@@ -8,8 +8,12 @@ import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js
 import diagramXML from '../resources/newDiagram.bpmn';
 
 // import Extra Props
-import additionalPropertiesProviderModule from './provider';
+import additionalPropertiesProviderModule from './provider/extra';
 import extraModdleDescriptor from './descriptors/extra';
+import additionalPropertiesListProviderModule from './provider/extra_list'
+import extra_listModdleDescriptor from './descriptors/extra_list';
+import additionalPropertiesList2ProviderModule from './provider/extra_list2'
+import extra_list2ModdleDescriptor from './descriptors/extra_list2';
 
 
 var container = $('#js-drop-zone');
@@ -24,10 +28,14 @@ var bpmnModeler = new BpmnModeler({
   additionalModules: [
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
-    additionalPropertiesProviderModule
+    additionalPropertiesProviderModule,
+    additionalPropertiesListProviderModule,
+    additionalPropertiesList2ProviderModule
   ],
   moddleExtensions: {
-    extra: extraModdleDescriptor
+    extra: extraModdleDescriptor,
+    extra_list: extra_listModdleDescriptor,
+    extra_list2: extra_list2ModdleDescriptor
   }
 });
 container.removeClass('with-diagram');
