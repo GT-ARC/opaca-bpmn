@@ -25,6 +25,7 @@ module.exports = {
         { from: 'src/index.html', to: '.' },
         { from: 'node_modules/bpmn-js/dist/assets', to: 'vendor/bpmn-js/assets' },
         { from: 'node_modules/@bpmn-io/properties-panel/dist/assets', to: 'vendor/@bpmn-io/properties-panel/assets' },
+        { from: 'node_modules/bpmn-js-token-simulation/assets', to: 'vendor/bpmn-js-token-simulation/assets' }
       ]
     })
   ]
