@@ -1,5 +1,6 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
+import TokenSimulationModule from 'bpmn-js-token-simulation';
 
 import { debounce } from 'min-dash';
 
@@ -33,7 +34,8 @@ var bpmnModeler = new BpmnModeler({
     CamundaPlatformPropertiesProviderModule,
     additionalPropertiesProviderModule,
     additionalPropertiesListProviderModule,
-    additionalPropertiesList2ProviderModule
+    additionalPropertiesList2ProviderModule,
+    TokenSimulationModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
