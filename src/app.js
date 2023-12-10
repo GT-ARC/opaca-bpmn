@@ -1,9 +1,12 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
+import TokenSimulationModule from 'bpmn-js-token-simulation';
 
 import { debounce } from 'min-dash';
 
-import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from 'bpmn-js-properties-panel';
+
+import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json'
 
 import diagramXML from '../resources/newDiagram.bpmn';
 
@@ -28,11 +31,14 @@ var bpmnModeler = new BpmnModeler({
   additionalModules: [
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
+    CamundaPlatformPropertiesProviderModule,
     additionalPropertiesProviderModule,
     additionalPropertiesListProviderModule,
-    additionalPropertiesList2ProviderModule
+    additionalPropertiesList2ProviderModule,
+    TokenSimulationModule
   ],
   moddleExtensions: {
+    camunda: CamundaBpmnModdle,
     extra: extraModdleDescriptor,
     extra_list: extra_listModdleDescriptor,
     extra_list2: extra_list2ModdleDescriptor
