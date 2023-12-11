@@ -32,16 +32,16 @@ var bpmnModeler = new BpmnModeler({
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule,
-    additionalPropertiesProviderModule,
+    //additionalPropertiesProviderModule,
     variablesListProviderModule,
-    additionalPropertiesList2ProviderModule,
+    //additionalPropertiesList2ProviderModule,
     TokenSimulationModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
-    extra: extraModdleDescriptor,
+    //extra: extraModdleDescriptor,
     variables: variablesListModdleDescriptor,
-    extra_list2: extra_list2ModdleDescriptor
+    //extra_list2: extra_list2ModdleDescriptor
   }
 });
 container.removeClass('with-diagram');
