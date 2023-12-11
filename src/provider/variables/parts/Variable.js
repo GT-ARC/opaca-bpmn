@@ -4,12 +4,14 @@ import { useService } from 'bpmn-js-properties-panel';
 
 //import ExtensionList from './ExtensionList';
 
+import { SelectEntry} from "@bpmn-io/properties-panel";
 
-export default function ParameterProps(props) {
+
+export default function Variable(props) {
 
     const {
         idPrefix,
-        parameter
+        variable
     } = props;
 
     const entries = [
@@ -17,13 +19,13 @@ export default function ParameterProps(props) {
             id: idPrefix + '-name',
             component: Name,
             idPrefix,
-            parameter
+            variable
         },
         {
-            id: idPrefix + '-value',
-            component: Value,
+            id: idPrefix + '-type',
+            component: Type,
             idPrefix,
-            parameter
+            variable
         }/*,
         {
             id: idPrefix + '-extensions',
@@ -41,7 +43,7 @@ function Name(props) {
     const {
         idPrefix,
         element,
-        parameter
+        variable
     } = props;
 
     const commandStack = useService('commandStack');
@@ -51,19 +53,19 @@ function Name(props) {
     const setValue = (value) => {
         commandStack.execute('element.updateModdleProperties', {
             element,
-            moddleElement: parameter,
+            moddleElement: variable,
             properties: {
                 name: value
             }
         });
     };
 
-    const getValue = (parameter) => {
-        return parameter.name;
+    const getValue = (variable) => {
+        return variable.name;
     };
 
     return TextFieldEntry({
-        element: parameter,
+        element: variable,
         id: idPrefix + '-name',
         label: translate('Name'),
         getValue,
@@ -72,35 +74,56 @@ function Name(props) {
     });
 }
 
-function Value(props) {
+function Type(props) {
     const {
         idPrefix,
         element,
-        parameter
+        variable
     } = props;
 
     const commandStack = useService('commandStack');
     const translate = useService('translate');
     const debounce = useService('debounceInput');
 
+    //const predefinedTypes = variable.type.values || [];
+    const predefinedTypes = ["String", "Integer", "Boolean", "Date"];
+
     const setValue = (value) => {
         commandStack.execute('element.updateModdleProperties', {
             element,
-            moddleElement: parameter,
+            moddleElement: variable,
             properties: {
-                value: value
+                type: value
             }
         });
     };
 
-    const getValue = (parameter) => {
-        return parameter.value;
+    const getValue = (variable) => {
+        return variable.type;
     };
 
+    /*
     return TextFieldEntry({
-        element: parameter,
-        id: idPrefix + '-value',
-        label: translate('Value'),
+        element: variable,
+        id: idPrefix + '-type',
+        label: translate('Type'),
+        getValue,
+        setValue,
+        debounce
+    });
+     */
+    const getOptions = () => {
+        return predefinedTypes.map(type => ({
+            value: type,
+            label: type
+        }));
+    };
+
+    return SelectEntry({
+        element: variable,
+        id: idPrefix + '-type',
+        label: translate('Type'),
+        getOptions,
         getValue,
         setValue,
         debounce

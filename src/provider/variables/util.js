@@ -4,10 +4,10 @@ import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
 export function getParametersExtension(element) {
     const businessObject = getBusinessObject(element);
-    return getExtension(businessObject, 'additional_list:Parameters');
+    return getExtension(businessObject, 'variables_list:Variables');
 }
 
-export function getParameters(element) {
+export function getVariables(element) {
     const parameters = getParametersExtension(element);
     return parameters && parameters.get('values');
 }
@@ -32,8 +32,8 @@ export function createElement(elementType, properties, parent, factory) {
     return element;
 }
 
-export function createParameters(properties, parent, bpmnFactory) {
-    return createElement('additional_list:Parameters', properties, parent, bpmnFactory);
+export function createVariables(properties, parent, bpmnFactory) {
+    return createElement('variables_list:Variables', properties, parent, bpmnFactory);
 }
 
 

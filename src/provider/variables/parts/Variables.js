@@ -4,37 +4,37 @@ import {
 
 import {
     createElement,
-    createParameters,
-    getParameters,
+    createVariables,
+    getVariables,
     getParametersExtension,
     nextId
 } from '../util';
 
-import ParameterProps from './ParameterProps';
+import Variable from './Variable';
 
 import { without } from 'min-dash';
 
 
-export default function ParametersProps({ element, injector }) {
+export default function Variables({ element, injector }) {
 
-    const parameters = getParameters(element) || [];
+    const variables = getVariables(element) || [];
 
     const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');
 
-    const items = parameters.map((parameter, index) => {
-        const id = element.id + '-parameter-' + index;
+    const items = variables.map((variable, index) => {
+        const id = element.id + '-variable-' + index;
 
         return {
             id,
-            label: parameter.get('name') || '',
-            entries: ParameterProps({
+            label: variable.get('name') || '',
+            entries: Variable({
                 idPrefix: id,
                 element,
-                parameter
+                variable
             }),
             autoFocusEntry: id + '-name',
-            remove: removeFactory({ commandStack, element, parameter })
+            remove: removeFactory({ commandStack, element, variable })
         };
     });
 
@@ -44,7 +44,7 @@ export default function ParametersProps({ element, injector }) {
     };
 }
 
-function removeFactory({ commandStack, element, parameter }) {
+function removeFactory({ commandStack, element, variable }) {
     return function(event) {
         event.stopPropagation();
 
@@ -54,13 +54,13 @@ function removeFactory({ commandStack, element, parameter }) {
             return;
         }
 
-        const parameters = without(extension.get('values'), parameter);
+        const variables = without(extension.get('values'), variable);
 
         commandStack.execute('element.updateModdleProperties', {
             element,
             moddleElement: extension,
             properties: {
-                values: parameters
+                values: variables
             }
         });
     };
@@ -99,7 +99,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         let extension = getParametersExtension(element);
 
         if (!extension) {
-            extension = createParameters({
+            extension = createVariables({
                 values: []
             }, extensionElements, bpmnFactory);
 
@@ -116,9 +116,9 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         }
 
         // (3) create parameter
-        const newParameter = createElement('additional_list2:Parameter', {
-            name: nextId('Parameter_'),
-            value: ''
+        const newVariable = createElement('variables_list:Variable', {
+            name: nextId('Variable_'),
+            type: ''
         }, extension, bpmnFactory);
 
         // (4) add parameter to list
@@ -128,7 +128,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
                 element,
                 moddleElement: extension,
                 properties: {
-                    values: [ ...extension.get('values'), newParameter ]
+                    values: [ ...extension.get('values'), newVariable ]
                 }
             }
         });

@@ -13,8 +13,8 @@ import diagramXML from '../resources/newDiagram.bpmn';
 // import Extra Props
 import additionalPropertiesProviderModule from './provider/extra';
 import extraModdleDescriptor from './descriptors/extra';
-import additionalPropertiesListProviderModule from './provider/extra_list'
-import extra_listModdleDescriptor from './descriptors/extra_list';
+import variablesListProviderModule from './provider/variables'
+import variablesListModdleDescriptor from './descriptors/variables';
 import additionalPropertiesList2ProviderModule from './provider/extra_list2'
 import extra_list2ModdleDescriptor from './descriptors/extra_list2';
 
@@ -33,14 +33,14 @@ var bpmnModeler = new BpmnModeler({
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule,
     additionalPropertiesProviderModule,
-    additionalPropertiesListProviderModule,
+    variablesListProviderModule,
     additionalPropertiesList2ProviderModule,
     TokenSimulationModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
     extra: extraModdleDescriptor,
-    extra_list: extra_listModdleDescriptor,
+    variables: variablesListModdleDescriptor,
     extra_list2: extra_list2ModdleDescriptor
   }
 });

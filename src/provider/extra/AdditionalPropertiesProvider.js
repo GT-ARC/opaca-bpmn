@@ -39,7 +39,7 @@ export default function AdditionalPropertiesProvider(propertiesPanel, translate)
         return function(groups) {
 
             // Add the "extra" group
-            if (is(element, 'bpmn:StartEvent')) {
+            if (is(element, 'bpmn:BaseElement')) {
                 groups.push(createAdditionalGroup(element, translate));
             }
 
