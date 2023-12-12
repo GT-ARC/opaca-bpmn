@@ -1,0 +1,38 @@
+{
+  "name": "Assignments_List",
+  "prefix": "assignments_list",
+  "uri": "http://assignments_list",
+  "xml": {
+    "tagAlias": "lowerCase"
+  },
+  "associations": [],
+  "types": [
+    {
+      "name": "Assignments",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "values",
+          "isMany": true,
+          "type": "Assignment"
+        }
+      ]
+    },
+    {
+      "name": "Assignment",
+      "properties": [
+        {
+          "name": "variable",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "expression",
+          "isAttr": true,
+          "type": "String",
+          "description": "Expression you want to assign"
+        }
+      ]
+    }
+  ]
+}

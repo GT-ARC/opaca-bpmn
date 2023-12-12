@@ -15,6 +15,8 @@ import additionalPropertiesProviderModule from './provider/extra';
 import extraModdleDescriptor from './descriptors/extra';
 import variablesListProviderModule from './provider/variables'
 import variablesListModdleDescriptor from './descriptors/variables';
+import assignmentsListProviderModule from './provider/assignments';
+import assignmentsListModdleDescriptor from './descriptors/assignments'
 import additionalPropertiesList2ProviderModule from './provider/extra_list2'
 import extra_list2ModdleDescriptor from './descriptors/extra_list2';
 
@@ -35,12 +37,14 @@ var bpmnModeler = new BpmnModeler({
     //additionalPropertiesProviderModule,
     variablesListProviderModule,
     //additionalPropertiesList2ProviderModule,
+    assignmentsListProviderModule,
     TokenSimulationModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
     //extra: extraModdleDescriptor,
     variables: variablesListModdleDescriptor,
+    assignments: assignmentsListModdleDescriptor
     //extra_list2: extra_list2ModdleDescriptor
   }
 });
