@@ -7,7 +7,9 @@ import { useService } from 'bpmn-js-properties-panel';
 
 import { SelectEntry} from "@bpmn-io/properties-panel";
 import {getBusinessObject, is} from "bpmn-js/lib/util/ModelUtil";
-
+import { getVariablesForScope } from '@bpmn-io/extract-process-variables';
+import { useEffect, useState } from '@bpmn-io/properties-panel/preact/hooks';
+//import { customGetVariablesForScope } from '../extractVariables'
 
 export default function Assignment(props) {
 
@@ -28,14 +30,7 @@ export default function Assignment(props) {
             component: Expression,
             idPrefix,
             assignment
-        }/*,
-        {
-            id: idPrefix + '-extensions',
-            component: ExtensionList,
-            idPrefix,
-            parameter
         }
-        */
     ];
 
     return entries;
@@ -66,38 +61,32 @@ function Variable(props) {
         return assignment.variable;
     };
 
-    /*
-    return TextFieldEntry({
-        element: variable,
-        id: idPrefix + '-name',
-        label: translate('Name'),
-        getValue,
-        setValue,
-        debounce
-    });
-     */
+    const [variables, setVariables] = useState([]);
 
-    // find parent containing variables
-    var parent = element;
-    const possibleParents = ['bpmn:Process', 'bpmn:SubProcess', 'bpmn:Participant', 'bpmn:Collaboration'];
+    useEffect(async () => {
+        // Retrieve variables for the current scope
+        const scope = getScope(element);
+        const rootElement = getRootElement(element);
 
-    while (parent) {
-        if (possibleParents.some(type => is(parent, type))) {
-            break;
+        try {
+            //const definedVariables = await customGetVariablesForScope(scope, rootElement) || [];
+            const definedVariables = rootElement.extensionElements.values[0].values || [];
+            setVariables(definedVariables);
+            // NOTE: This works for now, but is not that elegant
+            // values[0] should be the variables_list:variables (but may change with additional extensionElements)
+            // values[0].values gives the entries of that list
+            // TODO: use scopes, make it more readable and stable, clean-up
+
+        } catch (error) {
+            console.error('Error fetching variables:', error);
         }
-
-        parent = parent.$parent;
-    }
-    console.log(parent);
-    console.log(getBusinessObject(parent));
-    const definedVariables = parent?.businessObject?.variables || [];
-
+    }, [assignment]);
 
     const getOptions = () => {
-        return definedVariables.map(variable => ({
+        return Array.isArray(variables) ? variables.map(variable => ({
             value: variable.name,
             label: variable.name
-        }));
+        })) : [];
     };
 
     return SelectEntry({
@@ -110,6 +99,7 @@ function Variable(props) {
         debounce
     });
 }
+
 
 function Expression(props) {
     const {
@@ -144,4 +134,46 @@ function Expression(props) {
         setValue,
         debounce
     });
+}
+
+function getRootElement(element) {
+    // Implementation to get the root element
+    const businessObject = getBusinessObject(element);
+
+    if (is(businessObject, 'bpmn:Participant')) {
+        return businessObject.processRef;
+    }
+
+    if (is(businessObject, 'bpmn:Process')) {
+        return businessObject;
+    }
+
+    let parent = businessObject;
+
+    while (parent.$parent && !is(parent, 'bpmn:Process')) {
+        parent = parent.$parent;
+    }
+
+    return parent;
+}
+
+function getScope(element) {
+    // Implementation to get the scope
+    const bo = getBusinessObject(element);
+
+    if (is(element, 'bpmn:Participant')) {
+        return bo.processRef.id;
+    }
+
+    return bo.id;
+}
+
+function getExtensionElement(element, type) {
+    if (!element.extensionElements) {
+        return;
+    }
+
+    return element.extensionElements.values.filter((extensionElement) => {
+        return extensionElement.$instanceOf(type);
+    })[0];
 }
