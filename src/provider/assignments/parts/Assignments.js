@@ -26,13 +26,13 @@ export default function Assignments({ element, injector }) {
 
         return {
             id,
-            label: assignment.get('assignment') || '',
+            label: assignment.get('variable') || '',
             entries: Assignment({
                 idPrefix: id,
                 element,
                 assignment
             }),
-            autoFocusEntry: id + '-assignment',
+            autoFocusEntry: id + '-variable',
             remove: removeFactory({ commandStack, element, assignment })
         };
     });
@@ -116,7 +116,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
 
         // (3) create parameter
         const newAssignment = createElement('assignments_list:Assignment', {
-            variable : '', //name: nextId('Assignment_'),
+            variable : '', // default
             expression: ''
         }, extension, bpmnFactory);
 
