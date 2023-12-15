@@ -2,13 +2,13 @@ import Ids from 'ids';
 
 import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
 
-export function getParametersExtension(element) {
+export function getVariablesExtension(element) {
     const businessObject = getBusinessObject(element);
     return getExtension(businessObject, 'variables_list:Variables');
 }
 
 export function getVariables(element) {
-    const parameters = getParametersExtension(element);
+    const parameters = getVariablesExtension(element);
     return parameters && parameters.get('values');
 }
 

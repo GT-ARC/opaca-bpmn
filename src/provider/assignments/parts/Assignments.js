@@ -6,8 +6,7 @@ import {
     createElement,
     createAssignments,
     getAssignments,
-    getParametersExtension
-    //nextId
+    getAssignmentsExtension
 } from '../util';
 
 import Assignment from './Assignment';
@@ -48,7 +47,7 @@ function removeFactory({ commandStack, element, assignment }) {
     return function(event) {
         event.stopPropagation();
 
-        const extension = getParametersExtension(element);
+        const extension = getAssignmentsExtension(element);
 
         if (!extension) {
             return;
@@ -96,7 +95,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         }
 
         // (2) ensure parameters extension
-        let extension = getParametersExtension(element);
+        let extension = getAssignmentsExtension(element);
 
         if (!extension) {
             extension = createAssignments({

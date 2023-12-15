@@ -1,9 +1,5 @@
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
-
 import { useService } from 'bpmn-js-properties-panel';
-
-//import ExtensionList from './ExtensionList';
-
 import { SelectEntry} from "@bpmn-io/properties-panel";
 
 
@@ -14,7 +10,8 @@ export default function Variable(props) {
         variable
     } = props;
 
-    const entries = [
+    // return entries
+    return [
         {
             id: idPrefix + '-name',
             component: Name,
@@ -26,17 +23,8 @@ export default function Variable(props) {
             component: Type,
             idPrefix,
             variable
-        }/*,
-        {
-            id: idPrefix + '-extensions',
-            component: ExtensionList,
-            idPrefix,
-            parameter
         }
-        */
     ];
-
-    return entries;
 }
 
 function Name(props) {
@@ -85,7 +73,6 @@ function Type(props) {
     const translate = useService('translate');
     const debounce = useService('debounceInput');
 
-    //const predefinedTypes = variable.type.values || [];
     const predefinedTypes = ["String", "Integer", "Boolean", "Date"];
 
     const setValue = (value) => {
@@ -102,16 +89,6 @@ function Type(props) {
         return variable.type;
     };
 
-    /*
-    return TextFieldEntry({
-        element: variable,
-        id: idPrefix + '-type',
-        label: translate('Type'),
-        getValue,
-        setValue,
-        debounce
-    });
-     */
     const getOptions = () => {
         return predefinedTypes.map(type => ({
             value: type,

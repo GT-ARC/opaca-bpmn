@@ -1,5 +1,5 @@
-// Import your custom list group entries.
-import parametersProps from './parts/Variables';
+// Import our custom list group entries.
+import variablesList from './parts/Variables';
 
 // Import the properties panel list group component.
 import { ListGroup } from '@bpmn-io/properties-panel';
@@ -42,7 +42,7 @@ export default function VariablesListProvider(propertiesPanel, injector, transla
             const validElementTypes = ['bpmn:Process', 'bpmn:SubProcess', 'bpmn:Collaboration', 'bpmn:Participant'];
 
             if (validElementTypes.some(type => is(element, type))) {
-                groups.push(createParametersGroup(element, injector, translate));
+                groups.push(createVariablesGroup(element, injector, translate));
             }
 
             return groups;
@@ -52,7 +52,7 @@ export default function VariablesListProvider(propertiesPanel, injector, transla
 
     // registration ////////
 
-    // Register our custom extra properties provider.
+    // Register our custom variables list provider.
     // Use a lower priority to ensure it is loaded after
     // the basic BPMN properties.
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
@@ -61,15 +61,13 @@ export default function VariablesListProvider(propertiesPanel, injector, transla
 VariablesListProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
 // Create the custom parameters list group.
-function createParametersGroup(element, injector, translate) {
+function createVariablesGroup(element, injector, translate) {
 
-    // Create a group called "parameters".
-    const parametersGroup = {
+    // Return a group called "variables".
+    return {
         id: 'variables',
-        label: translate('List of variables'),
+        label: translate('Variables'),
         component: ListGroup,
-        ...parametersProps({ element, injector })
+        ...variablesList({ element, injector })
     };
-
-    return parametersGroup;
 }

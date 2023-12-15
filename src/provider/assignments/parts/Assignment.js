@@ -1,15 +1,9 @@
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
 
 import { useService } from 'bpmn-js-properties-panel';
-
-//import ExtensionList from './ExtensionList';
-//import { Importer } from 'bpmn-js/lib/import'
-
 import { SelectEntry} from "@bpmn-io/properties-panel";
 import {getBusinessObject, is} from "bpmn-js/lib/util/ModelUtil";
-import { getVariablesForScope } from '@bpmn-io/extract-process-variables';
 import { useEffect, useState } from '@bpmn-io/properties-panel/preact/hooks';
-//import { customGetVariablesForScope } from '../extractVariables'
 
 export default function Assignment(props) {
 
@@ -18,7 +12,8 @@ export default function Assignment(props) {
         assignment
     } = props;
 
-    const entries = [
+    // return entries
+    return [
         {
             id: idPrefix + '-variable',
             component: Variable,
@@ -32,8 +27,6 @@ export default function Assignment(props) {
             assignment
         }
     ];
-
-    return entries;
 }
 
 function Variable(props) {
@@ -136,6 +129,7 @@ function Expression(props) {
     });
 }
 
+// TODO maybe move these to util
 function getRootElement(element) {
     // Implementation to get the root element
     const businessObject = getBusinessObject(element);
@@ -166,14 +160,4 @@ function getScope(element) {
     }
 
     return bo.id;
-}
-
-function getExtensionElement(element, type) {
-    if (!element.extensionElements) {
-        return;
-    }
-
-    return element.extensionElements.values.filter((extensionElement) => {
-        return extensionElement.$instanceOf(type);
-    })[0];
 }

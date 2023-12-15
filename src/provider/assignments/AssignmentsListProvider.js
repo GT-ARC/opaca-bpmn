@@ -1,5 +1,5 @@
 // Import your custom list group entries.
-import parametersProps from './parts/Assignments';
+import assignmentsList from './parts/Assignments';
 
 // Import the properties panel list group component.
 import { ListGroup } from '@bpmn-io/properties-panel';
@@ -42,7 +42,7 @@ export default function AssignmentsListProvider(propertiesPanel, injector, trans
             const validElementTypes = ['bpmn:BaseElement', 'bpmn:StartEvent'];
 
             if (validElementTypes.some(type => is(element, type))) {
-                groups.push(createParametersGroup(element, injector, translate));
+                groups.push(createAssignmentsGroup(element, injector, translate));
             }
 
             return groups;
@@ -52,7 +52,7 @@ export default function AssignmentsListProvider(propertiesPanel, injector, trans
 
     // registration ////////
 
-    // Register our custom extra properties provider.
+    // Register our custom assignments list provider.
     // Use a lower priority to ensure it is loaded after
     // the basic BPMN properties.
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
@@ -60,16 +60,14 @@ export default function AssignmentsListProvider(propertiesPanel, injector, trans
 
 AssignmentsListProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
-// Create the custom parameters list group.
-function createParametersGroup(element, injector, translate) {
+// Create the custom assignments list group.
+function createAssignmentsGroup(element, injector, translate) {
 
-    // Create a group called "parameters".
-    const parametersGroup = {
+    // Return a group called "assignments".
+    return {
         id: 'assignments',
         label: translate('Assignments'),
         component: ListGroup,
-        ...parametersProps({ element, injector })
+        ...assignmentsList({ element, injector })
     };
-
-    return parametersGroup;
 }

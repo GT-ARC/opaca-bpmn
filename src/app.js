@@ -1,24 +1,18 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import TokenSimulationModule from 'bpmn-js-token-simulation';
-
 import { debounce } from 'min-dash';
 
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from 'bpmn-js-properties-panel';
-
 import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json'
 
 import diagramXML from '../resources/newDiagram.bpmn';
 
 // import Extra Props
-import additionalPropertiesProviderModule from './provider/extra';
-import extraModdleDescriptor from './descriptors/extra';
 import variablesListProviderModule from './provider/variables'
 import variablesListModdleDescriptor from './descriptors/variables';
 import assignmentsListProviderModule from './provider/assignments';
 import assignmentsListModdleDescriptor from './descriptors/assignments'
-import additionalPropertiesList2ProviderModule from './provider/extra_list2'
-import extra_list2ModdleDescriptor from './descriptors/extra_list2';
 
 
 var container = $('#js-drop-zone');
@@ -34,18 +28,14 @@ var bpmnModeler = new BpmnModeler({
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule,
-    //additionalPropertiesProviderModule,
     variablesListProviderModule,
-    //additionalPropertiesList2ProviderModule,
     assignmentsListProviderModule,
     TokenSimulationModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
-    //extra: extraModdleDescriptor,
     variables: variablesListModdleDescriptor,
     assignments: assignmentsListModdleDescriptor
-    //extra_list2: extra_list2ModdleDescriptor
   }
 });
 container.removeClass('with-diagram');
