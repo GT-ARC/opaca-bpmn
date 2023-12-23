@@ -1,0 +1,58 @@
+{
+  "type": "object",
+  "properties": {
+    "personId": {
+      "type": "integer"
+    },
+    "firstName": {
+      "type": "string"
+    },
+    "lastName": {
+      "type": "string"
+    },
+    "age": {
+      "type": "integer"
+    },
+    "address": {
+      "type": "object",
+      "properties": {
+        "street": {
+          "type": "string"
+        },
+        "city": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "zipCode": {
+          "type": "string"
+        }
+      }
+    },
+    "contactNumbers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "isStudent": {
+      "type": "boolean"
+    },
+    "courses": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["personId", "firstName", "lastName", "age", "isStudent"]
+}

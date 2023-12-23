@@ -1,6 +1,7 @@
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
-import { SelectEntry} from "@bpmn-io/properties-panel";
+import { SelectEntry } from "@bpmn-io/properties-panel";
+import { getDataTypes } from "../util";
 
 
 export default function Variable(props) {
@@ -73,7 +74,10 @@ function Type(props) {
     const translate = useService('translate');
     const debounce = useService('debounceInput');
 
-    const predefinedTypes = ["String", "Integer", "Boolean", "Date"];
+    // Basic types
+    const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+    // Add custom types
+    const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
     const setValue = (value) => {
         commandStack.execute('element.updateModdleProperties', {
@@ -90,7 +94,7 @@ function Type(props) {
     };
 
     const getOptions = () => {
-        return predefinedTypes.map(type => ({
+        return allTypes.map(type => ({
             value: type,
             label: type
         }));

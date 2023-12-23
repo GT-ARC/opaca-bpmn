@@ -1,6 +1,6 @@
 import Ids from 'ids';
 
-import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
+import {getBusinessObject} from 'bpmn-js/lib/util/ModelUtil';
 
 export function getVariablesExtension(element) {
     const businessObject = getBusinessObject(element);
@@ -41,4 +41,12 @@ export function nextId(prefix) {
     const ids = new Ids([ 32,32,1 ]);
 
     return ids.nextPrefixed(prefix);
+}
+
+// Get names of custom datatypes defined in 'resources/datatypes'
+export function getDataTypes(){
+    // Get context created by Webpack
+    const datatypesContext = require.context('datatypes', false, /\.json$/);
+    // Return filenames without .json extension
+    return datatypesContext.keys().map(key => key.replace(/^\.\//, '').replace(/\.json$/, ''));
 }
