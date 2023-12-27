@@ -39,7 +39,7 @@ export default function AssignmentsListProvider(propertiesPanel, injector, trans
          */
         return function(groups) {
 
-            const validElementTypes = ['bpmn:BaseElement', 'bpmn:StartEvent'];
+            const validElementTypes = ['bpmn:Process', 'bpmn:SubProcess', 'bpmn:Participant', 'bpmn:Task', 'bpmn:Event'];
 
             if (validElementTypes.some(type => is(element, type))) {
                 groups.push(createAssignmentsGroup(element, injector, translate));

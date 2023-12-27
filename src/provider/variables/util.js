@@ -8,8 +8,8 @@ export function getVariablesExtension(element) {
 }
 
 export function getVariables(element) {
-    const parameters = getVariablesExtension(element);
-    return parameters && parameters.get('values');
+    const variables = getVariablesExtension(element);
+    return variables && variables.get('values');
 }
 
 export function getExtension(element, type) {

@@ -39,7 +39,7 @@ export default function VariablesListProvider(propertiesPanel, injector, transla
          */
         return function(groups) {
 
-            const validElementTypes = ['bpmn:Process', 'bpmn:SubProcess', 'bpmn:Collaboration', 'bpmn:Participant'];
+            const validElementTypes = ['bpmn:Process', 'bpmn:SubProcess', 'bpmn:Participant'];
 
             if (validElementTypes.some(type => is(element, type))) {
                 groups.push(createVariablesGroup(element, injector, translate));
@@ -60,7 +60,7 @@ export default function VariablesListProvider(propertiesPanel, injector, transla
 
 VariablesListProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
-// Create the custom parameters list group.
+// Create the custom variables list group.
 function createVariablesGroup(element, injector, translate) {
 
     // Return a group called "variables".

@@ -95,7 +95,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
             });
         }
 
-        // (2) ensure parameters extension
+        // (2) ensure variables extension
         let extension = getVariablesExtension(element);
 
         if (!extension) {
@@ -115,13 +115,13 @@ function addFactory({ element, bpmnFactory, commandStack }) {
             });
         }
 
-        // (3) create parameter
+        // (3) create variable
         const newVariable = createElement('variables_list:Variable', {
             name: nextId('Variable_'),
             type: ''
         }, extension, bpmnFactory);
 
-        // (4) add parameter to list
+        // (4) add variable to list
         commands.push({
             cmd: 'element.updateModdleProperties',
             context: {

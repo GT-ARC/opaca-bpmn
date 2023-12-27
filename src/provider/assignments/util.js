@@ -1,4 +1,5 @@
-import { getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
+import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
+import { getVariablesExtension } from "../variables/util";
 
 export function getAssignmentsExtension(element) {
     const businessObject = getBusinessObject(element);
@@ -6,8 +7,8 @@ export function getAssignmentsExtension(element) {
 }
 
 export function getAssignments(element) {
-    const parameters = getAssignmentsExtension(element);
-    return parameters && parameters.get('values');
+    const assignments = getAssignmentsExtension(element);
+    return assignments && assignments.get('values');
 }
 
 
@@ -33,4 +34,51 @@ export function createElement(elementType, properties, parent, factory) {
 
 export function createAssignments(properties, parent, bpmnFactory) {
     return createElement('assignments_list:Assignments', properties, parent, bpmnFactory);
+}
+
+export function getParentElement(element) {
+    // Implementation to get the parent element
+    const businessObject = getBusinessObject(element);
+
+    if (is(businessObject, 'bpmn:Participant')) {
+        return businessObject.processRef;
+        // TODO
+    }
+
+    if (is(businessObject, 'bpmn:Process')) {
+        return businessObject;
+    }
+
+    if(is(businessObject, 'bpmn:SubProcess')){
+        return businessObject;
+    }
+    return getParentElement(businessObject.$parent);
+}
+
+
+export function getAllVariables(element) {
+
+    const rootElement = getParentElement(element);
+
+    const variables = [];
+
+    function collectVariables(currentElement) {
+        //const extension = getAssignmentsExtension(currentElement);
+        const extension = getVariablesExtension(currentElement);
+
+        if (extension) {
+            const currentVariables = extension.values || [];
+            variables.push(...currentVariables);
+        }
+
+        // Check if the current element has a parent
+        const parent = currentElement.$parent;
+
+        if (parent && parent.$parent) {
+            collectVariables(parent);
+        }
+    }
+    collectVariables(rootElement);
+
+    return variables;
 }
