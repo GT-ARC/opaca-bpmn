@@ -1,10 +1,6 @@
 import {
-    getBusinessObject
-} from 'bpmn-js/lib/util/ModelUtil';
-
-import {
     createElement,
-    createVariables,
+    createVariables, getRelevantBusinessObject,
     getVariables,
     getVariablesExtension,
     nextId
@@ -16,8 +12,8 @@ import { without } from 'min-dash';
 
 
 export default function Variables({ element, injector }) {
-
-    const variables = getVariables(element) || [];
+    const businessObject = getRelevantBusinessObject(element);
+    const variables = getVariables(businessObject) || [];
 
     const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');
@@ -48,7 +44,11 @@ function removeFactory({ commandStack, element, variable }) {
     return function(event) {
         event.stopPropagation();
 
-        const extension = getVariablesExtension(element);
+        const commands = [];
+
+        const businessObject = getRelevantBusinessObject(element);
+        const extensionElements = businessObject.get('extensionElements');
+        const extension = getVariablesExtension(businessObject);
 
         if (!extension) {
             return;
@@ -56,13 +56,32 @@ function removeFactory({ commandStack, element, variable }) {
 
         const variables = without(extension.get('values'), variable);
 
-        commandStack.execute('element.updateModdleProperties', {
-            element,
-            moddleElement: extension,
-            properties: {
-                values: variables
+        commands.push({
+            cmd : 'element.updateModdleProperties',
+            context : {
+                element,
+                moddleElement: extension,
+                properties: {
+                    values: variables
+                }
             }
         });
+
+        // Remove if variables list is empty
+        if(!variables.length){
+
+            commands.push({
+                cmd : 'element.updateModdleProperties',
+                context : {
+                    element,
+                    moddleElement : extensionElements,
+                    properties : {
+                        values : without(extensionElements.get('values'), extension)
+                    }
+                }
+            })
+        }
+        commandStack.execute('properties-panel.multi-command-executor', commands);
     };
 }
 
@@ -71,8 +90,8 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         event.stopPropagation();
 
         const commands = [];
+        const businessObject = getRelevantBusinessObject(element);
 
-        const businessObject = getBusinessObject(element);
 
         let extensionElements = businessObject.get('extensionElements');
 

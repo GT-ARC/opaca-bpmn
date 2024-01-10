@@ -1,10 +1,20 @@
 import Ids from 'ids';
 
-import {getBusinessObject} from 'bpmn-js/lib/util/ModelUtil';
+import {getBusinessObject, is} from 'bpmn-js/lib/util/ModelUtil';
+
+export function getRelevantBusinessObject(element) {
+    let businessObject = getBusinessObject(element);
+
+    if (is(element, 'bpmn:Participant')) {
+        return businessObject.get('processRef');
+    }
+
+    return businessObject;
+}
 
 export function getVariablesExtension(element) {
-    const businessObject = getBusinessObject(element);
-    return getExtension(businessObject, 'variables_list:Variables');
+    const businessObject = getRelevantBusinessObject(element);
+    return getExtensionElementsList(businessObject)[ 0 ];
 }
 
 export function getVariables(element) {
@@ -20,6 +30,26 @@ export function getExtension(element, type) {
     return element.extensionElements.values.filter(function(e) {
         return e.$instanceOf(type);
     })[0];
+}
+
+export function getExtensionElementsList(businessObject, type = undefined) {
+    const extensionElements = businessObject.get('extensionElements');
+
+    if (!extensionElements) {
+        return [];
+    }
+
+    const values = extensionElements.get('values');
+
+    if (!values || !values.length) {
+        return [];
+    }
+
+    if (type) {
+        return values.filter(value => is(value, type));
+    }
+
+    return values;
 }
 
 export function createElement(elementType, properties, parent, factory) {
