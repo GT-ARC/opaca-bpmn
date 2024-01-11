@@ -1,8 +1,18 @@
 import { getBusinessObject, is } from 'bpmn-js/lib/util/ModelUtil';
 import { getVariablesExtension } from "../variables/util";
 
+export function getRelevantBusinessObject(element) {
+    let businessObject = getBusinessObject(element);
+
+    if (is(element, 'bpmn:Participant')) {
+        return businessObject.get('processRef');
+    }
+
+    return businessObject;
+}
+
 export function getAssignmentsExtension(element) {
-    const businessObject = getBusinessObject(element);
+    const businessObject = getRelevantBusinessObject(element);
     return getExtension(businessObject, 'assignments_list:Assignments');
 }
 
@@ -42,7 +52,6 @@ export function getParentElement(element) {
 
     if (is(businessObject, 'bpmn:Participant')) {
         return businessObject.processRef;
-        // TODO
     }
 
     if (is(businessObject, 'bpmn:Process')) {

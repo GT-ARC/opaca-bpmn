@@ -115,7 +115,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         }
 
         // (2) ensure variables extension
-        let extension = getVariablesExtension(element);
+        let extension = getVariablesExtension(businessObject);
 
         if (!extension) {
             extension = createVariables({

@@ -14,11 +14,12 @@ export function getRelevantBusinessObject(element) {
 
 export function getVariablesExtension(element) {
     const businessObject = getRelevantBusinessObject(element);
-    return getExtensionElementsList(businessObject)[ 0 ];
+    return getExtension(businessObject, 'variables_list:Variables');
 }
 
 export function getVariables(element) {
-    const variables = getVariablesExtension(element);
+    const businessObject = getRelevantBusinessObject(element);
+    const variables = getVariablesExtension(businessObject);
     return variables && variables.get('values');
 }
 
@@ -30,26 +31,6 @@ export function getExtension(element, type) {
     return element.extensionElements.values.filter(function(e) {
         return e.$instanceOf(type);
     })[0];
-}
-
-export function getExtensionElementsList(businessObject, type = undefined) {
-    const extensionElements = businessObject.get('extensionElements');
-
-    if (!extensionElements) {
-        return [];
-    }
-
-    const values = extensionElements.get('values');
-
-    if (!values || !values.length) {
-        return [];
-    }
-
-    if (type) {
-        return values.filter(value => is(value, type));
-    }
-
-    return values;
 }
 
 export function createElement(elementType, properties, parent, factory) {

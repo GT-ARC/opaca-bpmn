@@ -129,25 +129,6 @@ $(function() {
       e.preventDefault();
       e.stopPropagation();
     }
-    // log the bpmn model in javascript object form
-    if ($(this).is('#js-download-diagram.active')) {
-
-      console.log('All bpmn elements:')
-
-      var elementRegistry = bpmnModeler.get('elementRegistry');
-      // Get all elements registered in the element registry
-      var allElements = elementRegistry.getAll();
-      // Log all elements to the console
-      allElements.forEach(function(element) {
-        var businessObject = element.businessObject;
-
-        // Now you can access properties of the businessObject
-        console.log('Element ID:', element.id);
-        console.log('Business Object:', businessObject);
-        console.log('Business Object Name:', businessObject.name);
-        // Access other properties as needed
-      });
-    }
   });
 
   function setEncoded(link, name, data) {
