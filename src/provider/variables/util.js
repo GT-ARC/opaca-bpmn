@@ -1,53 +1,25 @@
 import Ids from 'ids';
+import {getExtension, getRelevantBusinessObject, createElement, } from "../util";
 
-import {getBusinessObject, is} from 'bpmn-js/lib/util/ModelUtil';
-
-export function getRelevantBusinessObject(element) {
-    let businessObject = getBusinessObject(element);
-
-    if (is(element, 'bpmn:Participant')) {
-        return businessObject.get('processRef');
-    }
-
-    return businessObject;
-}
-
+// Get variables list extension
 export function getVariablesExtension(element) {
     const businessObject = getRelevantBusinessObject(element);
     return getExtension(businessObject, 'variables_list:Variables');
 }
 
+// Get variables extension entries
 export function getVariables(element) {
     const businessObject = getRelevantBusinessObject(element);
     const variables = getVariablesExtension(businessObject);
     return variables && variables.get('values');
 }
 
-export function getExtension(element, type) {
-    if (!element.extensionElements) {
-        return null;
-    }
-
-    return element.extensionElements.values.filter(function(e) {
-        return e.$instanceOf(type);
-    })[0];
-}
-
-export function createElement(elementType, properties, parent, factory) {
-    const element = factory.create(elementType, properties);
-
-    if (parent) {
-        element.$parent = parent;
-    }
-
-    return element;
-}
-
+// Create new variable extension
 export function createVariables(properties, parent, bpmnFactory) {
     return createElement('variables_list:Variables', properties, parent, bpmnFactory);
 }
 
-
+// Get id used for generated names
 export function nextId(prefix) {
     const ids = new Ids([ 32,32,1 ]);
 

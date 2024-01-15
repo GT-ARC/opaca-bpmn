@@ -3,7 +3,7 @@ import { TextFieldEntry } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 import { SelectEntry} from "@bpmn-io/properties-panel";
 import { useEffect, useState } from '@bpmn-io/properties-panel/preact/hooks';
-import {getAllVariables, getAssignmentsExtension} from "../util";
+import {getAllVariables} from "../util";
 
 export default function Assignment(props) {
 
@@ -28,7 +28,7 @@ export default function Assignment(props) {
         }
     ];
 }
-
+// Getting and setting variable name of assignment
 function Variable(props) {
     const {
         idPrefix,
@@ -67,6 +67,7 @@ function Variable(props) {
         }
     }, [assignment]);
 
+    // Drop-down options (defined variables)
     const getOptions = () => {
         return Array.isArray(variables) ? variables.map(variable => ({
             value: variable.name,
@@ -85,7 +86,7 @@ function Variable(props) {
     });
 }
 
-
+// Getting and setting expression of assignment
 function Expression(props) {
     const {
         idPrefix,

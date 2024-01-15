@@ -1,9 +1,11 @@
 import {
-    createElement,
     createAssignments,
     getAssignments,
-    getAssignmentsExtension, getRelevantBusinessObject
+    getAssignmentsExtension
 } from '../util';
+import {
+    createElement, getRelevantBusinessObject
+} from '../../util';
 
 import Assignment from './Assignment';
 
@@ -39,6 +41,7 @@ export default function Assignments({ element, injector }) {
     };
 }
 
+// Removing an entry of assignments list
 function removeFactory({ commandStack, element, assignment }) {
     return function(event) {
         event.stopPropagation();
@@ -52,7 +55,7 @@ function removeFactory({ commandStack, element, assignment }) {
         if (!extension) {
             return;
         }
-
+        // assignments list without the entry we want to remove
         const assignments = without(extension.get('values'), assignment);
 
         commands.push({
@@ -84,6 +87,7 @@ function removeFactory({ commandStack, element, assignment }) {
     };
 }
 
+// Adding new assignment to assignments list
 function addFactory({ element, bpmnFactory, commandStack }) {
     return function(event) {
         event.stopPropagation();

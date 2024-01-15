@@ -1,6 +1,5 @@
 import {
-    createElement,
-    createVariables, getRelevantBusinessObject,
+    createVariables,
     getVariables,
     getVariablesExtension,
     nextId
@@ -9,7 +8,7 @@ import Variable from './Variable';
 import {without} from 'min-dash';
 import {getAssignmentsExtension} from "../../assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
-import {getRootElement} from "../../util";
+import {getRootElement, createElement, getRelevantBusinessObject} from "../../util";
 
 
 export default function Variables({ element, injector }) {
@@ -41,6 +40,7 @@ export default function Variables({ element, injector }) {
     };
 }
 
+// Removing an entry of variables list
 function removeFactory({ commandStack, element, variable }) {
     return function(event) {
         event.stopPropagation();
@@ -54,9 +54,9 @@ function removeFactory({ commandStack, element, variable }) {
         if (!extension) {
             return;
         }
-
+        // Variables list without entry we want to remove
         const variables = without(extension.get('values'), variable);
-
+        // Updating element properties
         commands.push({
             cmd : 'element.updateModdleProperties',
             context : {
@@ -68,12 +68,12 @@ function removeFactory({ commandStack, element, variable }) {
             }
         });
         // Also remove assignments to that variable
+        // Getting all flow elements
         const root = getRootElement(element);
         const children = root.get('flowElements');
-
+        // Find elements, that have assignment to the variable we remove
         const isOfType = (element, types) => types.some(type => is(element, type));
         const relevantChildren = children.filter(child => isOfType(child, ['bpmn:SubProcess', 'bpmn:Task', 'bpmn:Event']));
-        //const hasExtension = relevantChildren.filter(child => child.get('extensionElements'));
         const hasAssignmentExtension = relevantChildren.filter(child => getAssignmentsExtension(child));
 
         hasAssignmentExtension.forEach(child => {
@@ -109,6 +109,7 @@ function removeFactory({ commandStack, element, variable }) {
     };
 }
 
+// Adding new variable to variables list
 function addFactory({ element, bpmnFactory, commandStack }) {
     return function(event) {
         event.stopPropagation();
