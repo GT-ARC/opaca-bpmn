@@ -30,12 +30,10 @@ Build the example using [webpack](https://webpack.js.org/) via
 npm run all
 ```
 
-You may also spawn a development setup by executing
+That generates the distribution ready client-side modeler application into the `public` folder.
+
+Serve the application via
 
 ```sh
-npm run dev
+npm start
 ```
-
-Both tasks generate the distribution ready client-side modeler application into the `public` folder.
-
-Serve the application locally or via a web server (nginx, apache, embedded).
