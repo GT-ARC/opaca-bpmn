@@ -5,10 +5,11 @@ import {
     getVariablesExtension,
     nextId
 } from '../util';
-
 import Variable from './Variable';
-
-import { without } from 'min-dash';
+import {without} from 'min-dash';
+import {getAssignmentsExtension} from "../../assignments/util";
+import {is} from "bpmn-js/lib/util/ModelUtil";
+import {getRootElement} from "../../util";
 
 
 export default function Variables({ element, injector }) {
@@ -65,6 +66,29 @@ function removeFactory({ commandStack, element, variable }) {
                     values: variables
                 }
             }
+        });
+        // Also remove assignments to that variable
+        const root = getRootElement(element);
+        const children = root.get('flowElements');
+
+        const isOfType = (element, types) => types.some(type => is(element, type));
+        const relevantChildren = children.filter(child => isOfType(child, ['bpmn:SubProcess', 'bpmn:Task', 'bpmn:Event']));
+        //const hasExtension = relevantChildren.filter(child => child.get('extensionElements'));
+        const hasAssignmentExtension = relevantChildren.filter(child => getAssignmentsExtension(child));
+
+        hasAssignmentExtension.forEach(child => {
+            const withoutVar = getAssignmentsExtension(child).get('values').filter(value => value.variable !== variable.name)
+
+            commands.push({
+                cmd: 'element.updateModdleProperties',
+                context: {
+                    element,
+                    moddleElement: getAssignmentsExtension(child),
+                    properties: {
+                        values: withoutVar
+                    }
+                }
+            })
         });
 
         // Remove if variables list is empty

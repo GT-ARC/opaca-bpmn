@@ -67,29 +67,7 @@ function Variable(props) {
         }
     }, [assignment]);
 
-    const [assignedVariables, setAssignedVariables] = useState([]);
-
-    useEffect(async() => {
-        // Retrieve assigned variables
-        try {
-            const assignedVars = getAssignmentsExtension(element).values;
-            setAssignedVariables(assignedVars);
-        } catch (error) {
-            console.error('Error fetching assigned variables:', error);
-        }
-    }, [assignment]);
-
     const getOptions = () => {
-        // Filter out variables that already have assignment
-        // TODO
-        /*
-        const unassignedVariables = variables.filter(variable => !assignedVariables.some(assignedVar => assignedVar.variable === variable.name));
-
-        return Array.isArray(unassignedVariables) ? unassignedVariables.map(variable => ({
-            value: variable.name,
-            label: variable.name
-        })) : [];
-         */
         return Array.isArray(variables) ? variables.map(variable => ({
             value: variable.name,
             label: variable.name
