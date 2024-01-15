@@ -1,25 +1,25 @@
 {
-  "name": "AdditionalPropList",
-  "prefix": "additional_list",
-  "uri": "http://additional_list",
+  "name": "Variables_List",
+  "prefix": "variables_list",
+  "uri": "http://variables_list",
   "xml": {
     "tagAlias": "lowerCase"
   },
   "associations": [],
   "types": [
     {
-      "name": "Parameters",
+      "name": "Variables",
       "superClass": [ "Element" ],
       "properties": [
         {
           "name": "values",
           "isMany": true,
-          "type": "Parameter"
+          "type": "Variable"
         }
       ]
     },
     {
-      "name": "Parameter",
+      "name": "Variable",
       "properties": [
         {
           "name": "name",
@@ -27,9 +27,11 @@
           "type": "String"
         },
         {
-          "name": "value",
+          "name": "type",
           "isAttr": true,
-          "type": "String"
+          "type": "String",
+          "description": "Choose from predefined types or enter a custom type",
+          "values": ["String", "Integer", "Boolean", "Date"]
         }
       ]
     }

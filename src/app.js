@@ -1,22 +1,18 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import TokenSimulationModule from 'bpmn-js-token-simulation';
-
 import { debounce } from 'min-dash';
 
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from 'bpmn-js-properties-panel';
-
 import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json'
 
 import diagramXML from '../resources/newDiagram.bpmn';
 
 // import Extra Props
-import additionalPropertiesProviderModule from './provider/extra';
-import extraModdleDescriptor from './descriptors/extra';
-import additionalPropertiesListProviderModule from './provider/extra_list'
-import extra_listModdleDescriptor from './descriptors/extra_list';
-import additionalPropertiesList2ProviderModule from './provider/extra_list2'
-import extra_list2ModdleDescriptor from './descriptors/extra_list2';
+import variablesListProviderModule from './provider/variables'
+import variablesListModdleDescriptor from './descriptors/variables';
+import assignmentsListProviderModule from './provider/assignments';
+import assignmentsListModdleDescriptor from './descriptors/assignments'
 
 
 var container = $('#js-drop-zone');
@@ -32,16 +28,14 @@ var bpmnModeler = new BpmnModeler({
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule,
-    additionalPropertiesProviderModule,
-    additionalPropertiesListProviderModule,
-    additionalPropertiesList2ProviderModule,
+    variablesListProviderModule,
+    assignmentsListProviderModule,
     TokenSimulationModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
-    extra: extraModdleDescriptor,
-    extra_list: extra_listModdleDescriptor,
-    extra_list2: extra_list2ModdleDescriptor
+    variables: variablesListModdleDescriptor,
+    assignments: assignmentsListModdleDescriptor
   }
 });
 container.removeClass('with-diagram');
@@ -134,25 +128,6 @@ $(function() {
     if (!$(this).is('.active')) {
       e.preventDefault();
       e.stopPropagation();
-    }
-    // log the bpmn model in javascript object form
-    if ($(this).is('#js-download-diagram.active')) {
-
-      console.log('All bpmn elements:')
-
-      var elementRegistry = bpmnModeler.get('elementRegistry');
-      // Get all elements registered in the element registry
-      var allElements = elementRegistry.getAll();
-      // Log all elements to the console
-      allElements.forEach(function(element) {
-        var businessObject = element.businessObject;
-
-        // Now you can access properties of the businessObject
-        console.log('Element ID:', element.id);
-        console.log('Business Object:', businessObject);
-        console.log('Business Object Name:', businessObject.name);
-        // Access other properties as needed
-      });
     }
   });
 

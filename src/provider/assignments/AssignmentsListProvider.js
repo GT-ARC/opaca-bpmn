@@ -1,5 +1,5 @@
 // Import your custom list group entries.
-import parametersProps from './parts/ParametersProps';
+import assignmentsList from './parts/Assignments';
 
 // Import the properties panel list group component.
 import { ListGroup } from '@bpmn-io/properties-panel';
@@ -16,7 +16,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function AdditionalPropertiesList2Provider(propertiesPanel, injector, translate) {
+export default function AssignmentsListProvider(propertiesPanel, injector, translate) {
 
     // API ////////
 
@@ -39,8 +39,10 @@ export default function AdditionalPropertiesList2Provider(propertiesPanel, injec
          */
         return function(groups) {
 
-            if (is(element, 'bpmn:StartEvent')) {
-                groups.push(createParametersGroup(element, injector, translate));
+            const validElementTypes = ['bpmn:Process', 'bpmn:SubProcess', 'bpmn:Participant', 'bpmn:Task', 'bpmn:Event'];
+
+            if (validElementTypes.some(type => is(element, type))) {
+                groups.push(createAssignmentsGroup(element, injector, translate));
             }
 
             return groups;
@@ -50,24 +52,22 @@ export default function AdditionalPropertiesList2Provider(propertiesPanel, injec
 
     // registration ////////
 
-    // Register our custom extra properties provider.
+    // Register our custom assignments list provider.
     // Use a lower priority to ensure it is loaded after
     // the basic BPMN properties.
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-AdditionalPropertiesList2Provider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
+AssignmentsListProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
-// Create the custom parameters list group.
-function createParametersGroup(element, injector, translate) {
+// Create the custom assignments list group.
+function createAssignmentsGroup(element, injector, translate) {
 
-    // Create a group called "parameters".
-    const parametersGroup = {
-        id: 'parameters',
-        label: translate('Extra parameters list 2'),
+    // Return a group called "assignments".
+    return {
+        id: 'assignments',
+        label: translate('Assignments'),
         component: ListGroup,
-        ...parametersProps({ element, injector })
+        ...assignmentsList({ element, injector })
     };
-
-    return parametersGroup;
 }
