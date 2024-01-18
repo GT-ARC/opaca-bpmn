@@ -31,6 +31,12 @@
           "isAttr": true,
           "type": "String",
           "description": "Expression you want to assign"
+        },
+        {
+          "name": "assignTime",
+          "isAttr": true,
+          "type": "String",
+          "description": "Assignment at start or end of an activity"
         }
       ]
     }

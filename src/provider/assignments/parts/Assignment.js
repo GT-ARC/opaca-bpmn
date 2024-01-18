@@ -1,9 +1,8 @@
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
-
 import { useService } from 'bpmn-js-properties-panel';
-import { SelectEntry} from "@bpmn-io/properties-panel";
+import { SelectEntry } from "@bpmn-io/properties-panel";
 import { useEffect, useState } from '@bpmn-io/properties-panel/preact/hooks';
-import {getAllVariables} from "../util";
+import { getAllVariables } from "../util";
 
 export default function Assignment(props) {
 
@@ -23,6 +22,12 @@ export default function Assignment(props) {
         {
             id: idPrefix + '-expression',
             component: Expression,
+            idPrefix,
+            assignment
+        },
+        {
+            id: idPrefix + '-assignTime',
+            component: AssignTime,
             idPrefix,
             assignment
         }
@@ -71,7 +76,7 @@ function Variable(props) {
     const getOptions = () => {
         return Array.isArray(variables) ? variables.map(variable => ({
             value: variable.name,
-            label: variable.name
+            label: variable.name + ' (' + variable.type + ')'
         })) : [];
     };
 
@@ -116,6 +121,51 @@ function Expression(props) {
         element: assignment,
         id: idPrefix + '-expression',
         label: translate('Expression'),
+        getValue,
+        setValue,
+        debounce
+    });
+}
+
+// Getting and setting assignTime of assignment
+function AssignTime(props){
+    const {
+        idPrefix,
+        element,
+        assignment
+    } = props;
+
+    const commandStack = useService('commandStack');
+    const translate = useService('translate');
+    const debounce = useService('debounceInput');
+
+    const setValue = (value) => {
+        commandStack.execute('element.updateModdleProperties', {
+            element,
+            moddleElement: assignment,
+            properties: {
+                assignTime: value
+            }
+        });
+    };
+
+    const getValue = (assignment) => {
+        return assignment.assignTime;
+    };
+
+    // Drop-down options (start or end)
+    const getOptions = () => {
+        return ["START", "END"].map(type => ({
+            value: type,
+            label: type
+        }));
+    };
+
+    return SelectEntry({
+        element: assignment,
+        id: idPrefix + '-assignTime',
+        label: translate('Assign time'),
+        getOptions,
         getValue,
         setValue,
         debounce
