@@ -4,7 +4,7 @@ import {getExtension, getRelevantBusinessObject, createElement, } from "../util"
 // Get variables list extension
 export function getVariablesExtension(element) {
     const businessObject = getRelevantBusinessObject(element);
-    return getExtension(businessObject, 'variables_list:Variables');
+    return getExtension(businessObject, 'vsdt2:Variables');
 }
 
 // Get variables extension entries
@@ -16,7 +16,7 @@ export function getVariables(element) {
 
 // Create new variable extension
 export function createVariables(properties, parent, bpmnFactory) {
-    return createElement('variables_list:Variables', properties, parent, bpmnFactory);
+    return createElement('vsdt2:Variables', properties, parent, bpmnFactory);
 }
 
 // Get id used for generated names

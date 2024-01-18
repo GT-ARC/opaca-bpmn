@@ -138,7 +138,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         }
 
         // (3) create assignment
-        const newAssignment = createElement('assignments_list:Assignment', {
+        const newAssignment = createElement('vsdt2:Assignment', {
             variable : '', // default
             expression: ''
         }, extension, bpmnFactory);

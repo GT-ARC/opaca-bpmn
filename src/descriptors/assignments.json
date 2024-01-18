@@ -1,6 +1,6 @@
 {
   "name": "Assignments_List",
-  "prefix": "assignments_list",
+  "prefix": "vsdt2",
   "uri": "http://assignments_list",
   "xml": {
     "tagAlias": "lowerCase"

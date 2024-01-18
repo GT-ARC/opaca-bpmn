@@ -160,7 +160,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         }
 
         // (3) create variable
-        const newVariable = createElement('variables_list:Variable', {
+        const newVariable = createElement('vsdt2:Variable', {
             name: nextId('Variable_'),
             type: ''
         }, extension, bpmnFactory);

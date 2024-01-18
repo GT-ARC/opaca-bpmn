@@ -1,6 +1,6 @@
 {
   "name": "Variables_List",
-  "prefix": "variables_list",
+  "prefix": "vsdt2",
   "uri": "http://variables_list",
   "xml": {
     "tagAlias": "lowerCase"

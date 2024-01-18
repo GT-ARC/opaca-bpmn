@@ -4,7 +4,7 @@ import {getExtension, getParentElement, getRelevantBusinessObject, createElement
 // Get assignment list extension
 export function getAssignmentsExtension(element) {
     const businessObject = getRelevantBusinessObject(element);
-    return getExtension(businessObject, 'assignments_list:Assignments');
+    return getExtension(businessObject, 'vsdt2:Assignments');
 }
 
 // Get assignments extension entries
@@ -15,7 +15,7 @@ export function getAssignments(element) {
 
 // Create new assignment extension
 export function createAssignments(properties, parent, bpmnFactory) {
-    return createElement('assignments_list:Assignments', properties, parent, bpmnFactory);
+    return createElement('vsdt2:Assignments', properties, parent, bpmnFactory);
 }
 
 // Get all defined process/ subprocess variables for drop-down
