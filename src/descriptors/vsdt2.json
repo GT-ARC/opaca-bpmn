@@ -1,7 +1,7 @@
 {
-  "name": "Assignments_List",
+  "name": "Vsdt2",
   "prefix": "vsdt2",
-  "uri": "http://assignments_list",
+  "uri": "http://vsdt2",
   "xml": {
     "tagAlias": "lowerCase"
   },
@@ -37,6 +37,34 @@
           "isAttr": true,
           "type": "String",
           "description": "Assignment at start or end of an activity"
+        }
+      ]
+    },
+    {
+      "name": "Variables",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "values",
+          "isMany": true,
+          "type": "Variable"
+        }
+      ]
+    },
+    {
+      "name": "Variable",
+      "properties": [
+        {
+          "name": "name",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "type",
+          "isAttr": true,
+          "type": "String",
+          "description": "Choose from predefined types or enter a custom type",
+          "values": ["String", "Integer", "Boolean", "Date"]
         }
       ]
     }

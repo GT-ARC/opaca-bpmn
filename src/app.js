@@ -9,11 +9,9 @@ import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json'
 import diagramXML from '../resources/newDiagram.bpmn';
 
 // import Extra Props
-import variablesListProviderModule from './provider/variables'
-import variablesListModdleDescriptor from './descriptors/variables';
+import variablesListProviderModule from './provider/variables';
 import assignmentsListProviderModule from './provider/assignments';
-import assignmentsListModdleDescriptor from './descriptors/assignments'
-
+import vsdtModdleDescriptor from './descriptors/vsdt2';
 
 var container = $('#js-drop-zone');
 
@@ -34,8 +32,7 @@ var bpmnModeler = new BpmnModeler({
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,
-    variables: variablesListModdleDescriptor,
-    assignments: assignmentsListModdleDescriptor
+    vsdt2: vsdtModdleDescriptor
   }
 });
 container.removeClass('with-diagram');
