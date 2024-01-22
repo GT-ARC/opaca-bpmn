@@ -63,8 +63,7 @@
           "name": "type",
           "isAttr": true,
           "type": "String",
-          "description": "Choose from predefined types or enter a custom type",
-          "values": ["String", "Integer", "Boolean", "Date"]
+          "description": "Choose from predefined types or enter a custom type"
         }
       ]
     }
