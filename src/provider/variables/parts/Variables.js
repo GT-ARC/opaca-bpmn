@@ -54,56 +54,63 @@ function removeFactory({ commandStack, element, variable }) {
         if (!extension) {
             return;
         }
-        // Variables list without entry we want to remove
-        const variables = without(extension.get('values'), variable);
-        // Updating element properties
-        commands.push({
-            cmd : 'element.updateModdleProperties',
-            context : {
-                element,
-                moddleElement: extension,
-                properties: {
-                    values: variables
-                }
-            }
-        });
-        // Also remove assignments to that variable
+
+        // First look for assignments to the variable we want to remove
         // Getting all flow elements
         const root = getRootElement(element);
         const children = root.get('flowElements');
-        // Find elements, that have assignment to the variable we remove
         const isOfType = (element, types) => types.some(type => is(element, type));
         const relevantChildren = children.filter(child => isOfType(child, ['bpmn:SubProcess', 'bpmn:Task', 'bpmn:Event']));
         const hasAssignmentExtension = relevantChildren.filter(child => getAssignmentsExtension(child));
 
-        hasAssignmentExtension.forEach(child => {
-            const withoutVar = getAssignmentsExtension(child).get('values').filter(value => value.variable !== variable.name)
-
-            commands.push({
-                cmd: 'element.updateModdleProperties',
-                context: {
-                    element,
-                    moddleElement: getAssignmentsExtension(child),
-                    properties: {
-                        values: withoutVar
-                    }
-                }
-            })
+        // Elements that have an assignment to the variable
+        const hasAssignment = hasAssignmentExtension.some(child => {
+            const assignmentsExtension = getAssignmentsExtension(child);
+            const vars = assignmentsExtension.get('values').map(value => value.variable);
+            return isValueInList(vars, variable.name);
         });
 
-        // Remove if variables list is empty
-        if(!variables.length){
+        // If there are assignments, they must be removed first
+        if(hasAssignment){
+            // Display error message
+            const errorContainer = document.getElementById('delete-assigned-var');
+            errorContainer.innerHTML = 'There are assignments to the variable you want to delete.';
+            errorContainer.style.display = 'block';
 
+            setTimeout(() => {
+                errorContainer.style.display = 'none';
+            }, 5000);
+            // Else the variable can be removed
+        }else{
+
+            // Variables list without entry we want to remove
+            const variables = without(extension.get('values'), variable);
+            // Updating element properties
             commands.push({
                 cmd : 'element.updateModdleProperties',
                 context : {
                     element,
-                    moddleElement : extensionElements,
-                    properties : {
-                        values : without(extensionElements.get('values'), extension)
+                    moddleElement: extension,
+                    properties: {
+                        values: variables
                     }
                 }
-            })
+            });
+
+            // Remove if variables list is empty
+            if(!variables.length){
+
+                commands.push({
+                    cmd : 'element.updateModdleProperties',
+                    context : {
+                        element,
+                        moddleElement : extensionElements,
+                        properties : {
+                            values : without(extensionElements.get('values'), extension)
+                        }
+                    }
+                })
+            }
         }
         commandStack.execute('properties-panel.multi-command-executor', commands);
     };
@@ -179,4 +186,8 @@ function addFactory({ element, bpmnFactory, commandStack }) {
 
         commandStack.execute('properties-panel.multi-command-executor', commands);
     };
+}
+// Helper
+function isValueInList(list, value) {
+    return list.some(item => item === value);
 }
