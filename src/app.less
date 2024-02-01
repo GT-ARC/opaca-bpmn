@@ -147,3 +147,46 @@ a:link {
   background-color: #ffcccc;
   border: 1px solid #ff0000;
 }
+// Views
+.views-container {
+  display: flex;
+  flex-direction: column;
+  //position: fixed;
+  top: 0;
+  right: 0;
+  max-width: 400px; /* Set the maximum width for the views */
+}
+
+.view-label {
+  background-color: hsl(225, 10%, 95%);
+  font-size: var(--text-size-base);
+
+  padding: 10px;
+  border-bottom: 1px solid hsl(225, 10%, 75%);
+  display: flex;
+  align-items: center;
+  cursor: pointer; /* Make it look clickable */
+}
+//TODO:
+.custom-properties-label img {
+  width: 30px; /* Adjust the width as needed */
+  height: 30px; /* Adjust the height as needed */
+  margin-right: 10px;
+}
+
+.view-label span {
+  font-weight: bold;
+}
+
+.collapsible-content {
+  display: none; /* Initially hide the content */
+
+  //position: absolute; /* Change to absolute positioning */
+  //top: 0;
+  right: 0;
+  z-index: 999;
+
+  //width: 0; /* Initially, set the width to 0 */
+  //overflow: hidden; /* Hide the overflow initially */
+  //transition: width 0.3s ease; /* Add a transition effect for smooth expansion */
+}
