@@ -1,6 +1,7 @@
-import {addFactory, getRelevantServiceProperty, removeFactory} from "./helper";
+import {addFactory, getRelevantServiceProperty, getServices, removeFactory} from "./helper";
+import {getRootElement, nextId} from "../../provider/util";
 
-export default function ServiceView(elementRegistry, injector, translate, eventBus) {
+export default function ServiceView(elementRegistry, injector, eventBus) {
     var container = document.getElementById('service-view');
 
     const bpmnFactory = injector.get('bpmnFactory'),
@@ -11,16 +12,18 @@ export default function ServiceView(elementRegistry, injector, translate, eventB
 
     // Create new empty service
     function createNewService() {
-        // Assume process element ID is 'Process_1' for now
-        const element = elementRegistry.get('Process_1');
+        // Get root of diagram
+        const firstElement = elementRegistry.getAll()[0];
+        const root = getRootElement(firstElement);
 
-        const newService = { type: '', uri: '', name: '' };
+        // Get bpmn:Definitions (where we want to define services)
+        const element = root.$parent;
 
-        console.log(newService);
-        //services.push(newService);
+        const newService = { type: '', uri: '', name: '', id: nextId('service_') };
+
         addFactory(element, bpmnFactory, commandStack, newService);
 
-        // Create a new service entry
+        // Create a new service entry in service view
         createServiceEntry(element, newService);
     }
 
@@ -31,21 +34,23 @@ export default function ServiceView(elementRegistry, injector, translate, eventB
         entry.className = 'service-entry';
 
         // Input Fields
-        const typeInput = createDropdown(element, service, '', service.type, ['OPACA', 'REST', 'BPMN Process'], (value) => {
+        const typeInput = createDropdown(element, entry, '', service, ['OPACA', 'REST', 'BPMN Process'], (value) => {
             service.type = value;
         });
-        const uriInput = createInput(element, service, 'text', 'URI', service.uri);
-        const nameInput = createInput(element, service, 'text', 'Name', service.name);
+        const uriInput = createInput(element, entry, 'text', 'URI', service);
+        const nameInput = createInput(element, entry, 'text', 'Name', service);
 
-        // Button for removing entry
+        // Button for removing a service
         const removeButton = document.createElement('button');
         removeButton.innerHTML = 'x';
         removeButton.addEventListener('click', () => {
-            // Remove the group from the DOM
-            content.removeChild(entry);
+            // Get property by id
+            const serviceToRemove = getRelevantServiceProperty(element, service.id);
             // Remove property from XML
-            const serviceToRemove = getRelevantServiceProperty(service.name);
             removeFactory(commandStack, element, serviceToRemove);
+
+            // Remove the entry from the DOM
+            content.removeChild(entry);
         });
 
         // Add entry to the content
@@ -57,41 +62,57 @@ export default function ServiceView(elementRegistry, injector, translate, eventB
     }
 
     // Function to create an input element
-    function createInput(element, service, type, placeholder, value) {
+    function createInput(element, entry, type, placeholder, service) {
         const input = document.createElement('input');
         input.type = type;
         input.placeholder = placeholder;
-        input.value = value || ''; // Set default value
+
+        if(placeholder==='URI'){
+            input.value = service.uri || '';
+        }else{
+            input.value = service.name || '';
+        }
+
+        // Add class to the input element based on the placeholder
+        input.classList.add(`${placeholder.toLowerCase()}-input`);
 
         // Add event listener to update the model on blur
-        input.addEventListener('blur', () => {
-            //TODO
+        input.addEventListener('change', () => {
+            // Get current inputs
+            const currentName = entry.querySelector('.name-input').value;
+            const currentType = entry.querySelector('.type-input').value;
+            const currentUri = entry.querySelector('.uri-input').value;
+
             if(placeholder==='URI'){
-                updateModel(element, service, {
-                    type: service.type,
+                updateModel(element, service.id, {
+                    type: currentType,
                     uri: input.value,
-                    name: service.name
+                    name: currentName,
+                    id: service.id
                 });
             }else{
-                updateModel(element, service, {
-                    type: service.type,
-                    uri: service.uri,
-                    name: input.value
+                updateModel(element, service.id, {
+                    type: currentType,
+                    uri: currentUri,
+                    name: input.value,
+                    id: service.id
                 });
             }
         });
-
         return input;
     }
 
     // Function to create a dropdown
-    function createDropdown(element, service, placeholder, selectedValue, options) {
+    function createDropdown(element, entry, placeholder, service, options) {
         const dropdown = document.createElement('select');
         const defaultOption = document.createElement('option');
         defaultOption.value = '';
         defaultOption.text = placeholder;
         dropdown.add(defaultOption);
 
+        dropdown.classList.add('type-input');
+
+        // Add options to pick from
         options.forEach((option) => {
             const optionElement = document.createElement('option');
             optionElement.value = option;
@@ -99,32 +120,22 @@ export default function ServiceView(elementRegistry, injector, translate, eventB
             dropdown.add(optionElement);
         });
 
-        dropdown.value = selectedValue || ''; // Set default value
+        dropdown.value = service.type || '';
 
         // Add event listener to update the model when selection changes
         dropdown.addEventListener('change', (event) => {
-            // TODO
-            updateModel(element, service, {
+            // Current inputs
+            const currentName = entry.querySelector('.name-input').value;
+            const currentUri = entry.querySelector('.uri-input').value;
+            updateModel(element, service.id, {
                 type: dropdown.value,
-                uri: service.uri,
-                name: service.name
+                uri: currentUri,
+                name: currentName,
+                id: service.id
             });
         });
-
         return dropdown;
     }
-
-    /*
-    // Listen for 'element.changed' event
-    eventBus.on('element.changed', function(event) {
-        const element = event.element;
-
-        // Check if the changed element is the one you are interested in
-        if (element && element.id === 'Process_1') {
-            updateView(element);
-        }
-    });
-     */
 
     // Set up the click event for the label
     const label = document.getElementById('service-view-label');
@@ -132,6 +143,7 @@ export default function ServiceView(elementRegistry, injector, translate, eventB
 
     const content = document.getElementById('service-view-groups');
 
+    // Open / Close service view
     function toggleServiceView() {
         if (content.style.display === 'none' || !content.style.display) {
             content.style.display = 'block';
@@ -141,37 +153,37 @@ export default function ServiceView(elementRegistry, injector, translate, eventB
     }
 
     // Function to update the XML model with the current services
-    function updateModel(element, oldService, newService) {
+    function updateModel(element, serviceId, newService) {
         // Remove old entry
-        console.log('updateModel service', oldService);
-        console.log('updateModel name', oldService.name);
-        const service = getRelevantServiceProperty(element, oldService.name);
+        const service = getRelevantServiceProperty(element, serviceId);
         removeFactory(commandStack, element, service);
+
         // Add new entry
         addFactory(element, bpmnFactory, commandStack, newService);
     }
 
     // Initial setup
     function initialize() {
-        // Assume process element ID is 'Process_1' for illustration purposes
-        /*
-        const processElement = elementRegistry.get('Process_1');
 
-        // Initialize services from the existing BPMN model
-        // This could involve reading from the businessObject or other related structures
-        // For simplicity, let's initialize with dummy data
-        const services = [
-            { type: 'OPACA', uri: 'http://service1', name: 'Service 1' },
-        ];
+        // Listen for the import.done event
+        eventBus.on('import.done', (event) => {
+            // Get some element
+            const firstElement = elementRegistry.getAll()[0];
+            // Get root from there (Process / Collaboration)
+            const root = getRootElement(firstElement);
+            // Get bpmn:Definitions
+            const def = root.$parent;
 
-        // Create service entries for the initial services
-        services.forEach(processElement, createServiceEntry);
-
-         */
+            // Create entries in the service view for initial services
+            const services = getServices(def) || [];
+            services.forEach((service) => {
+                const newEntry = {type: service.type, uri: service.uri, name: service.name, id: service.id}
+                createServiceEntry(def, newEntry);
+            });
+        });
     }
-
     // Call the initialize function
     initialize();
 }
 
-ServiceView.$inject = ['elementRegistry', 'injector', 'translate', 'eventBus'];
+ServiceView.$inject = ['elementRegistry', 'injector', 'eventBus'];

@@ -5,8 +5,6 @@ import {get, without} from "min-dash";
 export function addFactory(element, bpmnFactory, commandStack, service) {
     event.stopPropagation();
 
-    console.log(service);
-
     const commands = [];
 
     const businessObject = getBusinessObject(element);
@@ -55,7 +53,8 @@ export function addFactory(element, bpmnFactory, commandStack, service) {
     const newService = createElement('vsdt2:Service', {
         type: service.type,
         uri: service.uri,
-        name: service.name
+        name: service.name,
+        id: service.id
     }, extension, bpmnFactory);
 
     // (4) add service to list
@@ -78,13 +77,8 @@ export function removeFactory(commandStack, element, service) {
 
     const commands = [];
 
-    console.log('element:', element);
-
-
     const businessObject = getBusinessObject(element);
-    console.log('bo:', businessObject);
     const extensionElements = businessObject.get('extensionElements');
-    console.log('extensionElements:', extensionElements);
     const extension = getServicesExtension(businessObject);
 
     if (!extension) {
@@ -143,16 +137,11 @@ export function createServices(properties, parent, bpmnFactory) {
 }
 
 // Get service by name
-export function getRelevantServiceProperty(element, serviceName){
+export function getRelevantServiceProperty(element, serviceId){
     const services = getServices(element);
 
-    console.log('looking for:', serviceName);
-    console.log('in:', services);
-
-    // Find the service with the specified name
-    const relevantService = services.find(service => service.name === serviceName);
-
-    console.log('relevant service', relevantService);
+    // Find the service with the specified id
+    const relevantService = services.find(service => service.id === serviceId);
 
     // Return the service object or an empty string if not found
     return relevantService || '';

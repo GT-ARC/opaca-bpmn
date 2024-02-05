@@ -1,14 +1,13 @@
 import {
     createVariables,
     getVariables,
-    getVariablesExtension,
-    nextId
+    getVariablesExtension
 } from '../util';
 import Variable from './Variable';
 import {without} from 'min-dash';
 import {getAssignmentsExtension} from "../../assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
-import {getRootElement, createElement, getRelevantBusinessObject} from "../../util";
+import {getRootElement, createElement, getRelevantBusinessObject, nextId} from "../../util";
 
 
 export default function Variables({ element, injector }) {

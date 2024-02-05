@@ -1,4 +1,3 @@
-import Ids from 'ids';
 import {getExtension, getRelevantBusinessObject, createElement, } from "../util";
 
 // Get variables list extension
@@ -17,13 +16,6 @@ export function getVariables(element) {
 // Create new variable extension
 export function createVariables(properties, parent, bpmnFactory) {
     return createElement('vsdt2:Variables', properties, parent, bpmnFactory);
-}
-
-// Get id used for generated names
-export function nextId(prefix) {
-    const ids = new Ids([ 32,32,1 ]);
-
-    return ids.nextPrefixed(prefix);
 }
 
 // Get names of custom datatypes defined in 'resources/datatypes'
