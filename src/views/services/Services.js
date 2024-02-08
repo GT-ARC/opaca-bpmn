@@ -49,13 +49,56 @@ export function addFactory(element, bpmnFactory, commandStack, service) {
         });
     }
 
-    // (3) create service
+    // (3.1) create service
     const newService = createElement('vsdt2:Service', {
         type: service.type,
         uri: service.uri,
         name: service.name,
         id: service.id
     }, extension, bpmnFactory);
+
+    if(service.result.name!==''){
+        // (3.2) create result
+        const newResult = createElement('vsdt2:Variable', {
+            name: 'result:' + service.result.name,
+            type: service.result.type
+        }, newService, bpmnFactory);
+
+        // (3.3) add result to service
+        commands.push({
+            cmd: 'element.updateModdleProperties',
+            context: {
+                element,
+                moddleElement: newService,
+                properties: {
+                    result: newResult
+                }
+            }
+        });
+    }
+
+    if(service.parameters){
+        // (3.4) create parameters
+        const params = [];
+        service.parameters.forEach(param => {
+            const newParam = createElement('vsdt2:Variable', {
+                name: 'parameter:' + param.name,
+                type: param.type
+            }, newService, bpmnFactory);
+            params.push(newParam);
+        });
+        // (3.5) add parameters to service
+        commands.push({
+            cmd: 'element.updateModdleProperties',
+            context: {
+                element,
+                moddleElement: newService,
+                properties: {
+                    parameters: params
+                }
+            }
+        });
+    }
 
     // (4) add service to list
     commands.push({

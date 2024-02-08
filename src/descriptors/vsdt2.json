@@ -111,6 +111,16 @@
           "name": "id",
           "isAttr": true,
           "type": "String"
+        },
+        {
+          "name": "parameters",
+          "isMany": true,
+          "type": "Variable"
+        },
+        {
+          "name": "result",
+          "isAttr": false,
+          "type": "Variable"
         }
       ]
     }

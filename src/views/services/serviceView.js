@@ -1,9 +1,8 @@
-import {addFactory, getRelevantServiceProperty, getServices, removeFactory} from "./helper";
+import {addFactory, getRelevantServiceProperty, getServices, removeFactory} from "./Services";
 import {getRootElement, nextId} from "../../provider/util";
+import {getDataTypes} from "../../provider/variables/util";
 
 export default function ServiceView(elementRegistry, injector, eventBus) {
-    var container = document.getElementById('service-view');
-
     const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');
 
@@ -19,7 +18,8 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Get bpmn:Definitions (where we want to define services)
         const element = root.$parent;
 
-        const newService = { type: '', uri: '', name: '', id: nextId('service_') };
+        const newService = { type: '', uri: '', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
+        console.log('CREATE NEW SERVICE:', newService);
 
         addFactory(element, bpmnFactory, commandStack, newService);
 
@@ -34,11 +34,15 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.className = 'service-entry';
 
         // Input Fields
-        const typeInput = createDropdown(element, entry, '', service, ['OPACA', 'REST', 'BPMN Process'], (value) => {
+        const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA', 'REST', 'BPMN Process'], (value) => {
             service.type = value;
         });
-        const uriInput = createInput(element, entry, 'text', 'URI', service);
-        const nameInput = createInput(element, entry, 'text', 'Name', service);
+        const uriInput = createInput(element, entry, 'URI', service);
+        const nameInput = createInput(element, entry, 'Name', service);
+
+        const resultInput = createResultGroup(element, entry, service);
+
+        const parametersInput = createParametersGroup(element, entry, service);
 
         // Button for removing a service
         const removeButton = document.createElement('button');
@@ -57,20 +61,28 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.appendChild(typeInput);
         entry.appendChild(uriInput);
         entry.appendChild(nameInput);
+        entry.appendChild(resultInput);
+        entry.appendChild(parametersInput);
         entry.appendChild(removeButton);
         content.appendChild(entry);
     }
 
-    // Function to create an input element
-    function createInput(element, entry, type, placeholder, service) {
+    // Function to create an element for URI / name input
+    function createInput(element, entry, placeholder, service) {
         const input = document.createElement('input');
-        input.type = type;
+        input.type = 'text';
         input.placeholder = placeholder;
 
         if(placeholder==='URI'){
             input.value = service.uri || '';
-        }else{
+        }else if(placeholder==='Name'){
             input.value = service.name || '';
+        }else if(placeholder==='Result-name'){
+            input.value = service.result.name || '';
+        }else{
+            // TODO for initialization an index (or something) must be given
+            // input.value = service.parameters[index].name || '';
+            input.value = 'some parameter name';
         }
 
         // Add class to the input element based on the placeholder
@@ -79,25 +91,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Add event listener to update the model on blur
         input.addEventListener('change', () => {
             // Get current inputs
-            const currentName = entry.querySelector('.name-input').value;
-            const currentType = entry.querySelector('.type-input').value;
-            const currentUri = entry.querySelector('.uri-input').value;
+            const newService = getCurrentServiceValues(entry, service)
 
-            if(placeholder==='URI'){
-                updateModel(element, service.id, {
-                    type: currentType,
-                    uri: input.value,
-                    name: currentName,
-                    id: service.id
-                });
-            }else{
-                updateModel(element, service.id, {
-                    type: currentType,
-                    uri: currentUri,
-                    name: input.value,
-                    id: service.id
-                });
-            }
+            // Update XML
+            updateModel(element, service.id, newService);
         });
         return input;
     }
@@ -120,21 +117,87 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             dropdown.add(optionElement);
         });
 
-        dropdown.value = service.type || '';
+        if(placeholder==='Service-type'){
+            dropdown.value = service.type || '';
+        }else if(placeholder==='Result-type'){
+            dropdown.value = service.result.type || '';
+        }else{
+            // TODO for initialization an index (or something) must be given
+            // dropdown.value = service.parameters[index].type || '';
+            dropdown.value = 'some parameter type';
+        }
 
         // Add event listener to update the model when selection changes
         dropdown.addEventListener('change', (event) => {
             // Current inputs
-            const currentName = entry.querySelector('.name-input').value;
-            const currentUri = entry.querySelector('.uri-input').value;
-            updateModel(element, service.id, {
-                type: dropdown.value,
-                uri: currentUri,
-                name: currentName,
-                id: service.id
-            });
+            const newService = getCurrentServiceValues(entry, service);
+            updateModel(element, service.id, newService);
         });
         return dropdown;
+    }
+
+    function createResultGroup(element, entry, service){
+        const resultInput = document.createElement('div');
+        resultInput.classList.add('result-group');
+
+        const resultName = createInput(element, entry, 'Result-name', service);
+
+        // Basic types
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        // Add custom types
+        const allTypes = [].concat(getDataTypes(), predefinedTypes);
+
+        const resultType = createDropdown(element, entry, 'Result-type', service, allTypes);
+
+        resultInput.appendChild(resultName);
+        resultInput.appendChild(resultType);
+
+        return resultInput;
+    }
+
+    function createParametersGroup(element, entry, service){
+        // TODO parameters must be added on initialization
+        const paramsInput = document.createElement('div');
+        paramsInput.classList.add('parameters-group');
+
+        const addParameterButton = document.createElement('button');
+        addParameterButton.innerHTML = '+';
+        addParameterButton.addEventListener('click', () => {
+
+            const paramEntry = document.createElement('div');
+            paramEntry.classList.add('param-entry');
+
+            // Create input for parameter name
+            const paramName = createInput(element, entry, 'Parameter-name', service);
+
+            // Basic types
+            const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+            // Add custom types
+            const allTypes = [].concat(getDataTypes(), predefinedTypes);
+            // Create dropdown for parameter type
+            const paramType = createDropdown(element, entry, 'Parameter-type', service, allTypes);
+
+            // Button for removing a parameter
+            const removeButton = document.createElement('button');
+            removeButton.innerHTML = 'x';
+            removeButton.addEventListener('click', () => {
+                // Remove the entry from the DOM
+                paramsInput.removeChild(paramEntry);
+
+                // Update the XML
+                const newService = getCurrentServiceValues(entry, service);
+                updateModel(element, service.id, newService);
+            });
+
+            // Add to parent
+            paramEntry.appendChild(paramName);
+            paramEntry.appendChild(paramType);
+            paramEntry.appendChild(removeButton);
+            paramsInput.appendChild(paramEntry);
+        });
+        paramsInput.appendChild(addParameterButton);
+
+        return paramsInput;
     }
 
     // Set up the click event for the label
@@ -149,6 +212,37 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             content.style.display = 'block';
         } else {
             content.style.display = 'none';
+        }
+    }
+
+    // Get current values set for a service entry
+    function getCurrentServiceValues(entry, service){
+        const currentName = entry.querySelector('.name-input').value;
+        const currentType = entry.querySelector('.type-input').value;
+        const currentUri = entry.querySelector('.uri-input').value;
+
+        const result = entry.querySelector('.result-group');
+        const currentResultName = result.querySelector('.result-name-input').value;
+        const currentResultType = result.querySelector('.type-input').value;
+
+        const parameters = [];
+        const parameterGroup = entry.querySelector('.parameters-group');
+        const parameterEntries = parameterGroup.querySelectorAll('.param-entry');
+        parameterEntries.forEach(parameterGroup => {
+            parameters.push({
+                name: parameterGroup.querySelector('.parameter-name-input').value,
+                type: parameterGroup.querySelector('.type-input').value
+            });
+        });
+
+        // return service
+        return {
+            type: currentType,
+            uri: currentUri,
+            name: currentName,
+            result: {name: currentResultName, type: currentResultType},
+            parameters: parameters,
+            id: service.id
         }
     }
 
@@ -174,10 +268,16 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             // Get bpmn:Definitions
             const def = root.$parent;
 
-            // Create entries in the service view for initial services
+            // Create entries in the service view for initial services (in bpmn:Definitions)
             const services = getServices(def) || [];
             services.forEach((service) => {
-                const newEntry = {type: service.type, uri: service.uri, name: service.name, id: service.id}
+                const newEntry = {
+                    type: service.type,
+                    uri: service.uri,
+                    name: service.name,
+                    result: service.result,
+                    parameters: service.parameters,
+                    id: service.id}
                 createServiceEntry(def, newEntry);
             });
         });
