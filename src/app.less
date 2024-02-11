@@ -151,7 +151,6 @@ a:link {
 .views-container {
   display: flex;
   flex-direction: column;
-  //position: fixed;
   top: 0;
   right: 0;
   max-width: 400px; /* Set the maximum width for the views */
@@ -167,10 +166,10 @@ a:link {
   align-items: center;
   cursor: pointer; /* Make it look clickable */
 }
-//TODO:
+
 .custom-properties-label img {
-  width: 30px; /* Adjust the width as needed */
-  height: 30px; /* Adjust the height as needed */
+  width: 30px;
+  height: 30px;
   margin-right: 10px;
 }
 
@@ -180,13 +179,44 @@ a:link {
 
 .collapsible-content {
   display: none; /* Initially hide the content */
-
-  //position: absolute; /* Change to absolute positioning */
-  //top: 0;
   right: 0;
   z-index: 999;
+}
 
-  //width: 0; /* Initially, set the width to 0 */
-  //overflow: hidden; /* Hide the overflow initially */
-  //transition: width 0.3s ease; /* Add a transition effect for smooth expansion */
+.service-entry {
+  border-bottom: 1px solid hsl(225, 10%, 75%);
+}
+
+.param-entry {
+  display: flex;
+  align-items: center;
+}
+
+.param-entry button {
+  margin-left: 5px;
+}
+
+.createEntry {
+  border-radius: 50%;
+  border: none;
+  font-size: 20px;
+  background: transparent;
+  color: hsl(225, 10%, 35%);
+}
+.createEntry:hover {
+  background: hsl(205, 100%, 50%);
+  color: white;
+}
+
+input, select {
+  height: 26px;
+  padding: 2px;
+  margin-bottom: 5px;
+  background: hsl(225, 10%, 97%);
+  border: 1px solid hsl(225, 10%, 75%);
+  border-radius: 2px;
+  &:hover {
+    background: hsl(205, 100%, 95%);
+    border-color: hsl(205, 100%, 50%);
+  }
 }

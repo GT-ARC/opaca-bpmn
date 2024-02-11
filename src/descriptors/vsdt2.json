@@ -115,14 +115,24 @@
         {
           "name": "parameters",
           "isMany": true,
-          "type": "Variable"
+          "type": "Parameter"
         },
         {
           "name": "result",
           "isAttr": false,
-          "type": "Variable"
+          "type": "Result"
         }
       ]
+    },
+    {
+      "name": "Parameter",
+      "superClass": [ "Variable" ],
+      "properties": []
+    },
+    {
+      "name": "Result",
+      "superClass": [ "Variable" ],
+      "properties": []
     }
   ]
 }

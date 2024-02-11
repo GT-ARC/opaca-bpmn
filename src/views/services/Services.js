@@ -59,8 +59,8 @@ export function addFactory(element, bpmnFactory, commandStack, service) {
 
     if(service.result.name!==''){
         // (3.2) create result
-        const newResult = createElement('vsdt2:Variable', {
-            name: 'result:' + service.result.name,
+        const newResult = createElement('vsdt2:Result', {
+            name: service.result.name,
             type: service.result.type
         }, newService, bpmnFactory);
 
@@ -81,8 +81,8 @@ export function addFactory(element, bpmnFactory, commandStack, service) {
         // (3.4) create parameters
         const params = [];
         service.parameters.forEach(param => {
-            const newParam = createElement('vsdt2:Variable', {
-                name: 'parameter:' + param.name,
+            const newParam = createElement('vsdt2:Parameter', {
+                name: param.name,
                 type: param.type
             }, newService, bpmnFactory);
             params.push(newParam);
