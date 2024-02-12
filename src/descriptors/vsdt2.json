@@ -72,7 +72,7 @@
       "extends": [ "bpmn:ServiceTask" ],
       "properties": [
         {
-          "name": "serviceImplementation",
+          "name": "service",
           "isAttr": true,
           "type": "String"
         }

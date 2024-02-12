@@ -1,5 +1,5 @@
-// Import implementation property
-import implementation from './Implementation';
+// Import serviceImplementation property
+import serviceImplementation from './ServiceImplementation';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
@@ -13,7 +13,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function ServiceProvider(propertiesPanel, translate) {
+export default function ServiceImplProvider(propertiesPanel, translate) {
 
     // API ////////
 
@@ -38,7 +38,7 @@ export default function ServiceProvider(propertiesPanel, translate) {
 
             // Add the "ServiceImplementation" group
             if (is(element, 'bpmn:ServiceTask')) {
-                groups.push(createServiceGroup(element, translate));
+                groups.push(createServiceImplGroup(element, translate));
             }
 
             return groups;
@@ -54,16 +54,15 @@ export default function ServiceProvider(propertiesPanel, translate) {
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-ServiceProvider.$inject = [ 'propertiesPanel', 'translate' ];
+ServiceImplProvider.$inject = [ 'propertiesPanel', 'translate' ];
 
 // Create the "ServiceImplementation" group
-function createServiceGroup(element, translate) {
+function createServiceImplGroup(element, translate) {
 
-    const serviceImplGroup = {
+    // Return group
+    return {
         id: 'serviceImplementation',
         label: translate('Service Implementation'),
-        entries: implementation(element)
+        entries: serviceImplementation(element)
     };
-
-    return serviceImplGroup;
 }
