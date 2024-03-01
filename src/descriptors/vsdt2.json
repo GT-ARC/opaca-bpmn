@@ -66,6 +66,73 @@
           "description": "Choose from predefined types or enter a custom type"
         }
       ]
+    },
+    {
+      "name": "ServiceImplementation",
+      "extends": [ "bpmn:ServiceTask" ],
+      "properties": [
+        {
+          "name": "service",
+          "isAttr": true,
+          "type": "String"
+        }
+      ]
+    },
+    {
+      "name": "Services",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "values",
+          "isMany": true,
+          "type": "Service"
+        }
+      ]
+    },
+    {
+      "name": "Service",
+      "properties": [
+        {
+          "name": "type",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "uri",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "name",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "id",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
+          "name": "parameters",
+          "isMany": true,
+          "type": "Parameter"
+        },
+        {
+          "name": "result",
+          "isAttr": false,
+          "type": "Result"
+        }
+      ]
+    },
+    {
+      "name": "Parameter",
+      "superClass": [ "Variable" ],
+      "properties": []
+    },
+    {
+      "name": "Result",
+      "superClass": [ "Variable" ],
+      "properties": []
     }
   ]
 }

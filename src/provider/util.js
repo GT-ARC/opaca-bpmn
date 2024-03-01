@@ -1,4 +1,5 @@
 import {getBusinessObject, is} from "bpmn-js/lib/util/ModelUtil";
+import Ids from "ids";
 
 // Get diagram root/ element with the greatest scope
 export function getRootElement(element) {
@@ -9,6 +10,10 @@ export function getRootElement(element) {
     }
 
     if (is(businessObject, 'bpmn:Process')) {
+        return businessObject;
+    }
+
+    if(is(businessObject, 'bpmn:Collaboration')){
         return businessObject;
     }
 
@@ -68,4 +73,11 @@ export function createElement(elementType, properties, parent, factory) {
         element.$parent = parent;
     }
     return element;
+}
+
+// Get id used for generated names
+export function nextId(prefix) {
+    const ids = new Ids([ 32,32,1 ]);
+
+    return ids.nextPrefixed(prefix);
 }

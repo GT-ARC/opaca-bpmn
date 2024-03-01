@@ -11,10 +11,13 @@ import diagramXML from '../resources/newDiagram.bpmn';
 // import Extra Props
 import variablesListProviderModule from './provider/variables';
 import assignmentsListProviderModule from './provider/assignments';
+import serviceImplProviderModule from './provider/services';
 import vsdtModdleDescriptor from './descriptors/vsdt2';
+// import Views
+import serviceViewModule from './views/services';
+import interpreterViewModule from './views/interpreter';
 
 var container = $('#js-drop-zone');
-
 var canvas = $('#js-canvas');
 
 var bpmnModeler = new BpmnModeler({
@@ -28,7 +31,10 @@ var bpmnModeler = new BpmnModeler({
     CamundaPlatformPropertiesProviderModule,
     variablesListProviderModule,
     assignmentsListProviderModule,
-    TokenSimulationModule
+    serviceImplProviderModule,
+    TokenSimulationModule,
+    serviceViewModule,
+    interpreterViewModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,

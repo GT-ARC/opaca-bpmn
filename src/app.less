@@ -147,3 +147,76 @@ a:link {
   background-color: #ffcccc;
   border: 1px solid #ff0000;
 }
+// Views
+.views-container {
+  display: flex;
+  flex-direction: column;
+  top: 0;
+  right: 0;
+  max-width: 400px; /* Set the maximum width for the views */
+}
+
+.view-label {
+  background-color: hsl(225, 10%, 95%);
+  font-size: var(--text-size-base);
+
+  padding: 10px;
+  border-bottom: 1px solid hsl(225, 10%, 75%);
+  display: flex;
+  align-items: center;
+  cursor: pointer; /* Make it look clickable */
+}
+
+.custom-properties-label img {
+  width: 30px;
+  height: 30px;
+  margin-right: 10px;
+}
+
+.view-label span {
+  font-weight: bold;
+}
+
+.collapsible-content {
+  display: none; /* Initially hide the content */
+  right: 0;
+  z-index: 999;
+}
+
+.service-entry {
+  border-bottom: 1px solid hsl(225, 10%, 75%);
+}
+
+.param-entry {
+  display: flex;
+  align-items: center;
+}
+
+.param-entry button {
+  margin-left: 5px;
+}
+
+.createEntry {
+  border-radius: 50%;
+  border: none;
+  font-size: 20px;
+  background: transparent;
+  color: hsl(225, 10%, 35%);
+}
+.createEntry:hover {
+  background: hsl(205, 100%, 50%);
+  color: white;
+}
+
+input, select {
+  height: 26px;
+  padding: 2px;
+  margin-bottom: 5px;
+  background: hsl(225, 10%, 97%);
+  border: 1px solid hsl(225, 10%, 75%);
+  border-radius: 2px;
+  &:hover {
+    background: hsl(205, 100%, 95%);
+    border-color: hsl(205, 100%, 50%);
+  }
+}

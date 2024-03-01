@@ -1,5 +1,6 @@
 import { getVariablesExtension } from "../variables/util";
 import {getExtension, getParentElement, getRelevantBusinessObject, createElement} from "../util";
+import {getServices, getServicesExtension} from "../../views/services/Services";
 
 // Get assignment list extension
 export function getAssignmentsExtension(element) {
@@ -38,6 +39,15 @@ export function getAllVariables(element) {
 
         if (parent && parent.$parent) {
             collectVariables(parent);
+        }else{
+            // No parent means we are in bpmn:Definitions
+            // Get parameters and results from services
+            if(getServicesExtension(parent)){
+                getServices(parent).forEach(service => {
+                    variables.push(...service.parameters);
+                    variables.push(...(service.result !== undefined ? [service.result] : []));
+                });
+            }
         }
     }
     collectVariables(rootElement);
