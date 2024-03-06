@@ -5,10 +5,10 @@ import BoundaryEventBehavior from 'bpmn-js-token-simulation/lib/simulator/behavi
 import IntermediateCatchEventBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/IntermediateCatchEventBehavior';
 import IntermediateThrowEventBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/IntermediateThrowEventBehavior';
 
-import ExclusiveGatewayBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior';
+//import ExclusiveGatewayBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior';
 import ParallelGatewayBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/ParallelGatewayBehavior';
 import EventBasedGatewayBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/EventBasedGatewayBehavior';
-import InclusiveGatewayBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior';
+//import InclusiveGatewayBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior';
 
 import SubProcessBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/SubProcessBehavior';
 import TransactionBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/TransactionBehavior';
@@ -24,6 +24,8 @@ import ProcessBehavior from 'bpmn-js-token-simulation/lib/simulator/behaviors/Pr
 
 // Changed behavior
 import ActivityBehavior from './ActivityBehavior';
+import ExclusiveGatewayBehavior from './ExclusiveGatewayBehavior';
+import InclusiveGatewayBehavior from './InclusiveGatewayBehavior';
 
 export default {
     __init__: [

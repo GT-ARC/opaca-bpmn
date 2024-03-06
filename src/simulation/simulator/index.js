@@ -1,8 +1,6 @@
 import Simulator from 'bpmn-js-token-simulation/lib/simulator/Simulator';
 import SimulationBehaviorModule from './behaviors';
 
-import {TOGGLE_MODE_EVENT, RESET_SIMULATION_EVENT} from "bpmn-js-token-simulation/lib/util/EventHelper";
-
 const HIGH_PRIORITY = 5000;
 
 export default {
@@ -12,10 +10,11 @@ export default {
     __init__: [
         [ 'eventBus', 'simulator', function(eventBus, simulator) {
             eventBus.on([
-                TOGGLE_MODE_EVENT,
-                RESET_SIMULATION_EVENT
+                'tokenSimulation.toggleMode',
+                'tokenSimulation.resetSimulation'
             ], HIGH_PRIORITY, event => {
-                simulator.reset();
+                // TODO why does this not work?
+                //simulator.reset();
             });
         } ]
     ],

@@ -5,6 +5,7 @@ import {
 import {
     TOGGLE_MODE_EVENT
 } from 'bpmn-js-token-simulation/lib/util/EventHelper';
+
 import {evaluateCondition} from "../util";
 
 
@@ -14,28 +15,14 @@ const NOT_SELECTED_COLOR = '--token-simulation-grey-lighten-56';
 function getNext(gateway) {
     var outgoing = gateway.outgoing.filter(isSequenceFlow);
 
-    // TODO test stuff
-    // Variable
-    var var1 = {name: 'x', type: 'int'};
-    var x;
-
-    // Assignment
-    var assignment1 = {variable: 'x', expression: '2+1'};
-    x = 3;
-
     var next = null;
     outgoing.forEach(sequenceFlow => {
-       //console.log(sequenceFlow.businessObject);
-
-       const con = sequenceFlow.businessObject.get('conditionExpression');
-       //console.log('con: ', con);
-       //console.log('body: ', con.body);
-       //console.log('eval: ', evaluateCondition(con.body));
+       const conditionExpression = sequenceFlow.businessObject.get('conditionExpression');
 
        // If there is a condition defined, evaluate it
-       if(con){
+       if(conditionExpression){
            // Return, if the condition holds true
-           if(evaluateCondition(con.body)){
+           if(evaluateCondition(conditionExpression.body)){
                next = sequenceFlow;
            }
        // If there is no condition defined, it is interpreted as default flow
@@ -71,15 +58,14 @@ export default function ExclusiveGatewaySettings(
     this._simulator = simulator;
     this._simulationStyles = simulationStyles;
 
-    //TODO remove log
     eventBus.on(TOGGLE_MODE_EVENT, event => {
-        console.log('TOGGLE MODE EVENT');
-        if (event.active) {
-            this.setSequenceFlowsDefault();
-            console.log('event.active is true');
-        } else {
+        if(!event.active){
             this.resetSequenceFlows();
         }
+    });
+    // While exiting a gateway the next sequence flow gets set
+    eventBus.on('tokenSimulation.exitExclusiveGateway', event => {
+        this.setSequenceFlowsDefault();
     });
 }
 
@@ -87,6 +73,7 @@ ExclusiveGatewaySettings.prototype.setSequenceFlowsDefault = function() {
     const exclusiveGateways = this._elementRegistry.filter(element => {
         return is(element, 'bpmn:ExclusiveGateway');
     });
+    console.log('exclusiveGateways', exclusiveGateways);
 
     for (const gateway of exclusiveGateways) {
         this.setSequenceFlow(gateway);
@@ -114,10 +101,13 @@ ExclusiveGatewaySettings.prototype.setSequenceFlow = function(gateway) {
 
     const outgoing = gateway.outgoing.filter(isSequenceFlow);
 
+    console.log('outgoing:', outgoing);
+
     // not forking
     if (outgoing.length < 2) {
         return;
     }
+    console.log('more than 2 outgoing!')
 
     let newActiveOutgoing;
     newActiveOutgoing = getNext(gateway);
