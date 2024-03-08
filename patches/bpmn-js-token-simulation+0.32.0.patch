@@ -1,0 +1,120 @@
+### ActivityBehavior ###
+
+diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
+index a44cb67..aeb92cb 100644
+--- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
++++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
+@@ -3,6 +3,7 @@ import {
+   isMessageFlow,
+   isSequenceFlow
+ } from '../util/ModelUtil';
++import {addVariables, updateVariables} from "../../../../../src/simulation/util";
+
+
+ export default function ActivityBehavior(
+@@ -76,6 +77,9 @@ ActivityBehavior.prototype.exit = function(context) {
+     scope
+   } = context;
+
++  // Handle assignments
++  updateVariables(element);
++
+   const parentScope = scope.parent;
+
+   // TODO(nikku): if a outgoing flow is conditional,
+
+### ExclusiveGatewayBehavior ###
+
+diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
+index 1d2cbe0..ff2f841 100644
+--- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
++++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
+@@ -3,9 +3,10 @@ import {
+ } from '../util/ModelUtil';
+
+
+-export default function ExclusiveGatewayBehavior(simulator, scopeBehavior) {
++export default function ExclusiveGatewayBehavior(simulator, scopeBehavior, eventBus) {
+   this._scopeBehavior = scopeBehavior;
+   this._simulator = simulator;
++  this._eventBus = eventBus;
+
+   simulator.registerBehavior('bpmn:ExclusiveGateway', this);
+ }
+@@ -21,6 +22,9 @@ ExclusiveGatewayBehavior.prototype.exit = function(context) {
+     scope
+   } = context;
+
++  // Fire event for setting gateway automatically
++  this._eventBus.fire('tokenSimulation.exitExclusiveGateway');
++
+   // depends on UI to properly configure activeOutgoing for
+   // each exclusive gateway
+
+@@ -51,5 +55,6 @@ ExclusiveGatewayBehavior.prototype.exit = function(context) {
+
+ ExclusiveGatewayBehavior.$inject = [
+   'simulator',
+-  'scopeBehavior'
++  'scopeBehavior',
++  'eventBus'
+ ];
+
+### InclusiveGatewayBehavior ###
+
+diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
+index d05bc96..6cad92c 100644
+--- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
++++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
+@@ -5,10 +5,12 @@ import {
+
+ export default function InclusiveGatewayBehavior(
+     simulator,
+-    activityBehavior) {
++    activityBehavior,
++    eventBus) {
+
+   this._simulator = simulator;
+   this._activityBehavior = activityBehavior;
++  this._eventBus = eventBus;
+
+   simulator.registerBehavior('bpmn:InclusiveGateway', this);
+ }
+@@ -24,6 +26,9 @@ InclusiveGatewayBehavior.prototype.exit = function(context) {
+     scope
+   } = context;
+
++  // Fire event for setting gateway automatically
++  this._eventBus.fire('tokenSimulation.exitInclusiveGateway');
++
+   // depends on UI to properly configure activeOutgoing for
+   // each inclusive gateway
+
+@@ -190,5 +195,6 @@ InclusiveGatewayBehavior.prototype._canReachAnyElement = function(elements, curr
+
+ InclusiveGatewayBehavior.$inject = [
+   'simulator',
+-  'activityBehavior'
++  'activityBehavior',
++  'eventBus'
+ ];
+
+### StartEventBehavior ###
+
+diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js
+index 526de53..293b87e 100644
+--- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js
++++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js
+@@ -1,3 +1,4 @@
++import {initializeVariables} from "../../../../../src/simulation/util";
+ export default function StartEventBehavior(
+     simulator,
+     activityBehavior) {
+@@ -13,6 +14,7 @@ StartEventBehavior.prototype.signal = function(context) {
+ };
+
+ StartEventBehavior.prototype.exit = function(context) {
++  initializeVariables(context);
+   this._activityBehavior.exit(context);
+ };
+
