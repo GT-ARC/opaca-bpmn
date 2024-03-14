@@ -1,6 +1,6 @@
 import { getVariablesExtension } from "../variables/util";
 import {getExtension, getParentElement, getRelevantBusinessObject, createElement} from "../util";
-import {getServices, getServicesExtension} from "../../views/services/Services";
+import {getServices, getServicesExtension} from "../../views/services/util";
 
 // Get assignment list extension
 export function getAssignmentsExtension(element) {

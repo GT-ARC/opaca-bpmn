@@ -1,30 +1,63 @@
-### ActivityBehavior ###
-
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
-index a44cb67..aeb92cb 100644
+index a44cb67..c02e177 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
 +++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
-@@ -3,6 +3,7 @@ import {
+@@ -3,6 +3,8 @@ import {
    isMessageFlow,
    isSequenceFlow
  } from '../util/ModelUtil';
-+import {addVariables, updateVariables} from "../../../../../src/simulation/util";
++import {addVariables, callService, updateVariables} from "../../../../../src/simulation/util";
++import {is} from "bpmn-js/lib/util/ModelUtil";
 
 
  export default function ActivityBehavior(
-@@ -76,6 +77,9 @@ ActivityBehavior.prototype.exit = function(context) {
+@@ -53,6 +55,36 @@ ActivityBehavior.prototype.enter = function(context) {
+     element
+   } = context;
+
++  // Handle assignments at Start
++  updateVariables(element, 'START');
++
++  // Make service call
++  if(is(element, 'bpmn:ServiceTask')){
++    console.log('ACTIVITY BEHAVIOR, calling service');
++
++    return callService(element)
++        .then(() => {
++          const continueEvent = this.waitAtElement(element);
++
++          if (continueEvent) {
++            return this.signalOnEvent(context, continueEvent);
++          }
++
++          // trigger messages that are pending send
++          const event = this._triggerMessages(context);
++
++          if (event) {
++            return this.signalOnEvent(context, event);
++          }
++
++          this._simulator.exit(context);
++        })
++        .catch(error => {
++          console.error('Error occurred while calling service:', error);
++          this._simulator.exit(context); // Exit even in case of error
++        });
++  }
++
+   const continueEvent = this.waitAtElement(element);
+
+   if (continueEvent) {
+@@ -76,6 +108,9 @@ ActivityBehavior.prototype.exit = function(context) {
      scope
    } = context;
 
-+  // Handle assignments
-+  updateVariables(element);
++  // Handle assignments at End
++  updateVariables(element, 'END');
 +
    const parentScope = scope.parent;
 
    // TODO(nikku): if a outgoing flow is conditional,
-
-### ExclusiveGatewayBehavior ###
-
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
 index 1d2cbe0..ff2f841 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
@@ -59,9 +92,6 @@ index 1d2cbe0..ff2f841 100644
 +  'scopeBehavior',
 +  'eventBus'
  ];
-
-### InclusiveGatewayBehavior ###
-
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
 index d05bc96..6cad92c 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
@@ -98,9 +128,6 @@ index d05bc96..6cad92c 100644
 +  'activityBehavior',
 +  'eventBus'
  ];
-
-### StartEventBehavior ###
-
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js
 index 526de53..293b87e 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/StartEventBehavior.js

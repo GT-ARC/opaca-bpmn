@@ -1,6 +1,7 @@
 import {getBusinessObject} from "bpmn-js/lib/util/ModelUtil";
-import {createElement, getExtension} from "../../provider/util";
-import {get, without} from "min-dash";
+import {createElement} from "../../provider/util";
+import {without} from "min-dash";
+import {createServices, getServicesExtension} from "./util";
 
 export function addFactory(element, bpmnFactory, commandStack, service) {
     event.stopPropagation();
@@ -157,35 +158,4 @@ export function removeFactory(commandStack, element, service) {
         })
     }
     commandStack.execute('properties-panel.multi-command-executor', commands);
-}
-
-// Helper
-
-// Get services list extension
-export function getServicesExtension(element) {
-    const businessObject = getBusinessObject(element);
-    return getExtension(businessObject, 'vsdt2:Services');
-}
-
-// Get services extension entries
-export function getServices(element) {
-    const businessObject = getBusinessObject(element);
-    const services = getServicesExtension(businessObject);
-    return services && services.get('values');
-}
-
-// Create new service extension
-export function createServices(properties, parent, bpmnFactory) {
-    return createElement('vsdt2:Services', properties, parent, bpmnFactory);
-}
-
-// Get service by name
-export function getRelevantServiceProperty(element, serviceId){
-    const services = getServices(element);
-
-    // Find the service with the specified id
-    const relevantService = services.find(service => service.id === serviceId);
-
-    // Return the service object or an empty string if not found
-    return relevantService || '';
 }

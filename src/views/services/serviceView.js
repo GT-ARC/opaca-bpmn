@@ -1,6 +1,7 @@
-import {addFactory, getRelevantServiceProperty, getServices, removeFactory} from "./Services";
+import {addFactory, removeFactory} from "./Services";
 import {getRootElement, nextId} from "../../provider/util";
 import {getDataTypes} from "../../provider/variables/util";
+import {getRelevantServiceProperty, getServices, } from "./util"
 
 export default function ServiceView(elementRegistry, injector, eventBus) {
     const bpmnFactory = injector.get('bpmnFactory'),
