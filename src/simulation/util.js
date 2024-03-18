@@ -1,4 +1,4 @@
-import {getRootElement} from "../provider/util";
+import {getParentElement, getRootElement} from "../provider/util";
 import {getRelevantServiceProperty, getServices} from "../views/services/util";
 import {getVariables} from "../provider/variables/util";
 import {getAssignments} from "../provider/assignments/util";
@@ -11,6 +11,19 @@ const variableMapping = {};
 // Called in StartEvent
 export function initializeVariables(startEventContext){
     const root = getRootElement(startEventContext.element.di.bpmnElement);
+    const parent = getParentElement(startEventContext.element.di.bpmnElement);
+
+    // if parent is not root, we entered a sub-process
+    // which could have additional variables defined
+    if(parent!==root){
+        const variables = getVariables(parent);
+        if(variables){
+            variables.forEach(variable => {
+                variableMapping[variable.name] = {};
+            });
+        }
+        return;
+    }
     const def = root.$parent;
 
     const variables = getVariables(root);
@@ -32,20 +45,6 @@ export function initializeVariables(startEventContext){
             }
         });
     }
-    console.log('variableMapping: ');
-    for(let key in variableMapping){
-        console.log(key , ', ', variableMapping[key]);
-    }
-}
-
-// TODO
-// Create local mapping for variables defined in participants and sub-processes
-export function addVariables(element){
-    const bpmnElement =element.di.bpmnElement;
-
-    getVariables(bpmnElement).forEach(variable => {
-        variableMapping[variable.name] = {};
-    });
     console.log('variableMapping: ');
     for(let key in variableMapping){
         console.log(key , ', ', variableMapping[key]);

@@ -9,7 +9,7 @@
     <bpmn2:startEvent id="StartEvent_1">
       <bpmn2:extensionElements>
         <vsdt2:assignments>
-          <vsdt2:assignment variable="x" expression="0" assignTime="START" />
+          <vsdt2:assignment variable="x" expression="0" assignTime="END" />
         </vsdt2:assignments>
       </bpmn2:extensionElements>
       <bpmn2:outgoing>Flow_0yxn1fb</bpmn2:outgoing>
