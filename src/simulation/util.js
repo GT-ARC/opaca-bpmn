@@ -70,9 +70,7 @@ export function updateVariables(element, assignTime){
     if(assignments){
         assignments.forEach(assignment => {
             if(assignment.assignTime === assignTime){
-                const processedAssignment = preprocessExpression(assignment.expression);
-                variableMapping[assignment.variable] = eval(processedAssignment);
-                console.log(assignTime, assignment.variable, '->', eval(processedAssignment));
+                makeAssignment(assignment);
             }
         });
     }
@@ -80,16 +78,6 @@ export function updateVariables(element, assignTime){
     for(let key in variableMapping){
         console.log(key , ', ', variableMapping[key]);
     }
-}
-
-// Replace variable names inside expression with local mapping.
-// Will not work for some variable types (i.e. Collections)
-function preprocessExpression(expression){
-    for (const variable in variableMapping) {
-        const regex = new RegExp(`\\b${variable}\\b`, 'g'); // Match whole word
-        expression = expression.replace(regex, `variableMapping['${variable}']`);
-    }
-    return expression;
 }
 
 // Call service defined in ServiceTask.
@@ -103,15 +91,25 @@ export function callService(element){
             reject(new Error('Service implementation not found'));
             return;
         }
-        console.log('serviceImpl', serviceImpl);
 
         // Find service in definitions
         const root = getRootElement(element);
         const def = root.$parent;
         const service = getRelevantServiceProperty(def, serviceImpl);
         console.log('service', service);
-        const uri = service.uri;
-        const resName = service.result.name;
+
+        // In case we want to call an opaca action /invoke/action is added
+        var uri = service.uri;
+        if(service.type==='OPACA Action'){
+            uri = service.uri + '/invoke/' + service.name;
+        }
+
+        var resName;
+        if(service.result){
+            resName = service.result.name;
+        }
+
+        // Collect parameters needed for the request
         const params = {};
         service.parameters.forEach(parameter => {
             if(parameter.name in variableMapping){
@@ -119,14 +117,14 @@ export function callService(element){
             }
         });
 
-        var result = '';
         // Make service call
-        call(uri, params)
+        call(uri, service.method, params)
             .then((response) => {
                 console.log('Response from service:', response);
                 // Assign result
-                result = response;
-                variableMapping[resName] = eval(result); // Assuming the response is a string representing JavaScript code
+                if(resName){
+                    makeAssignment({variable: resName, expression: response});
+                }
                 resolve(); // Resolve the promise after assigning the result
             })
             .catch((error) => {
@@ -136,14 +134,26 @@ export function callService(element){
     });
 }
 
-function call(uri, params){
+// TODO: Error Handling -> Message, Symbol or something?
+function call(uri, serviceMethod, params){
     return new Promise((resolve, reject) => {
-        // Construct the request URL with parameters
-        const url = `${uri}?${new URLSearchParams(params)}`;
+        var url = uri;
+        // In case of GET request, add query parameters
+        if (serviceMethod === 'GET' && params) {
+            url += `?${new URLSearchParams(params)}`;
+        }
         console.log('url ', url);
+        console.log('body ', params);
 
-        // Make a GET request using fetch API
-        fetch(url)
+        // Make a request using fetch API
+        fetch(url, {
+            method: serviceMethod,
+            // In case of POST/ PUT/ DELETE add body with parameters
+            body: serviceMethod !== 'GET' ? JSON.stringify(params) : undefined,
+            headers: {
+                "Content-Type": "application/json"
+            }
+        })
             .then(response => {
                 if (!response.ok) {
                     throw new Error('Network response was not ok');
@@ -157,4 +167,42 @@ function call(uri, params){
                 reject(error);
             });
     });
+}
+
+//// Helpers ////
+
+// Check if string is valid JSON
+function isValidJSON(str) {
+    try {
+        JSON.parse(str);
+        return true;
+    } catch (e) {
+        console.log(e);
+        return false;
+    }
+}
+
+// Replace variable names inside expression with local mapping.
+// May not work for some variable types
+function preprocessExpression(expression){
+    for (const variable in variableMapping) {
+        const regex = new RegExp(`\\b${variable}\\b`, 'g'); // Match whole word
+        expression = expression.replace(regex, `variableMapping['${variable}']`);
+    }
+    return expression;
+}
+
+// Evaluate assignment of different expressions
+function makeAssignment(assignment){
+    if(isValidJSON(assignment.expression)){
+        // Object (JSON), collection
+        variableMapping[assignment.variable] = JSON.parse(assignment.expression);
+    }else if(typeof assignment.expression === 'string'){
+        // String
+        variableMapping[assignment.variable] = assignment.expression;//eval(assignment.expression);
+    }else{
+        // Other (primitive, operations)
+        const processedAssignment = preprocessExpression(assignment.expression);
+        variableMapping[assignment.variable] = eval(processedAssignment);
+    }
 }

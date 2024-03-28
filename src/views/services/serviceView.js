@@ -19,7 +19,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Get bpmn:Definitions (where we want to define services)
         const element = root.$parent;
 
-        const newService = { type: '', uri: '', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
+        const newService = { type: '', uri: '', method:'', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
 
         addFactory(element, bpmnFactory, commandStack, newService);
 
@@ -34,8 +34,9 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.className = 'service-entry';
 
         // Input Fields
-        const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA', 'REST', 'BPMN Process'], service.type);
+        const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA Action', 'REST Service', 'BPMN Process'], service.type);
         const uriInput = createInput(element, entry, 'URI', service, service.uri);
+        const methodInput = createDropdown(element, entry, 'Method-type', service, ['GET', 'POST', 'PUT', 'DELETE'], service.method);
         const nameInput = createInput(element, entry, 'Name', service, service.name);
 
         const resultInput = createResultGroup(element, entry, service);
@@ -58,6 +59,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Add entry to the content
         entry.appendChild(typeInput);
         entry.appendChild(uriInput);
+        entry.appendChild(methodInput);
         entry.appendChild(nameInput);
         entry.appendChild(resultInput);
         entry.appendChild(parametersInput);
@@ -96,7 +98,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         defaultOption.disabled = true;
         dropdown.add(defaultOption);
 
-        dropdown.classList.add('type-input');
+        dropdown.classList.add(`${placeholder.toLowerCase()}`);
 
         // Add options to pick from
         options.forEach((option) => {
@@ -110,6 +112,16 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         // Add event listener to update the model when selection changes
         dropdown.addEventListener('change', (event) => {
+
+            // Check if the selected type is 'OPACA ACTION'
+            if (dropdown.value === 'OPACA Action') {
+                // Set default URI
+                const uriInput = entry.querySelector('.uri-input');
+                uriInput.value = 'http://localhost:8000';
+                // Set default method
+                const methodType = entry.querySelector('.method-type');
+                methodType.value = 'POST';
+            }
             // Current inputs
             const newService = getCurrentServiceValues(entry, service);
             updateModel(element, service.id, newService);
@@ -128,7 +140,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
-        const resultType = createDropdown(element, entry, 'Result-type', service, allTypes, service.result.type);
+        const resultType = createDropdown(element, entry, 'result-type', service, allTypes, service.result.type);
 
         resultInput.appendChild(resultName);
         resultInput.appendChild(resultType);
@@ -172,7 +184,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
         // Create dropdown for parameter type
-        const paramType = createDropdown(element, entry, 'Parameter-type', service, allTypes, initial_param.type);
+        const paramType = createDropdown(element, entry, 'parameter-type', service, allTypes, initial_param.type);
 
         // Button for removing a parameter
         const removeButton = document.createElement('button');
@@ -212,12 +224,13 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     // Get current values set for a service entry
     function getCurrentServiceValues(entry, service){
         const currentName = entry.querySelector('.name-input').value;
-        const currentType = entry.querySelector('.type-input').value;
+        const currentType = entry.querySelector('.service-type').value;
         const currentUri = entry.querySelector('.uri-input').value;
+        const currentMethod = entry.querySelector('.method-type').value;
 
         const result = entry.querySelector('.result-group');
         const currentResultName = result.querySelector('.result-name-input').value;
-        const currentResultType = result.querySelector('.type-input').value;
+        const currentResultType = result.querySelector('.result-type').value;
 
         const parameters = [];
         const parameterGroup = entry.querySelector('.parameters-group');
@@ -225,7 +238,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         parameterEntries.forEach(parameterGroup => {
             parameters.push({
                 name: parameterGroup.querySelector('.parameter-name-input').value,
-                type: parameterGroup.querySelector('.type-input').value
+                type: parameterGroup.querySelector('.parameter-type').value
             });
         });
 
@@ -233,6 +246,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         return {
             type: currentType,
             uri: currentUri,
+            method: currentMethod,
             name: currentName,
             result: {name: currentResultName, type: currentResultType},
             parameters: parameters,
@@ -268,6 +282,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 const newEntry = {
                     type: service.type,
                     uri: service.uri,
+                    method: service.method,
                     name: service.name,
                     result: service.result || {name : '', type: ''},
                     parameters: service.parameters || [],

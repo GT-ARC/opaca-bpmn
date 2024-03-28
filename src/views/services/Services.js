@@ -54,6 +54,7 @@ export function addFactory(element, bpmnFactory, commandStack, service) {
     const newService = createElement('vsdt2:Service', {
         type: service.type,
         uri: service.uri,
+        method: service.method,
         name: service.name,
         id: service.id
     }, extension, bpmnFactory);
