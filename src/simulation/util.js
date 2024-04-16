@@ -174,8 +174,8 @@ function call(uri, serviceMethod, params){
 // Check if string is valid JSON
 function isValidJSON(str) {
     try {
-        JSON.parse(str);
-        return true;
+        const parsedJSON = JSON.parse(str);
+        return parsedJSON && typeof parsedJSON === 'object';
     } catch (e) {
         console.log(e);
         return false;
@@ -197,9 +197,9 @@ function makeAssignment(assignment){
     if(isValidJSON(assignment.expression)){
         // Object (JSON), collection
         variableMapping[assignment.variable] = JSON.parse(assignment.expression);
-    }else if(typeof assignment.expression === 'string'){
+    }else if(assignment.expression.startsWith('"')){
         // String
-        variableMapping[assignment.variable] = assignment.expression;//eval(assignment.expression);
+        variableMapping[assignment.variable] = assignment.expression;
     }else{
         // Other (primitive, operations)
         const processedAssignment = preprocessExpression(assignment.expression);
