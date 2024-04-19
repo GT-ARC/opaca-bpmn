@@ -4,7 +4,9 @@ import {without} from "min-dash";
 import {createServices, getServicesExtension} from "./util";
 
 export function addFactory(element, bpmnFactory, commandStack, service) {
-    event.stopPropagation();
+    if (event) {
+        event.stopPropagation();
+    }
 
     const commands = [];
 

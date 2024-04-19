@@ -10,8 +10,40 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     const addServiceButton = document.getElementById('addServiceButton');
     addServiceButton.addEventListener('click', createNewService);
 
+    const loadServicesButton = document.getElementById('loadServiceButton');
+    loadServicesButton.addEventListener('click', loadRunningServices);
+
     // Create new empty service
     function createNewService() {
+        const newService = { type: '', uri: '', method:'', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
+        createService(newService);
+    }
+
+    // Load all OPACA Actions from Runtime Platform currently running on localhost:8000
+    async function loadRunningServices() {
+        const response = await fetch('http://localhost:8000/agents');
+        if (response.status != 200) {
+            alert("Failed to load Services: " + response.text())
+        }
+        const result = await response.json();
+        for (const agent of result) {
+            for (const action of agent["actions"]) {
+                const newService = {
+                    type: 'OPACA Action',
+                    uri: 'http://localhost:8000',
+                    method: 'POST',
+                    name: action["name"],
+                    result: {name: 'result', type: action["result"] != null ? action["result"]["type"] : "void"},
+                    parameters: Object.entries(action["parameters"]).map(e => ({"name": e[0], "type": e[1]["type"]})),
+                    id: nextId('service_')
+                };
+                createService(newService);
+            }
+        } 
+    }
+
+    // add service to model and create widgets
+    function createService(service) {
         // Get root of diagram
         const firstElement = elementRegistry.getAll()[0];
         const root = getRootElement(firstElement);
@@ -19,12 +51,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Get bpmn:Definitions (where we want to define services)
         const element = root.$parent;
 
-        const newService = { type: '', uri: '', method:'', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
-
-        addFactory(element, bpmnFactory, commandStack, newService);
+        addFactory(element, bpmnFactory, commandStack, service);
 
         // Create a new service entry in service view
-        createServiceEntry(element, newService);
+        createServiceEntry(element, service);
     }
 
     // Function to create a service entry
