@@ -97,6 +97,8 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         dropdown.classList.add('type-input');
 
+        dropdown.value = initial_value;
+
         // Add options to pick from
         options.forEach((option) => {
             const optionElement = document.createElement('option');
@@ -105,13 +107,34 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             dropdown.add(optionElement);
         });
 
-        dropdown.value = initial_value;
+        // Add a custom option
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.text = 'Custom';
+        dropdown.add(customOption);
 
-        // Add event listener to update the model when selection changes
+        // Add event listener to handle custom selection
         dropdown.addEventListener('change', (event) => {
-            // Current inputs
-            const newService = getCurrentServiceValues(entry, service);
-            updateModel(element, service.id, newService);
+            const selectedValue = event.target.value;
+            if (selectedValue === 'custom') {
+                const customValue = prompt('Enter custom value:');
+                if (customValue !== null) {
+                    // Add the custom value as a new option
+                    const customOption = document.createElement('option');
+                    customOption.value = customValue;
+                    customOption.text = customValue;
+                    dropdown.add(customOption);
+                    dropdown.value = customValue;
+                } else {
+                    // Reset to the previous value if user cancels
+                    dropdown.value = initial_value;
+                }
+            } else {
+                // Normal option selected
+                // Current inputs
+                const newService = getCurrentServiceValues(entry, service);
+                updateModel(element, service.id, newService);
+            }
         });
         return dropdown;
     }
