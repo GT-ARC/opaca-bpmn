@@ -19,26 +19,39 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         createService(newService);
     }
 
-    // Load all OPACA Actions from Runtime Platform currently running on localhost:8000
+    // Load all OPACA Actions from Runtime Platform
     async function loadRunningServices() {
-        const response = await fetch('http://localhost:8000/agents');
-        if (response.status != 200) {
-            alert("Failed to load Services: " + response.text())
+        // Ask the user for the location, with a default value of 'http://localhost:8000/agents'
+        const location = prompt('Load services from:', 'http://localhost:8000/agents');
+
+        // If the user cancels the prompt, exit the function
+        if (location === null) {
+            return;
         }
-        const result = await response.json();
-        for (const agent of result) {
-            for (const action of agent["actions"]) {
-                const newService = {
-                    type: 'OPACA Action',
-                    uri: 'http://localhost:8000',
-                    method: 'POST',
-                    name: action["name"],
-                    result: {name: 'result', type: action["result"] != null ? action["result"]["type"] : "void"},
-                    parameters: Object.entries(action["parameters"]).map(e => ({"name": e[0], "type": e[1]["type"]})),
-                    id: nextId('service_')
-                };
-                createService(newService);
+
+        try {
+            const response = await fetch(location);
+            if (!response.ok) {
+                throw new Error(`Failed to load Services: ${response.statusText}`);
             }
+
+            const result = await response.json();
+            for (const agent of result) {
+                for (const action of agent["actions"]) {
+                    const newService = {
+                        type: 'OPACA Action',
+                        uri: location,
+                        method: 'POST',
+                        name: action["name"],
+                        result: {name: 'result', type: action["result"] != null ? action["result"]["type"] : "void"},
+                        parameters: Object.entries(action["parameters"]).map(e => ({"name": e[0], "type": e[1]["type"]})),
+                        id: nextId('service_')
+                    };
+                    createService(newService);
+                }
+            }
+        } catch (error) {
+            alert(`Error loading services: ${error.message}`);
         }
     }
 
@@ -95,7 +108,17 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.appendChild(parametersInput);
         entry.appendChild(removeButton);
         content.appendChild(entry);
+
+        // Select the correct result type in the dropdown
+        resultInput.querySelector('.result-type').value = service.result.type;
+
+        // Select the correct parameter types in the dropdowns
+        const parameterEntries = parametersInput.querySelectorAll('.param-entry');
+        parameterEntries.forEach((parameterEntry, index) => {
+            parameterEntry.querySelector('.parameter-type').value = service.parameters[index].type;
+        });
     }
+
 
     // Function to create an element for URI / name input
     function createInput(element, entry, placeholder, service, initial_value) {
@@ -130,8 +153,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         dropdown.classList.add(`${placeholder.toLowerCase()}`);
 
+        // Combine all types including the initial value's type
+        const allTypes = Array.from(new Set([initial_value, ...options]));
+
         // Add options to pick from
-        options.forEach((option) => {
+        allTypes.forEach((option) => {
             const optionElement = document.createElement('option');
             optionElement.value = option;
             optionElement.text = option;
@@ -142,8 +168,6 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         // Add event listener to update the model when selection changes
         dropdown.addEventListener('change', (event) => {
-
-            // Check if the selected type is 'OPACA ACTION'
             if (dropdown.value === 'OPACA Action') {
                 // Set default URI
                 const uriInput = entry.querySelector('.uri-input');
@@ -151,8 +175,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 // Set default method
                 const methodType = entry.querySelector('.method-type');
                 methodType.value = 'POST';
-            }
-            else if (dropdown.value === 'Custom') {
+            } else if (dropdown.value === 'Custom') {
                 const customValue = prompt('Enter custom value:');
                 if (customValue !== null) {
                     // Add the custom value as a new option
@@ -171,7 +194,6 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 const newService = getCurrentServiceValues(entry, service);
                 updateModel(element, service.id, newService);
             }
-
         });
         return dropdown;
     }
