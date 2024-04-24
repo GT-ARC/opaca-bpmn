@@ -64,6 +64,17 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Get bpmn:Definitions (where we want to define services)
         const element = root.$parent;
 
+        // Get existing services or default to an empty array
+        const existingServices = getServices(element) || [];
+
+        // Check if a service with the same name already exists
+        const existingService = existingServices.find(existing => existing.name === service.name);
+        if (existingService) {
+            // Service with the same name already exists, do not add it again
+            console.warn('Service with name', service.name, 'already exists.');
+            return;
+        }
+
         addFactory(element, bpmnFactory, commandStack, service);
 
         // Create a new service entry in service view
