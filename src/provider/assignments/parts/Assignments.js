@@ -140,7 +140,8 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         // (3) create assignment
         const newAssignment = createElement('vsdt2:Assignment', {
             variable : '', // default
-            expression: ''
+            expression: '',
+            assignTime: 'START'
         }, extension, bpmnFactory);
 
         // (4) add assignment to list
