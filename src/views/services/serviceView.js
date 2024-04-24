@@ -39,7 +39,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 };
                 createService(newService);
             }
-        } 
+        }
     }
 
     // add service to model and create widgets
@@ -152,9 +152,26 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 const methodType = entry.querySelector('.method-type');
                 methodType.value = 'POST';
             }
-            // Current inputs
-            const newService = getCurrentServiceValues(entry, service);
-            updateModel(element, service.id, newService);
+            else if (dropdown.value === 'Custom') {
+                const customValue = prompt('Enter custom value:');
+                if (customValue !== null) {
+                    // Add the custom value as a new option
+                    const customOption = document.createElement('option');
+                    customOption.value = customValue;
+                    customOption.text = customValue;
+                    dropdown.add(customOption);
+                    dropdown.value = customValue;
+                } else {
+                    // Reset to the previous value if user cancels
+                    dropdown.value = initial_value;
+                }
+            } else {
+                // Normal option selected
+                // Current inputs
+                const newService = getCurrentServiceValues(entry, service);
+                updateModel(element, service.id, newService);
+            }
+
         });
         return dropdown;
     }
@@ -166,7 +183,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const resultName = createInput(element, entry, 'Result-name', service, service.result.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String", "Custom"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
@@ -210,7 +227,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const paramName = createInput(element, entry, 'Parameter-name', service, initial_param.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String", "Custom"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
         // Create dropdown for parameter type
