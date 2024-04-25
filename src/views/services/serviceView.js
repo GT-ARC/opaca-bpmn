@@ -210,6 +210,8 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Combine all types including the initial value's type
         const allTypes = Array.from(new Set([initial_value, ...options]));
 
+        dropdown.value = initial_value;
+
         // Add options to pick from
         allTypes.forEach((option) => {
             const optionElement = document.createElement('option');
@@ -218,9 +220,13 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             dropdown.add(optionElement);
         });
 
-        dropdown.value = initial_value;
+        // Add a custom option
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.text = 'Custom';
+        dropdown.add(customOption);
 
-        // Add event listener to update the model when selection changes
+        // Add event listener to handle custom selection
         dropdown.addEventListener('change', (event) => {
             if (dropdown.value === 'OPACA Action') {
                 // Set default URI
