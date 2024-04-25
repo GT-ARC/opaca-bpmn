@@ -4,12 +4,33 @@ import {getDataTypes} from "../../provider/variables/util";
 import {getRelevantServiceProperty, getServices, } from "./util"
 
 export default function ServiceView(elementRegistry, injector, eventBus) {
+    // For the model
     const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');
 
-    const addServiceButton = document.getElementById('addServiceButton');
-    addServiceButton.addEventListener('click', createNewService);
+    // Set up the click event for the toggleView Button inside the label
+    const toggleViewButton = document.getElementById('toggle-service-view');
+    toggleViewButton.addEventListener('click', toggleServiceView);
 
+    const content = document.getElementById('service-view-groups');
+
+    // Open / Close service view
+    function toggleServiceView() {
+        if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+        } else {
+            content.style.display = 'none';
+        }
+    }
+
+    // Set up the click event for adding a service
+    const addServiceButton = document.getElementById('addServiceButton');
+    addServiceButton.addEventListener('click', function (){
+        createNewService();
+        content.style.display = 'block';
+    });
+
+    // Set up the click event for loading OPACA Actions
     const loadServicesButton = document.getElementById('loadServiceButton');
     loadServicesButton.addEventListener('click', loadRunningServices);
 
@@ -87,14 +108,21 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const entry = document.createElement('div');
         entry.className = 'service-entry';
 
+        // Create label for displaying the name (always visible)
+        const serviceEntryLabel = document.createElement('div');
+        serviceEntryLabel.textContent = service.name ? service.name : 'New Service';
+        serviceEntryLabel.className = 'service-entry-label';
+        serviceEntryLabel.addEventListener('click', toggleServiceEntry);
+
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = 'service-input-wrapper';
+
         // Input Fields
         const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA Action', 'REST Service', 'BPMN Process'], service.type);
         const uriInput = createInput(element, entry, 'URI', service, service.uri);
         const methodInput = createDropdown(element, entry, 'Method-type', service, ['GET', 'POST', 'PUT', 'DELETE'], service.method);
         const nameInput = createInput(element, entry, 'Name', service, service.name);
-
         const resultInput = createResultGroup(element, entry, service);
-
         const parametersInput = createParametersGroup(element, entry, service);
 
         // Button for removing a service
@@ -105,19 +133,20 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             const serviceToRemove = getRelevantServiceProperty(element, service.id);
             // Remove property from XML
             removeFactory(commandStack, element, serviceToRemove);
-
             // Remove the entry from the DOM
             content.removeChild(entry);
         });
 
         // Add entry to the content
-        entry.appendChild(typeInput);
-        entry.appendChild(uriInput);
-        entry.appendChild(methodInput);
-        entry.appendChild(nameInput);
-        entry.appendChild(resultInput);
-        entry.appendChild(parametersInput);
-        entry.appendChild(removeButton);
+        entry.appendChild(serviceEntryLabel);
+        inputWrapper.appendChild(typeInput);
+        inputWrapper.appendChild(uriInput);
+        inputWrapper.appendChild(methodInput);
+        inputWrapper.appendChild(nameInput);
+        inputWrapper.appendChild(resultInput);
+        inputWrapper.appendChild(parametersInput);
+        inputWrapper.appendChild(removeButton);
+        entry.appendChild(inputWrapper);
         content.appendChild(entry);
 
         // Select the correct result type in the dropdown
@@ -128,6 +157,16 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         parameterEntries.forEach((parameterEntry, index) => {
             parameterEntry.querySelector('.parameter-type').value = service.parameters[index].type;
         });
+
+        // Open / Close service entry
+        function toggleServiceEntry() {
+            const computedStyle = window.getComputedStyle(inputWrapper);
+            if (computedStyle.display === 'none' || !computedStyle.display) {
+                inputWrapper.style.display = 'block';
+            } else {
+                inputWrapper.style.display = 'none';
+            }
+        }
     }
 
 
@@ -146,6 +185,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         input.addEventListener('change', () => {
             // Get current inputs
             const newService = getCurrentServiceValues(entry, service)
+
+            // Make sure entry label is updated
+            const nameLabel = entry.querySelector('.service-entry-label');
+            nameLabel.textContent = newService.name;
 
             // Update XML
             updateModel(element, service.id, newService);
@@ -284,21 +327,6 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         paramEntry.appendChild(removeButton);
 
         return paramEntry;
-    }
-
-    // Set up the click event for the label
-    const label = document.getElementById('service-view-label');
-    label.addEventListener('click', toggleServiceView);
-
-    const content = document.getElementById('service-view-groups');
-
-    // Open / Close service view
-    function toggleServiceView() {
-        if (content.style.display === 'none' || !content.style.display) {
-            content.style.display = 'block';
-        } else {
-            content.style.display = 'none';
-        }
     }
 
     // Get current values set for a service entry

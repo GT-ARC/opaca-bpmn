@@ -1,6 +1,5 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
-//import TokenSimulationModule from 'bpmn-js-token-simulation';
 import InterpreterTokenSimulation from "./simulation";
 import { debounce } from 'min-dash';
 
@@ -16,7 +15,7 @@ import serviceImplProviderModule from './provider/services';
 import vsdtModdleDescriptor from './descriptors/vsdt2';
 // import Views
 import serviceViewModule from './views/services';
-import interpreterViewModule from './views/interpreter';
+//import interpreterViewModule from './views/interpreter';
 
 var container = $('#js-drop-zone');
 var canvas = $('#js-canvas');
@@ -35,7 +34,7 @@ var bpmnModeler = new BpmnModeler({
     serviceImplProviderModule,
     InterpreterTokenSimulation,
     serviceViewModule,
-    interpreterViewModule
+    //interpreterViewModule
   ],
   moddleExtensions: {
     camunda: CamundaBpmnModdle,

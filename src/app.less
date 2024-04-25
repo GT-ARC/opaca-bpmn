@@ -164,7 +164,7 @@ a:link {
   border-bottom: 1px solid hsl(225, 10%, 75%);
   display: flex;
   align-items: center;
-  cursor: pointer; /* Make it look clickable */
+  //cursor: pointer;
 }
 
 .custom-properties-label img {
@@ -196,15 +196,23 @@ a:link {
   margin-left: 5px;
 }
 
-.createEntry {
-  border-radius: 50%;
+.view-button {
+  border-radius: 20px;
   border: none;
   font-size: 20px;
   background: transparent;
   color: hsl(225, 10%, 35%);
+  overflow: hidden;
 }
-.createEntry:hover {
+#loadServiceButton {
+  font-size: 16px;
+}
+#addServiceButton:hover, #loadServiceButton:hover {
   background: hsl(205, 100%, 50%);
+  color: white;
+}
+#toggle-service-view:hover {
+  background: hsl(225, 10%, 35%);
   color: white;
 }
 
@@ -219,4 +227,13 @@ input, select {
     background: hsl(205, 100%, 95%);
     border-color: hsl(205, 100%, 50%);
   }
+}
+
+.service-entry-label {
+  padding: 10px;
+  font-size: 14px;
+}
+
+.service-input-wrapper {
+  display: block;
 }
