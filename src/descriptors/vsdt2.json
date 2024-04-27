@@ -98,6 +98,11 @@
           "type": "String"
         },
         {
+          "name" : "method",
+          "isAttr": true,
+          "type": "String"
+        },
+        {
           "name": "uri",
           "isAttr": true,
           "type": "String"

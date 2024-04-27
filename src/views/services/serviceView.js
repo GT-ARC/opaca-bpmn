@@ -1,16 +1,83 @@
-import {addFactory, getRelevantServiceProperty, getServices, removeFactory} from "./Services";
+import {addFactory, removeFactory} from "./Services";
 import {getRootElement, nextId} from "../../provider/util";
 import {getDataTypes} from "../../provider/variables/util";
+import {getRelevantServiceProperty, getServices, } from "./util"
 
 export default function ServiceView(elementRegistry, injector, eventBus) {
+    // For the model
     const bpmnFactory = injector.get('bpmnFactory'),
         commandStack = injector.get('commandStack');
 
+    // Set up the click event for the toggleView Button inside the label
+    const toggleViewButton = document.getElementById('toggle-service-view');
+    toggleViewButton.addEventListener('click', toggleServiceView);
+
+    const content = document.getElementById('service-view-groups');
+
+    // Open / Close service view
+    function toggleServiceView() {
+        if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+        } else {
+            content.style.display = 'none';
+        }
+    }
+
+    // Set up the click event for adding a service
     const addServiceButton = document.getElementById('addServiceButton');
-    addServiceButton.addEventListener('click', createNewService);
+    addServiceButton.addEventListener('click', function (){
+        createNewService();
+        content.style.display = 'block';
+    });
+
+    // Set up the click event for loading OPACA Actions
+    const loadServicesButton = document.getElementById('loadServiceButton');
+    loadServicesButton.addEventListener('click', loadRunningServices);
 
     // Create new empty service
     function createNewService() {
+        const newService = { type: '', uri: '', method:'', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
+        createService(newService);
+    }
+
+    // Load all OPACA Actions from Runtime Platform
+    async function loadRunningServices() {
+        // Ask the user for the location, with a default value of 'http://localhost:8000/agents'
+        const location = prompt('Load services from:', 'http://localhost:8000/agents');
+
+        // If the user cancels the prompt, exit the function
+        if (location === null) {
+            return;
+        }
+
+        try {
+            const response = await fetch(location);
+            if (!response.ok) {
+                throw new Error(`Failed to load Services: ${response.statusText}`);
+            }
+
+            const result = await response.json();
+            for (const agent of result) {
+                for (const action of agent["actions"]) {
+                    const newService = {
+                        type: 'OPACA Action',
+                        uri: location,
+                        method: 'POST',
+                        name: action["name"],
+                        result: {name: 'result', type: action["result"] != null ? action["result"]["type"] : "void"},
+                        parameters: Object.entries(action["parameters"]).map(e => ({"name": e[0], "type": e[1]["type"]})),
+                        id: nextId('service_')
+                    };
+                    createService(newService);
+                }
+            }
+        } catch (error) {
+            alert(`Error loading services: ${error.message}`);
+        }
+    }
+
+    // add service to model and create widgets
+    function createService(service) {
         // Get root of diagram
         const firstElement = elementRegistry.getAll()[0];
         const root = getRootElement(firstElement);
@@ -18,12 +85,21 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Get bpmn:Definitions (where we want to define services)
         const element = root.$parent;
 
-        const newService = { type: '', uri: '', name: '', result: {name: '', type: ''}, parameters: [], id: nextId('service_') };
+        // Get existing services or default to an empty array
+        const existingServices = getServices(element) || [];
 
-        addFactory(element, bpmnFactory, commandStack, newService);
+        // Check if a service with the same name already exists
+        const existingService = existingServices.find(existing => existing.name === service.name);
+        if (existingService) {
+            // Service with the same name already exists, do not add it again
+            console.warn('Service with name', service.name, 'already exists.');
+            return;
+        }
+
+        addFactory(element, bpmnFactory, commandStack, service);
 
         // Create a new service entry in service view
-        createServiceEntry(element, newService);
+        createServiceEntry(element, service);
     }
 
     // Function to create a service entry
@@ -32,13 +108,21 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const entry = document.createElement('div');
         entry.className = 'service-entry';
 
+        // Create label for displaying the name (always visible)
+        const serviceEntryLabel = document.createElement('div');
+        serviceEntryLabel.textContent = service.name ? service.name : 'New Service';
+        serviceEntryLabel.className = 'service-entry-label';
+        serviceEntryLabel.addEventListener('click', toggleServiceEntry);
+
+        const inputWrapper = document.createElement('div');
+        inputWrapper.className = 'service-input-wrapper';
+
         // Input Fields
-        const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA', 'REST', 'BPMN Process'], service.type);
+        const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA Action', 'REST Service', 'BPMN Process'], service.type);
         const uriInput = createInput(element, entry, 'URI', service, service.uri);
+        const methodInput = createDropdown(element, entry, 'Method-type', service, ['GET', 'POST', 'PUT', 'DELETE'], service.method);
         const nameInput = createInput(element, entry, 'Name', service, service.name);
-
         const resultInput = createResultGroup(element, entry, service);
-
         const parametersInput = createParametersGroup(element, entry, service);
 
         // Button for removing a service
@@ -49,20 +133,42 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             const serviceToRemove = getRelevantServiceProperty(element, service.id);
             // Remove property from XML
             removeFactory(commandStack, element, serviceToRemove);
-
             // Remove the entry from the DOM
             content.removeChild(entry);
         });
 
         // Add entry to the content
-        entry.appendChild(typeInput);
-        entry.appendChild(uriInput);
-        entry.appendChild(nameInput);
-        entry.appendChild(resultInput);
-        entry.appendChild(parametersInput);
-        entry.appendChild(removeButton);
+        entry.appendChild(serviceEntryLabel);
+        inputWrapper.appendChild(typeInput);
+        inputWrapper.appendChild(uriInput);
+        inputWrapper.appendChild(methodInput);
+        inputWrapper.appendChild(nameInput);
+        inputWrapper.appendChild(resultInput);
+        inputWrapper.appendChild(parametersInput);
+        inputWrapper.appendChild(removeButton);
+        entry.appendChild(inputWrapper);
         content.appendChild(entry);
+
+        // Select the correct result type in the dropdown
+        resultInput.querySelector('.result-type').value = service.result.type;
+
+        // Select the correct parameter types in the dropdowns
+        const parameterEntries = parametersInput.querySelectorAll('.param-entry');
+        parameterEntries.forEach((parameterEntry, index) => {
+            parameterEntry.querySelector('.parameter-type').value = service.parameters[index].type;
+        });
+
+        // Open / Close service entry
+        function toggleServiceEntry() {
+            const computedStyle = window.getComputedStyle(inputWrapper);
+            if (computedStyle.display === 'none' || !computedStyle.display) {
+                inputWrapper.style.display = 'block';
+            } else {
+                inputWrapper.style.display = 'none';
+            }
+        }
     }
+
 
     // Function to create an element for URI / name input
     function createInput(element, entry, placeholder, service, initial_value) {
@@ -80,6 +186,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             // Get current inputs
             const newService = getCurrentServiceValues(entry, service)
 
+            // Make sure entry label is updated
+            const nameLabel = entry.querySelector('.service-entry-label');
+            nameLabel.textContent = newService.name;
+
             // Update XML
             updateModel(element, service.id, newService);
         });
@@ -95,12 +205,15 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         defaultOption.disabled = true;
         dropdown.add(defaultOption);
 
-        dropdown.classList.add('type-input');
+        dropdown.classList.add(`${placeholder.toLowerCase()}`);
+
+        // Combine all types including the initial value's type
+        const allTypes = Array.from(new Set([initial_value, ...options]));
 
         dropdown.value = initial_value;
 
         // Add options to pick from
-        options.forEach((option) => {
+        allTypes.forEach((option) => {
             const optionElement = document.createElement('option');
             optionElement.value = option;
             optionElement.text = option;
@@ -115,8 +228,14 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         // Add event listener to handle custom selection
         dropdown.addEventListener('change', (event) => {
-            const selectedValue = event.target.value;
-            if (selectedValue === 'custom') {
+            if (dropdown.value === 'OPACA Action') {
+                // Set default URI
+                const uriInput = entry.querySelector('.uri-input');
+                uriInput.value = 'http://localhost:8000';
+                // Set default method
+                const methodType = entry.querySelector('.method-type');
+                methodType.value = 'POST';
+            } else if (dropdown.value === 'Custom') {
                 const customValue = prompt('Enter custom value:');
                 if (customValue !== null) {
                     // Add the custom value as a new option
@@ -146,11 +265,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const resultName = createInput(element, entry, 'Result-name', service, service.result.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String", "Custom"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
-        const resultType = createDropdown(element, entry, 'Result-type', service, allTypes, service.result.type);
+        const resultType = createDropdown(element, entry, 'result-type', service, allTypes, service.result.type);
 
         resultInput.appendChild(resultName);
         resultInput.appendChild(resultType);
@@ -190,11 +309,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const paramName = createInput(element, entry, 'Parameter-name', service, initial_param.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String", "Custom"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
         // Create dropdown for parameter type
-        const paramType = createDropdown(element, entry, 'Parameter-type', service, allTypes, initial_param.type);
+        const paramType = createDropdown(element, entry, 'parameter-type', service, allTypes, initial_param.type);
 
         // Button for removing a parameter
         const removeButton = document.createElement('button');
@@ -216,30 +335,16 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         return paramEntry;
     }
 
-    // Set up the click event for the label
-    const label = document.getElementById('service-view-label');
-    label.addEventListener('click', toggleServiceView);
-
-    const content = document.getElementById('service-view-groups');
-
-    // Open / Close service view
-    function toggleServiceView() {
-        if (content.style.display === 'none' || !content.style.display) {
-            content.style.display = 'block';
-        } else {
-            content.style.display = 'none';
-        }
-    }
-
     // Get current values set for a service entry
     function getCurrentServiceValues(entry, service){
         const currentName = entry.querySelector('.name-input').value;
-        const currentType = entry.querySelector('.type-input').value;
+        const currentType = entry.querySelector('.service-type').value;
         const currentUri = entry.querySelector('.uri-input').value;
+        const currentMethod = entry.querySelector('.method-type').value;
 
         const result = entry.querySelector('.result-group');
         const currentResultName = result.querySelector('.result-name-input').value;
-        const currentResultType = result.querySelector('.type-input').value;
+        const currentResultType = result.querySelector('.result-type').value;
 
         const parameters = [];
         const parameterGroup = entry.querySelector('.parameters-group');
@@ -247,7 +352,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         parameterEntries.forEach(parameterGroup => {
             parameters.push({
                 name: parameterGroup.querySelector('.parameter-name-input').value,
-                type: parameterGroup.querySelector('.type-input').value
+                type: parameterGroup.querySelector('.parameter-type').value
             });
         });
 
@@ -255,6 +360,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         return {
             type: currentType,
             uri: currentUri,
+            method: currentMethod,
             name: currentName,
             result: {name: currentResultName, type: currentResultType},
             parameters: parameters,
@@ -290,6 +396,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 const newEntry = {
                     type: service.type,
                     uri: service.uri,
+                    method: service.method,
                     name: service.name,
                     result: service.result || {name : '', type: ''},
                     parameters: service.parameters || [],

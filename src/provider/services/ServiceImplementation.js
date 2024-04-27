@@ -2,7 +2,7 @@ import {isSelectEntryEdited, SelectEntry} from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 import {useEffect, useState} from '@bpmn-io/properties-panel/preact/hooks';
 import {getRootElement} from "../util";
-import {getServices} from "../../views/services/Services";
+import {getServices} from "../../views/services/util";
 
 export default function ServiceImplementation(element) {
 
