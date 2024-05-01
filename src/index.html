@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>bpmn-js -> jiac test</title>
+  <title>bpmn-js-interpreter</title>
 
   <link rel="stylesheet" href="vendor/bpmn-js/assets/diagram-js.css" />
   <link rel="stylesheet" href="vendor/bpmn-js/assets/bpmn-js.css" />
@@ -36,22 +36,20 @@
       <div class="message error" id="delete-assigned-var">
         <p></p>
       </div>
-    </div>
-    <div class="views-container">
-      <!-- Service View -->
-      <div class="properties-panel-parent" id="service-view">
-        <div class="view-label" id="service-view-label">
-          <span>SERVICES</span>
-          <button id="addServiceButton" title="Add service" class="view-button">+</button>
-          <button id="loadServiceButton" title="Load services" class="view-button">Load...</button>
-          <button id="toggle-service-view" title="open or collapse" class="view-button">&vellip;</button>
+      <div class="views-container">
+        <!-- Service View -->
+        <div class="properties-panel-parent" id="service-view">
+            <div class="view-label" id="service-view-label">
+                <span>SERVICES</span>
+                <button id="addServiceButton" title="Add service" class="view-button">+</button>
+                <button id="loadServiceButton" title="Load services" class="view-button">Load...</button>
+                <button id="toggle-service-view" title="open or collapse" class="view-button">&vellip;</button>
+            </div>
+            <div class="collapsible-content" id="service-view-groups"></div>
         </div>
-        <div class="collapsible-content" id="service-view-groups">
-
-        </div>
+        <!-- Interpreter View -->
+        <!-- <div class="properties-panel-parent collapsible-content" id="interpreter-view"></div> -->
       </div>
-      <!-- Interpreter View -->
-      <div class="properties-panel-parent collapsible-content" id="interpreter-view"></div>
     </div>
     <!-- Properties Panel -->
     <div class="properties-panel-parent" id="js-properties-panel"></div>

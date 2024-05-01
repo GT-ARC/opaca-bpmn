@@ -23,7 +23,7 @@ a:link {
 }
 
 .content {
-  position: relative;
+  //position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -68,6 +68,7 @@ a:link {
 
   .canvas {
     width: 100%;
+    position: relative;
   }
 
   .canvas,
@@ -149,11 +150,14 @@ a:link {
 }
 // Views
 .views-container {
+  background-color: white;
   display: flex;
-  flex-direction: column;
   top: 0;
   right: 0;
   max-width: 400px; /* Set the maximum width for the views */
+  height: fit-content;
+  z-index: 1;
+  position: absolute; /* place relative to canvas */
 }
 
 .view-label {
@@ -164,7 +168,6 @@ a:link {
   border-bottom: 1px solid hsl(225, 10%, 75%);
   display: flex;
   align-items: center;
-  //cursor: pointer;
 }
 
 .custom-properties-label img {
@@ -232,6 +235,7 @@ input, select {
 .service-entry-label {
   padding: 10px;
   font-size: 14px;
+  cursor: pointer;
 }
 
 .service-input-wrapper {
