@@ -2,7 +2,7 @@
 <bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="http://vsdt2" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
   <bpmn2:extensionElements>
     <vsdt2:services>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000/agents" name="Add" id="service_1sv6ivk">
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="Add" id="service_1sv6ivk">
         <vsdt2:parameter name="x" type="int" />
         <vsdt2:parameter name="y" type="int" />
         <vsdt2:result name="result" type="int" />
@@ -99,11 +99,11 @@
       <bpmn2:outgoing>Flow_15o6ou9</bpmn2:outgoing>
       <bpmn2:outgoing>Flow_1ydtxue</bpmn2:outgoing>
     </bpmn2:exclusiveGateway>
-    <bpmn2:sequenceFlow id="Flow_15o6ou9" name="sign&#62;0" sourceRef="Gateway_00uqc2p" targetRef="Gateway_14mybpm">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">sign&gt;0</bpmn2:conditionExpression>
+    <bpmn2:sequenceFlow id="Flow_15o6ou9" name="sign_product&#62;0" sourceRef="Gateway_00uqc2p" targetRef="Gateway_14mybpm">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">sign_product&gt;0</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
-    <bpmn2:sequenceFlow id="Flow_1ydtxue" name="sign&#60;0" sourceRef="Gateway_00uqc2p" targetRef="Activity_0gv025r">
-      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">sign&lt;0</bpmn2:conditionExpression>
+    <bpmn2:sequenceFlow id="Flow_1ydtxue" name="sign_product&#60;0" sourceRef="Gateway_00uqc2p" targetRef="Activity_0gv025r">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">sign_product&lt;0</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:exclusiveGateway id="Gateway_14mybpm">
       <bpmn2:incoming>Flow_0gl4clx</bpmn2:incoming>
@@ -216,7 +216,7 @@
         <di:waypoint x="965" y="258" />
         <di:waypoint x="1105" y="258" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="1013" y="233" width="33" height="14" />
+          <dc:Bounds x="992" y="233" width="76" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_1ydtxue_di" bpmnElement="Flow_1ydtxue">
@@ -224,7 +224,7 @@
         <di:waypoint x="940" y="330" />
         <di:waypoint x="990" y="330" />
         <bpmndi:BPMNLabel>
-          <dc:Bounds x="903" y="304" width="33" height="14" />
+          <dc:Bounds x="862" y="304" width="76" height="14" />
         </bpmndi:BPMNLabel>
       </bpmndi:BPMNEdge>
       <bpmndi:BPMNEdge id="Flow_0gl4clx_di" bpmnElement="Flow_0gl4clx">
