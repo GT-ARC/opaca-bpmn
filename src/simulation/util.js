@@ -71,6 +71,13 @@ export function updateVariables(element, assignTime){
         assignments.forEach(assignment => {
             if(assignment.assignTime === assignTime){
                 makeAssignment(assignment);
+
+                const log = {
+                    text: assignment.variable + '=' + variableMapping[assignment.variable],
+                    icon: 'bpmn-icon-task',
+                    scope: {}
+                }
+                document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
             }
         });
     }
