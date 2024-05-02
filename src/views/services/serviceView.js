@@ -61,7 +61,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 for (const action of agent["actions"]) {
                     const newService = {
                         type: 'OPACA Action',
-                        uri: location,
+                        uri: location.split('/agents', 1)[0],
                         method: 'POST',
                         name: action["name"],
                         result: {name: 'result', type: action["result"] != null ? action["result"]["type"] : "void"},
