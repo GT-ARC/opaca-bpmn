@@ -3,9 +3,7 @@ import BpmnModeler from 'bpmn-js/lib/Modeler';
 import InterpreterTokenSimulation from "./simulation";
 import { debounce } from 'min-dash';
 
-import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule, CamundaPlatformPropertiesProviderModule } from 'bpmn-js-properties-panel';
-import CamundaBpmnModdle from 'camunda-bpmn-moddle/resources/camunda.json'
-
+import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import diagramXML from '../resources/newDiagram.bpmn';
 
 // import Extra Props
@@ -13,6 +11,7 @@ import variablesListProviderModule from './provider/variables';
 import assignmentsListProviderModule from './provider/assignments';
 import serviceImplProviderModule from './provider/services';
 import vsdtModdleDescriptor from './descriptors/vsdt2';
+import conditionPropsProviderModule from './provider/conditions';
 // import Views
 import serviceViewModule from './views/services';
 //import interpreterViewModule from './views/interpreter';
@@ -28,16 +27,15 @@ var bpmnModeler = new BpmnModeler({
   additionalModules: [
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
-    CamundaPlatformPropertiesProviderModule,
     variablesListProviderModule,
     assignmentsListProviderModule,
     serviceImplProviderModule,
     InterpreterTokenSimulation,
     serviceViewModule,
     //interpreterViewModule
+    conditionPropsProviderModule
   ],
   moddleExtensions: {
-    camunda: CamundaBpmnModdle,
     vsdt2: vsdtModdleDescriptor
   }
 });
