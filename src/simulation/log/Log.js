@@ -135,8 +135,8 @@ export default function Log(
         });
     });
 
+    // Custom EventListener for logging assignments
     document.addEventListener('logAssignment', event => {
-        console.log('in log eventListener');
         // Extract log options from the event detail
         const options = event.detail;
         // Call the log method with the provided options
@@ -340,10 +340,6 @@ Log.prototype.log = function(options) {
         scope
     } = options;
 
-    console.log('LOG');
-    console.log('text: ', text);
-    console.log('icon: ', icon);
-    console.log('scope: ', scope);
 
     const content = this._content;
 
