@@ -2,6 +2,7 @@
 import ExclusiveGatewaySettingsModule from './exclusive-gateway-settings';
 import InclusiveGatewaySettingsModule from './inclusive-gateway-settings';
 import ContextPadsModule from './context-pads';
+import LogModule from './log';
 
 // original modules
 import SimulatorModule from 'bpmn-js-token-simulation/lib/simulator';
@@ -10,7 +11,7 @@ import ColoredScopesModule from 'bpmn-js-token-simulation/lib/features/colored-s
 //import ContextPadsModule from 'bpmn-js-token-simulation/lib/features/context-pads';
 import SimulationStateModule from 'bpmn-js-token-simulation/lib/features/simulation-state';
 import ShowScopesModule from 'bpmn-js-token-simulation/lib/features/show-scopes';
-import LogModule from 'bpmn-js-token-simulation/lib/features/log';
+//import LogModule from 'bpmn-js-token-simulation/lib/features/log';
 import ElementSupportModule from 'bpmn-js-token-simulation/lib/features/element-support';
 import PauseSimulationModule from 'bpmn-js-token-simulation/lib/features/pause-simulation';
 import ResetSimulationModule from 'bpmn-js-token-simulation/lib/features/reset-simulation';

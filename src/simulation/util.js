@@ -2,6 +2,7 @@ import {getParentElement, getRootElement} from "../provider/util";
 import {getRelevantServiceProperty, getServices} from "../views/services/util";
 import {getVariables} from "../provider/variables/util";
 import {getAssignments} from "../provider/assignments/util";
+import {is} from "bpmn-js/lib/util/ModelUtil";
 
 // variable, value
 const variableMapping = {};
@@ -63,7 +64,7 @@ export function evaluateCondition(condition){
 }
 
 // Make assignment to a variable at assignTime
-export function updateVariables(element, assignTime){
+export function updateVariables(element, assignTime, scope){
     const bpmnElement = element.di.bpmnElement;
 
     const assignments = getAssignments(bpmnElement);
@@ -71,6 +72,8 @@ export function updateVariables(element, assignTime){
         assignments.forEach(assignment => {
             if(assignment.assignTime === assignTime){
                 makeAssignment(assignment);
+
+                logAssignment(assignment.variable, bpmnElement, scope);
             }
         });
     }
@@ -124,6 +127,7 @@ export function callService(element){
                 // Assign result
                 if(resName){
                     makeAssignment({variable: resName, expression: response});
+                    logAssignment(resName, element, ' '); //TODO scope
                 }
                 resolve(); // Resolve the promise after assigning the result
             })
@@ -205,4 +209,28 @@ function makeAssignment(assignment){
         const processedAssignment = preprocessExpression(assignment.expression);
         variableMapping[assignment.variable] = eval(processedAssignment);
     }
+}
+
+// Create log element with assignment info and trigger log event
+function logAssignment(variable, element, scope){
+
+    const log = {
+        // indent text
+        text: '&nbsp;&nbsp;&nbsp;&nbsp;' + variable + ' = ' + variableMapping[variable],
+        icon: 'bpmn-icon-task',
+        scope: scope
+    }
+
+    // Adjust icon
+    if(is(element, 'bpmn:StartEvent')){
+        log.icon = 'bpmn-icon-start-event-none';
+
+    }else if(is(element, 'bpmn:ServiceTask')){
+        log.icon = 'bpmn-icon-service';
+
+    }else if(is(element, 'bpmn:EndEvent')){
+        log.icon = 'bpmn-icon-end-event-none';
+    }
+    // Dispatch
+    document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
 }

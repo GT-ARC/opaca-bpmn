@@ -43,6 +43,7 @@
     "bpmn-js-properties-panel": "^5.0.0",
     "bpmn-js-token-simulation": "^0.32.0",
     "camunda-bpmn-moddle": "^7.0.1",
+    "diagram-js": "^14.4.1",
     "htm": "^3.1.1",
     "ids": "^1.0.5",
     "jquery": "^3.5.1",
