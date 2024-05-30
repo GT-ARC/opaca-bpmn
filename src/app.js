@@ -1,10 +1,12 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import InterpreterTokenSimulation from "./simulation";
+import simulationSupportModule from "bpmn-js-token-simulation/lib/simulation-support";
 import { debounce } from 'min-dash';
 
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
-import diagramXML from '../resources/newDiagram.bpmn';
+//import diagramXML from '../resources/newDiagram.bpmn';
+import diagramXML from '../resources/examples/exclusive_gateway_test.bpmn';
 
 // import Extra Props
 import variablesListProviderModule from './provider/variables';
@@ -15,6 +17,10 @@ import conditionPropsProviderModule from './provider/conditions';
 // import Views
 import serviceViewModule from './views/services';
 //import interpreterViewModule from './views/interpreter';
+
+//import http from 'http';
+//import url from 'url';
+import {is} from "bpmn-js/lib/util/ModelUtil";
 
 var container = $('#js-drop-zone');
 var canvas = $('#js-canvas');
@@ -31,6 +37,7 @@ var bpmnModeler = new BpmnModeler({
     assignmentsListProviderModule,
     serviceImplProviderModule,
     InterpreterTokenSimulation,
+    simulationSupportModule,
     serviceViewModule,
     //interpreterViewModule
     conditionPropsProviderModule
@@ -40,6 +47,10 @@ var bpmnModeler = new BpmnModeler({
   }
 });
 container.removeClass('with-diagram');
+
+const eventBus = bpmnModeler.get('eventBus');
+const simulationSupport = bpmnModeler.get('simulationSupport');
+const elementRegistry = bpmnModeler.get('elementRegistry');
 
 function createNewDiagram() {
   openDiagram(diagramXML);
@@ -54,6 +65,21 @@ async function openDiagram(xml) {
     container
       .removeClass('with-error')
       .addClass('with-diagram');
+
+    // Toggle simulation mode automatically
+    const toggleMode = bpmnModeler.get('toggleMode');
+    toggleMode.toggleMode(true);
+
+    // Find start event
+    const elements = elementRegistry.getAll()
+    console.log(elements);
+    const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
+    console.log(startEvent);
+    console.log(startEvent.id);
+
+    // Trigger simulation
+    simulationSupport.triggerElement(startEvent.id);
+
   } catch (err) {
 
     container
@@ -174,3 +200,50 @@ $(function() {
 
   bpmnModeler.on('commandStack.changed', exportArtifacts);
 });
+
+// Native HTTP server to handle API requests
+/*
+const server = http.createServer(async (req, res) => {
+  const parsedUrl = url.parse(req.url, true);
+
+  if (req.method === 'POST' && parsedUrl.pathname === '/trigger-start-event') {
+    let body = '';
+
+    req.on('data', chunk => {
+      body += chunk.toString();
+    });
+
+    req.on('end', () => {
+      const { startEventId } = JSON.parse(body);
+
+      if (!startEventId) {
+        res.writeHead(400, { 'Content-Type': 'text/plain' });
+        return res.end('startEventId is required');
+      }
+
+      const elementRegistry = bpmnModeler.get('elementRegistry');
+      const eventBus = bpmnModeler.get('eventBus');
+      const startEvent = elementRegistry.get(startEventId);
+
+      if (!startEvent) {
+        res.writeHead(404, { 'Content-Type': 'text/plain' });
+        return res.end('Start event not found');
+      }
+
+      // Trigger token creation for the start event
+      eventBus.fire('tokenSimulation.createToken', { element: startEvent });
+
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
+      res.end('Start event triggered');
+    });
+  } else {
+    res.writeHead(404, { 'Content-Type': 'text/plain' });
+    res.end('Not Found');
+  }
+});
+
+server.listen(3000, () => {
+  console.log('Server is running on http://localhost:3000');
+});
+
+ */
