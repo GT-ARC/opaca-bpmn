@@ -203,7 +203,8 @@ function makeAssignment(assignment){
         variableMapping[assignment.variable] = JSON.parse(assignment.expression);
     }else if(assignment.expression.startsWith('"')){
         // String
-        variableMapping[assignment.variable] = assignment.expression;
+        const unquoted = assignment.expression.replace(/"(.*)"/g, "$1");
+        variableMapping[assignment.variable] = unquoted;
     }else{
         // Other (primitive, operations)
         const processedAssignment = preprocessExpression(assignment.expression);
