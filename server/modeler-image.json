@@ -1,0 +1,17 @@
+{
+  "imageName": "modeler-services-image",
+
+  "requires": [],
+  "provides": [],
+
+  "name": "Modeler Services Image",
+  "version": "0.1.0",
+  "description": "OPACA Agent Container declaring agents and actions for interacting with the bpmn modeler.",
+  "provider": "DAI-Lab",
+
+  "apiPort": 8082,
+  "extraPorts": {},
+  "definitions": {},
+  "definitionsByUrl": {},
+  "parameters": []
+}

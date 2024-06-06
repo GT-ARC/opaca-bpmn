@@ -1,0 +1,31 @@
+{
+  "containerId": null,
+  "image": null,
+  "agents": [
+    {
+      "agentId": "modeler-agent",
+      "agentType": "ModelerAgent",
+      "actions": [
+        {
+          "name": "LoadModel",
+          "parameters": {
+            "diagram": {"type" : "string"}
+          },
+          "result": "void"
+        },
+        {
+          "name": "Add",
+          "parameters": {
+            "value1": {"type" : "integer"},
+            "value2": {"type" : "integer"}
+          },
+          "result": "integer"
+        }
+      ],
+      "streams": []
+    }
+  ],
+  "owner": null,
+  "runningSince": null,
+  "connectivity": null
+}
