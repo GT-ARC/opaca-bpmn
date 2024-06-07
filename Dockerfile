@@ -13,11 +13,11 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+# Start server first
+RUN node server/main.js
+
 # Build the web application
 RUN npm run build
-
-# Start server
-node server/main.js
 
 # Start the application
 # CMD ["node", "index.js"]

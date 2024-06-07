@@ -14,12 +14,10 @@
           "result": "void"
         },
         {
-          "name": "Add",
+          "name": "StartSimulation",
           "parameters": {
-            "value1": {"type" : "integer"},
-            "value2": {"type" : "integer"}
           },
-          "result": "integer"
+          "result": "void"
         }
       ],
       "streams": []

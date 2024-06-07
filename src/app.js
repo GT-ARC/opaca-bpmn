@@ -5,8 +5,8 @@ import simulationSupportModule from "bpmn-js-token-simulation/lib/simulation-sup
 import { debounce } from 'min-dash';
 
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
-//import diagramXML from '../resources/newDiagram.bpmn';
-import diagramXML from '../resources/examples/exclusive_gateway_test.bpmn';
+import diagramXML from '../resources/newDiagram.bpmn';
+import exampleXML from '../resources/examples/exclusive_gateway_test.bpmn';
 
 // import Extra Props
 import variablesListProviderModule from './provider/variables';
@@ -18,8 +18,6 @@ import conditionPropsProviderModule from './provider/conditions';
 import serviceViewModule from './views/services';
 //import interpreterViewModule from './views/interpreter';
 
-//import http from 'http';
-//import url from 'url';
 import {is} from "bpmn-js/lib/util/ModelUtil";
 
 var container = $('#js-drop-zone');
@@ -65,20 +63,6 @@ async function openDiagram(xml) {
     container
       .removeClass('with-error')
       .addClass('with-diagram');
-
-    // Toggle simulation mode automatically
-    const toggleMode = bpmnModeler.get('toggleMode');
-    toggleMode.toggleMode(true);
-
-    // Find start event
-    const elements = elementRegistry.getAll()
-    console.log(elements);
-    const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
-    console.log(startEvent);
-    console.log(startEvent.id);
-
-    // Trigger simulation
-    simulationSupport.triggerElement(startEvent.id);
 
   } catch (err) {
 
@@ -199,51 +183,60 @@ $(function() {
   }, 500);
 
   bpmnModeler.on('commandStack.changed', exportArtifacts);
+
+  //// WebSocket to control simulation on request ////
+
+  // Create a WebSocket client
+  const ws = new WebSocket('ws://localhost:8082');
+
+  // Event handlers for WebSocket client
+  ws.onopen = function() {
+    console.log('Connected to WebSocket server');
+
+    // Send a message to the client
+    ws.send(JSON.stringify({type: 'info', message: 'Message from client'}));
+  };
+
+  ws.onmessage = function(event) {
+    console.log('Received message from server:', event.data);
+
+    var request;
+    try {
+      request = JSON.parse(event.data);
+    } catch (error) {
+      console.error('Error parsing message from server:', error);
+      return;
+    }
+
+    // Different actions
+    if(request.type==='loadDiagram'){// LOAD DIAGRAM
+      // Open the passed diagram
+      // TODO
+      //openDiagram(request.parameters.diagram);
+      openDiagram(exampleXML).then(r => ws.send(JSON.stringify({type: 'info', message: 'load ok'})));
+
+      // Toggle simulation mode automatically
+      const toggleMode = bpmnModeler.get('toggleMode');
+      toggleMode.toggleMode(true);
+
+    }else if(request.type==='startSimulation'){// START SIMULATION
+      // Find start event
+      const elements = elementRegistry.getAll()
+      console.log(elements);
+      const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
+      console.log(startEvent);
+      console.log(startEvent.id);
+
+      // Trigger simulation
+      simulationSupport.triggerElement(startEvent.id);
+    }
+  };
+
+  ws.onclose = function() {
+    console.log('Disconnected from WebSocket server');
+  };
+
+  ws.onerror = function(error) {
+    console.error('WebSocket error:', error);
+  };
 });
-
-// Native HTTP server to handle API requests
-/*
-const server = http.createServer(async (req, res) => {
-  const parsedUrl = url.parse(req.url, true);
-
-  if (req.method === 'POST' && parsedUrl.pathname === '/trigger-start-event') {
-    let body = '';
-
-    req.on('data', chunk => {
-      body += chunk.toString();
-    });
-
-    req.on('end', () => {
-      const { startEventId } = JSON.parse(body);
-
-      if (!startEventId) {
-        res.writeHead(400, { 'Content-Type': 'text/plain' });
-        return res.end('startEventId is required');
-      }
-
-      const elementRegistry = bpmnModeler.get('elementRegistry');
-      const eventBus = bpmnModeler.get('eventBus');
-      const startEvent = elementRegistry.get(startEventId);
-
-      if (!startEvent) {
-        res.writeHead(404, { 'Content-Type': 'text/plain' });
-        return res.end('Start event not found');
-      }
-
-      // Trigger token creation for the start event
-      eventBus.fire('tokenSimulation.createToken', { element: startEvent });
-
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('Start event triggered');
-    });
-  } else {
-    res.writeHead(404, { 'Content-Type': 'text/plain' });
-    res.end('Not Found');
-  }
-});
-
-server.listen(3000, () => {
-  console.log('Server is running on http://localhost:3000');
-});
-
- */

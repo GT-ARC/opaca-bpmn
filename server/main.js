@@ -1,11 +1,10 @@
-
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
-const app = express();
 
-//const {loadDiagram} = require('./bpmnModeler');
+const app = express();
+var webSocketClient = null;
 
 dotenv.config();
 
@@ -53,29 +52,12 @@ app.post('/send/:agentId', (req, res) => {
     res.sendStatus(200);
 });
 
-/*
-app.post('/invoke/:action', (req, res) => {
-    const action = req.params.action;
-    const parameters = req.body;
-    const msg = `INVOKE ${action} with ${JSON.stringify(parameters)}`;
-    console.log(msg);
-    res.json(msg);
-});
-
-app.post('/invoke/:action/:agentId', (req, res) => {
-    const action = req.params.action;
-    const agentId = req.params.agentId;
-    const parameters = req.body;
-    const msg = `INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`;
-    console.log(msg);
-    res.json(msg);
-});
-
- */
-
 app.post('/invoke/:action', async (req, res) => {
     const action = req.params.action;
     const parameters = req.body;
+
+    console.log('action', action);
+    console.log('parameters', parameters);
 
     try {
         const result = await invokeAgentAction(action, null, parameters);
@@ -105,22 +87,78 @@ app.post('/broadcast/:channel', (req, res) => {
     res.sendStatus(200);
 });
 
+// Forward action requests to the modeler
 async function invokeAgentAction(action, agentId, parameters) {
+    var request = {};
+
     if (action === 'LoadDiagram') {
         console.log(`INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`);
-        //await loadDiagram('./resources/newDiagram.bpmn');
-    } else if(action === 'Add'){
+
+        request = {
+            type: 'loadDiagram',
+            parameters
+        }
+        console.log('request', request);
+
+    } else if(action === 'StartSimulation'){
         console.log(`INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`);
-        return await add(3, 80);
-        //await add(parameters.value1, parameters.value2);
+
+        request = {
+            type: 'startSimulation'
+        }
+
     } else {
         const msg = `INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`;
-        console.log('in else case ');
+        console.log('action unknown');
         return msg;
     }
+    webSocketClient.send(JSON.stringify(request));
 }
 
+//// WebSocket to connect to modeler ////
 
-app.listen(PORT, () => {
+const http = require('http');
+const WebSocket = require('ws');
+
+// Create an HTTP server
+const server = http.createServer(app);
+
+// Create a WebSocket server
+const wss = new WebSocket.Server({ server });
+
+// WebSocket server event handlers
+wss.on('connection', (ws) => {
+    console.log('Client connected to WebSocket server');
+    webSocketClient = ws;
+
+    ws.on('message', (message) => {
+        console.log('Received message from client:', message.toString());
+    });
+
+    ws.on('close', () => {
+        console.log('Client disconnected from WebSocket server');
+    });
+
+    ws.on('error', (error) => {
+        console.error('WebSocket error:', error);
+    });
+
+    // Ensure the message is sent only when the connection is open
+    if (ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({type: 'info', message: 'Hello from server'}));
+    } else {
+        ws.on('open', () => {
+            ws.send('Message from server');
+        });
+    }
+});
+
+// Handle server errors
+server.on('error', (error) => {
+    console.error('HTTP Server error:', error);
+});
+
+// Handle server listening event
+server.listen(PORT, () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
