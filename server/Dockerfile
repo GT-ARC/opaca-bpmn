@@ -11,9 +11,9 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the application code
-COPY . .
+COPY server ./server
 
-EXPOSE 8080
+EXPOSE 8082
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "server/main.js"]

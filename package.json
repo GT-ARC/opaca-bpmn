@@ -5,8 +5,8 @@
   "main": "app/index.js",
   "scripts": {
     "all": "run-s build",
-    "dev": "run-s build:less watch:js",
-    "start": "run-s build serve",
+    "dev": "webpack-dev-server --open --host 0.0.0.0",
+    "start": "run-s dev",
     "serve": "sirv public --dev",
     "build": "run-s build:*",
     "build:less": "lessc src/app.less public/app.css",
@@ -51,6 +51,7 @@
     "jquery": "^3.5.1",
     "min-dash": "^4.0.0",
     "min-dom": "4.1.0",
+    "webpack-dev-server": "^5.0.4",
     "ws": "^8.17.0"
   },
   "devDependencies": {

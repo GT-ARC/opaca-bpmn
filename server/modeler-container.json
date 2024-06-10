@@ -7,7 +7,7 @@
       "agentType": "ModelerAgent",
       "actions": [
         {
-          "name": "LoadModel",
+          "name": "LoadDiagram",
           "parameters": {
             "diagram": {"type" : "string"}
           },
