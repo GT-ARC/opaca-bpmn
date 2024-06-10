@@ -1,7 +1,8 @@
 import {addFactory, removeFactory} from "./Services";
 import {getRootElement, nextId} from "../../provider/util";
 import {getDataTypes} from "../../provider/variables/util";
-import {getRelevantServiceProperty, getServices, } from "./util"
+import {getRelevantServiceProperty, getServices, } from "./util";
+import {fetchOpacaServices} from "../../opacaUtil";
 
 export default function ServiceView(elementRegistry, injector, eventBus) {
     // For the model
@@ -51,12 +52,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         }
 
         try {
-            const response = await fetch(location);
-            if (!response.ok) {
-                throw new Error(`Failed to load Services: ${response.statusText}`);
-            }
-
-            const result = await response.json();
+            const result = await fetchOpacaServices(location);
             for (const agent of result) {
                 for (const action of agent["actions"]) {
                     const newService = {
@@ -75,7 +71,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             alert(`Error loading services: ${error.message}`);
         }
     }
-
+        
     // add service to model and create widgets
     function createService(service) {
         // Get root of diagram
