@@ -208,16 +208,20 @@ $(function() {
       return;
     }
 
-    // Different actions
+    /// Different actions
     if(request.type==='loadDiagram'){// LOAD DIAGRAM
       // Open the passed diagram
-      // TODO
-      //openDiagram(request.parameters.diagram);
-      openDiagram(exampleXML).then(r => ws.send(JSON.stringify({type: 'info', message: 'load ok'})));
-
-      // Toggle simulation mode automatically
-      const toggleMode = bpmnModeler.get('toggleMode');
-      toggleMode.toggleMode(true);
+      openDiagram(request.parameters.diagram).then(() => {
+        // Toggle simulation mode automatically after openDiagram is complete
+        const toggleMode = bpmnModeler.get('toggleMode');
+        toggleMode.toggleMode(true);
+        // Send info
+        ws.send(JSON.stringify({ type: 'info', message: 'load ok' }));
+      }).catch(error => {
+        console.error('Error in openDiagram:', error);
+        // Send info
+        ws.send(JSON.stringify({ type: 'error', message: 'load failed' }));
+      });
 
     }else if(request.type==='startSimulation'){// START SIMULATION
       // Find start event
