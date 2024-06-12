@@ -71,7 +71,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             alert(`Error loading services: ${error.message}`);
         }
     }
-        
+
     // add service to model and create widgets
     function createService(service) {
         // Get root of diagram
@@ -111,7 +111,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         serviceEntryLabel.addEventListener('click', toggleServiceEntry);
 
         const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'service-input-wrapper';
+        inputWrapper.className = 'input-wrapper';
 
         // Input Fields
         const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA Action', 'REST Service', 'BPMN Process'], service.type);
