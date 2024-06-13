@@ -54,9 +54,7 @@ async function login(location) {
 }
 
 function headers() {
-    console.log("TOKEN!!! " + token);
     if (use_auth && token !== null) {
-        console.log("USING TOKEN " + token);
         return {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token
@@ -96,7 +94,6 @@ export async function call(uri, serviceMethod, params){
 // Load all OPACA Actions from Runtime Platform
 export async function fetchOpacaServices(location) {
     await login(location);
-    console.log("HEADERS " + JSON.stringify(headers()));
     const response = await fetch(location, {
         headers: headers()
     });
