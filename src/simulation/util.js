@@ -3,6 +3,7 @@ import {getRelevantServiceProperty, getServices} from "../views/services/util";
 import {getVariables} from "../provider/variables/util";
 import {getAssignments} from "../provider/assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
+import {call} from "../opacaUtil";
 
 // variable, value
 const variableMapping = {};
@@ -138,40 +139,6 @@ export function callService(element){
     });
 }
 
-// TODO: Error Handling -> Message, Symbol or something?
-function call(uri, serviceMethod, params){
-    return new Promise((resolve, reject) => {
-        var url = uri;
-        // In case of GET request, add query parameters
-        if (serviceMethod === 'GET' && params) {
-            url += `?${new URLSearchParams(params)}`;
-        }
-        console.log('url ', url);
-        console.log('body ', params);
-
-        // Make a request using fetch API
-        fetch(url, {
-            method: serviceMethod,
-            // In case of POST/ PUT/ DELETE add body with parameters
-            body: serviceMethod !== 'GET' ? JSON.stringify(params) : undefined,
-            headers: {
-                "Content-Type": "application/json"
-            }
-        })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
-                }
-                return response.text();
-            })
-            .then(data => {
-                resolve(data);
-            })
-            .catch(error => {
-                reject(error);
-            });
-    });
-}
 
 //// Helpers ////
 

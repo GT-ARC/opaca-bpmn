@@ -1,7 +1,8 @@
 import {addFactory, removeFactory} from "./Services";
 import {getRootElement, nextId} from "../../provider/util";
 import {getDataTypes} from "../../provider/variables/util";
-import {getRelevantServiceProperty, getServices, } from "./util"
+import {getRelevantServiceProperty, getServices, } from "./util";
+import {fetchOpacaServices} from "../../opacaUtil";
 
 export default function ServiceView(elementRegistry, injector, eventBus) {
     // For the model
@@ -51,12 +52,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         }
 
         try {
-            const response = await fetch(location);
-            if (!response.ok) {
-                throw new Error(`Failed to load Services: ${response.statusText}`);
-            }
-
-            const result = await response.json();
+            const result = await fetchOpacaServices(location);
             for (const agent of result) {
                 for (const action of agent["actions"]) {
                     const newService = {
@@ -115,7 +111,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         serviceEntryLabel.addEventListener('click', toggleServiceEntry);
 
         const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'service-input-wrapper';
+        inputWrapper.className = 'input-wrapper';
 
         // Input Fields
         const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA Action', 'REST Service', 'BPMN Process'], service.type);
