@@ -1,5 +1,5 @@
 {
-  "name": "bpmn-js-interpreter",
+  "name": "bpmn-interpreter-vsdt2",
   "version": "0.0.0",
   "description": "A bpmn-js modeler with properties panel and token-simulator and some extensions for interpretation",
   "main": "app/index.js",
@@ -15,8 +15,8 @@
     "postinstall": "patch-package"
   },
   "repository": {
-    "type": "",
-    "url": "",
+    "type": "git",
+    "url": "https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-interpreter-vsdt2",
     "directory": ""
   },
   "keywords": [
@@ -26,10 +26,14 @@
     "business-process-interpretation"
   ],
   "author": {
-    "name": "",
-    "url": ""
+    "name": "Cedric Braun",
+    "url": "https://gitlab.dai-labor.de/30892"
   },
   "contributors": [
+    {
+      "name": "Tobias Küster",
+      "url": "https://gitlab.dai-labor.de/30176"
+    },
     {
       "name": "bpmn.io contributors",
       "url": "https://github.com/bpmn-io"

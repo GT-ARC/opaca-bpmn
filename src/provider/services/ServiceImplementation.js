@@ -8,7 +8,7 @@ export default function ServiceImplementation(element) {
 
     return [
         {
-            id: 'service',
+            id: 'serviceImpl',
             element,
             component: Service,
             isEdited: isSelectEntryEdited
@@ -27,11 +27,11 @@ function Service(props) {
     const debounce = useService('debounceInput');
 
     const getValue = () => {
-        return element.businessObject.service;
+        return element.businessObject.serviceImpl;
     };
 
     const setValue = value => {
-        return modeling.updateProperties(element, { service: value });
+        return modeling.updateProperties(element, { serviceImpl: value });
     };
 
     const [services, setServices] = useState([]);
