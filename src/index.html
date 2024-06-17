@@ -44,6 +44,27 @@
                 <button id="addServiceButton" title="Add service" class="view-button">+</button>
                 <button id="loadServiceButton" title="Load services" class="view-button">Load...</button>
                 <button id="toggle-service-view" title="open or collapse" class="view-button">&vellip;</button>
+                <div>
+                    Use Auth
+                    <input type="checkbox" id="useAuthCheckbox" title="Use auth?" class="view-button">
+                </div>
+            </div>
+            <div class="view-label collapsible-content" id="login-label">
+                <span>USER</span>
+                <div id="userInfo" class="input-wrapper">
+                    <div>
+                        Login Location
+                        <input type="text" id="loginLocation" value="http://localhost:8000/login">
+                    </div>
+                    <div>
+                        Username
+                        <input type="text" id="loginUsername" placeholder="username">
+                    </div>
+                    <div>
+                        Password
+                        <input type="password" id="loginPassword" placeholder="password">
+                    </div>
+                </div>
             </div>
             <div class="collapsible-content" id="service-view-groups"></div>
         </div>
