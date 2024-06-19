@@ -51,7 +51,12 @@ const simulationSupport = bpmnModeler.get('simulationSupport');
 const elementRegistry = bpmnModeler.get('elementRegistry');
 
 function createNewDiagram() {
-  openDiagram(diagramXML);
+  try{
+    openDiagram(diagramXML);
+  }catch (err) {
+    console.error(err);
+  }
+
 }
 
 async function openDiagram(xml) {
@@ -72,7 +77,8 @@ async function openDiagram(xml) {
 
     container.find('.error pre').text(err.message);
 
-    console.error(err);
+    // Rethrow error for webSocket
+    throw err;
   }
 }
 
@@ -92,7 +98,12 @@ function registerFileDrop(container, callback) {
 
       var xml = e.target.result;
 
-      callback(xml);
+      try{
+        callback(xml);
+      }catch(err){
+        console.error(err);
+      }
+
     };
 
     reader.readAsText(file);
@@ -184,6 +195,7 @@ $(function() {
 
   bpmnModeler.on('commandStack.changed', exportArtifacts);
 
+
   //// WebSocket to control simulation on request ////
 
   // Create a WebSocket client
@@ -193,13 +205,14 @@ $(function() {
   ws.onopen = function() {
     console.log('Connected to WebSocket server');
 
-    // Send a message to the client
+    // Send a message to the server
     ws.send(JSON.stringify({type: 'info', message: 'Message from client'}));
   };
 
   ws.onmessage = function(event) {
     console.log('Received message from server:', event.data);
 
+    // TODO: Handle different types of messages
     var request;
     try {
       request = JSON.parse(event.data);
@@ -216,23 +229,56 @@ $(function() {
         const toggleMode = bpmnModeler.get('toggleMode');
         toggleMode.toggleMode(true);
         // Send info
-        ws.send(JSON.stringify({ type: 'info', message: 'load ok' }));
+        ws.send(JSON.stringify({ type: 'response', requestId: request.id, message: 'load ok.'}));
       }).catch(error => {
         console.error('Error in openDiagram:', error);
         // Send info
-        ws.send(JSON.stringify({ type: 'error', message: 'load failed' }));
+        ws.send(JSON.stringify({ type: 'error', requestId: request.id, message: 'load failed. ' + error.message}));
       });
-
     }else if(request.type==='startSimulation'){// START SIMULATION
-      // Find start event
-      const elements = elementRegistry.getAll()
-      console.log(elements);
-      const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
-      console.log(startEvent);
-      console.log(startEvent.id);
+      try {
+        // Find (the first) start event
+        const elements = elementRegistry.getAll();
+        const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
 
-      // Trigger simulation
-      simulationSupport.triggerElement(startEvent.id);
+        // Trigger start event
+        simulationSupport.triggerElement(startEvent.id);
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation started at ' + startEvent.id}));
+      }catch (error){
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'start failed. ' + error.message}));
+      }
+    }else if(request.type==='pauseSimulation') {// PAUSE SIMULATION
+      try { // try-catch not needed here, but maybe later
+        // Trigger pause
+        eventBus.fire('tokenSimulation.pauseSimulation');
+        // TODO: Handle case where simulation is not running
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation paused.'}));
+      } catch (error) {
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'pause failed. ' + error.message}));
+      }
+    }else if(request.type==='resumeSimulation') {// RESUME SIMULATION
+      try { // try-catch not needed here, but maybe later
+        // Trigger play
+        eventBus.fire('tokenSimulation.playSimulation');
+        // TODO: Handle case where simulation is not paused
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation resumed.'}));
+      } catch (error) {
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'resume failed. ' + error.message}));
+      }
+    }else if(request.type==='resetSimulation'){// RESET SIMULATION
+      try { // try-catch not needed here, but maybe later
+        // Trigger reset
+        eventBus.fire('tokenSimulation.resetSimulation');
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation reset.'}));
+      }catch (error){
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'reset failed. ' + error.message}));
+      }
+    }else if(request.type==='sendMessage'){// SEND MESSAGE
+      // TODO: Trigger message events
+      ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'got request'}));
     }
   };
 

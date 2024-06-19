@@ -61,9 +61,14 @@ app.post('/invoke/:action', async (req, res) => {
 
     try {
         const result = await invokeAgentAction(action, null, parameters);
-        res.json(result);
+        console.log("SENDING STATUS");
+        res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        var code = 500;
+        if(error.message==='Action not found.'){
+            code = 404;
+        }
+        res.status(code).json({ error: error.message });
     }
 });
 
@@ -72,11 +77,21 @@ app.post('/invoke/:action/:agentId', async (req, res) => {
     const agentId = req.params.agentId;
     const parameters = req.body;
 
+    // Is there an agent with this id
+    if(!getContainer().agents.find(agent => agent.id === agentId)){
+        res.status(404).json({error: 'Agent not found.'});
+        return;
+    }
+
     try {
         const result = await invokeAgentAction(action, agentId, parameters);
-        res.json(result);
+        res.status(200).json(result);
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        var code = 500;
+        if(error.message==='Action unknown'){
+            code = 404;
+        }
+        res.status(code).json({ error: error.message });
     }
 });
 
@@ -87,32 +102,62 @@ app.post('/broadcast/:channel', (req, res) => {
     res.sendStatus(200);
 });
 
+// Unresolved promises
+const pendingActions = new Map();
+
 // Forward action requests to the modeler
 async function invokeAgentAction(action, agentId, parameters) {
-    var request = {};
+    return new Promise((resolve, reject) => {
+        var request = {};
 
-    if (action === 'LoadDiagram') {
-        console.log(`INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`);
+        if (action === 'LoadDiagram') {
+            request = {
+                type: 'loadDiagram',
+                parameters
+            }
 
-        request = {
-            type: 'loadDiagram',
-            parameters
+        } else if (action === 'StartSimulation') {
+            request = {
+                type: 'startSimulation'
+            }
+
+        } else if (action === 'PauseSimulation'){
+            request = {
+                type: 'pauseSimulation'
+            }
+
+        } else if (action === 'ResumeSimulation'){
+            request = {
+                type: 'resumeSimulation'
+            }
+
+        } else if (action === 'ResetSimulation'){
+            request = {
+                type: 'resetSimulation'
+            }
+
+        } else if (action === 'SendMessage'){
+            request = {
+                type: 'sendMessage'
+                //TODO
+            }
+
+        } else {
+            return reject(new Error('Action not found'));
         }
-        console.log('request', request);
 
-    } else if(action === 'StartSimulation'){
-        console.log(`INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`);
+        // Create a request id and save request
+        request.id = `${action}-${Date.now()}`;
+        pendingActions.set(request.id, {resolve, reject})
 
-        request = {
-            type: 'startSimulation'
-        }
-
-    } else {
-        const msg = `INVOKE ${action} at ${agentId} with ${JSON.stringify(parameters)}`;
-        console.log('action unknown');
-        return msg;
-    }
-    webSocketClient.send(JSON.stringify(request));
+        // Forward action to editor
+        webSocketClient.send(JSON.stringify(request), (err) => {
+            if (err) {
+                pendingActions.delete(request.id);
+                return reject(err);
+            }
+        });
+    });
 }
 
 //// WebSocket to connect to modeler ////
@@ -131,8 +176,23 @@ wss.on('connection', (ws) => {
     console.log('Client connected to WebSocket server');
     webSocketClient = ws;
 
-    ws.on('message', (message) => {
-        console.log('Received message from client:', message.toString());
+    ws.on('message', (msg) => {
+        console.log('Received message from client:', msg.toString());
+
+        const message = JSON.parse(msg);
+
+        if(message.type === 'response'){
+            const {resolve, reject} = pendingActions.get(message.requestId);
+            console.log("RESOLVING REQUEST");
+            resolve(message.message);
+            pendingActions.delete(message.requestId);
+        }
+        if(message.type === 'error'){
+            const {resolve, reject} = pendingActions.get(message.requestId);
+            console.log("REJECTING REQUEST");
+            reject(message.message);
+            pendingActions.delete(message.requestId);
+        }
     });
 
     ws.on('close', () => {
