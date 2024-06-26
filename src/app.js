@@ -6,7 +6,6 @@ import { debounce } from 'min-dash';
 
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
 import diagramXML from '../resources/newDiagram.bpmn';
-import exampleXML from '../resources/examples/exclusive_gateway_test.bpmn';
 
 // import Extra Props
 import variablesListProviderModule from './provider/variables';
@@ -49,6 +48,8 @@ container.removeClass('with-diagram');
 const eventBus = bpmnModeler.get('eventBus');
 const simulationSupport = bpmnModeler.get('simulationSupport');
 const elementRegistry = bpmnModeler.get('elementRegistry');
+const toggleMode = bpmnModeler.get('toggleMode');
+const pauseSimulation = bpmnModeler.get('pauseSimulation');
 
 function createNewDiagram() {
   try{
@@ -212,7 +213,6 @@ $(function() {
   ws.onmessage = function(event) {
     console.log('Received message from server:', event.data);
 
-    // TODO: Handle different types of messages
     var request;
     try {
       request = JSON.parse(event.data);
@@ -220,14 +220,21 @@ $(function() {
       console.error('Error parsing message from server:', error);
       return;
     }
+    if(request.type==='info'){
+      return;
+    }
+
+    // Make sure simulation mode is active before invoking actions depending on that
+    if(!toggleMode._active){
+      toggleMode.toggleMode(true);
+    }
 
     /// Different actions
     if(request.type==='loadDiagram'){// LOAD DIAGRAM
       // Open the passed diagram
       openDiagram(request.parameters.diagram).then(() => {
-        // Toggle simulation mode automatically after openDiagram is complete
-        const toggleMode = bpmnModeler.get('toggleMode');
-        toggleMode.toggleMode(true);
+        // After a new diagram is opened we need to deactivate simulation mode once
+        toggleMode.toggleMode(false);
         // Send info
         ws.send(JSON.stringify({ type: 'response', requestId: request.id, message: 'load ok.'}));
       }).catch(error => {
@@ -248,20 +255,26 @@ $(function() {
         ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'start failed. ' + error.message}));
       }
     }else if(request.type==='pauseSimulation') {// PAUSE SIMULATION
-      try { // try-catch not needed here, but maybe later
-        // Trigger pause
-        eventBus.fire('tokenSimulation.pauseSimulation');
-        // TODO: Handle case where simulation is not running
+      try {
+        // If not paused, pause simulation
+        if(!pauseSimulation.isPaused){
+          pauseSimulation.pause();
+        }else{
+          throw new Error('Simulation is already paused.');
+        }
 
         ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation paused.'}));
       } catch (error) {
         ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'pause failed. ' + error.message}));
       }
     }else if(request.type==='resumeSimulation') {// RESUME SIMULATION
-      try { // try-catch not needed here, but maybe later
-        // Trigger play
-        eventBus.fire('tokenSimulation.playSimulation');
-        // TODO: Handle case where simulation is not paused
+      try {
+        // If paused, unpause simulation
+        if(pauseSimulation.isPaused){
+          pauseSimulation.unpause();
+        }else{
+          throw new Error('Simulation is not paused.');
+        }
 
         ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation resumed.'}));
       } catch (error) {
@@ -277,8 +290,25 @@ $(function() {
         ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'reset failed. ' + error.message}));
       }
     }else if(request.type==='sendMessage'){// SEND MESSAGE
-      // TODO: Trigger message events
-      ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'got request'}));
+      try{
+        // Get all elements
+        const elements = elementRegistry.getAll();
+
+        // Filter for events
+        const events = elements.filter(el => is(el, 'bpmn:Event'));
+
+        // Filter for events that have the messageReference of our message
+        const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === request.parameters.messageType));
+
+        // TODO: make sure when triggering one element fails, others are still executed
+        messageEvents.forEach(msgEvent => simulationSupport.triggerElement(msgEvent.id));
+
+        // trigger boundary events with message reference, only when attached to a running action
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'got request.'}));
+      }catch (error){
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'message could not be processed. ' + error.message}));
+      }
     }
   };
 

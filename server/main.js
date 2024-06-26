@@ -88,7 +88,7 @@ app.post('/invoke/:action/:agentId', async (req, res) => {
         res.status(200).json(result);
     } catch (error) {
         var code = 500;
-        if(error.message==='Action unknown'){
+        if(error.message==='Action not found.'){
             code = 404;
         }
         res.status(code).json({ error: error.message });
@@ -138,12 +138,12 @@ async function invokeAgentAction(action, agentId, parameters) {
 
         } else if (action === 'SendMessage'){
             request = {
-                type: 'sendMessage'
-                //TODO
+                type: 'sendMessage',
+                parameters
             }
 
         } else {
-            return reject(new Error('Action not found'));
+            return reject(new Error('Action not found.'));
         }
 
         // Create a request id and save request
@@ -190,7 +190,7 @@ wss.on('connection', (ws) => {
         if(message.type === 'error'){
             const {resolve, reject} = pendingActions.get(message.requestId);
             console.log("REJECTING REQUEST");
-            reject(message.message);
+            reject(new Error(message.message));
             pendingActions.delete(message.requestId);
         }
     });
