@@ -1,6 +1,7 @@
 import $ from 'jquery';
 import BpmnModeler from 'bpmn-js/lib/Modeler';
 import InterpreterTokenSimulation from "./simulation";
+import simulationSupportModule from "bpmn-js-token-simulation/lib/simulation-support";
 import { debounce } from 'min-dash';
 
 import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
@@ -15,6 +16,8 @@ import conditionPropsProviderModule from './provider/conditions';
 // import Views
 import serviceViewModule from './views/services';
 //import interpreterViewModule from './views/interpreter';
+
+import {is} from "bpmn-js/lib/util/ModelUtil";
 
 var container = $('#js-drop-zone');
 var canvas = $('#js-canvas');
@@ -31,6 +34,7 @@ var bpmnModeler = new BpmnModeler({
     assignmentsListProviderModule,
     serviceImplProviderModule,
     InterpreterTokenSimulation,
+    simulationSupportModule,
     serviceViewModule,
     //interpreterViewModule
     conditionPropsProviderModule
@@ -41,8 +45,19 @@ var bpmnModeler = new BpmnModeler({
 });
 container.removeClass('with-diagram');
 
+const eventBus = bpmnModeler.get('eventBus');
+const simulationSupport = bpmnModeler.get('simulationSupport');
+const elementRegistry = bpmnModeler.get('elementRegistry');
+const toggleMode = bpmnModeler.get('toggleMode');
+const pauseSimulation = bpmnModeler.get('pauseSimulation');
+
 function createNewDiagram() {
-  openDiagram(diagramXML);
+  try{
+    openDiagram(diagramXML);
+  }catch (err) {
+    console.error(err);
+  }
+
 }
 
 async function openDiagram(xml) {
@@ -54,6 +69,7 @@ async function openDiagram(xml) {
     container
       .removeClass('with-error')
       .addClass('with-diagram');
+
   } catch (err) {
 
     container
@@ -62,7 +78,8 @@ async function openDiagram(xml) {
 
     container.find('.error pre').text(err.message);
 
-    console.error(err);
+    // Rethrow error for webSocket
+    throw err;
   }
 }
 
@@ -82,7 +99,12 @@ function registerFileDrop(container, callback) {
 
       var xml = e.target.result;
 
-      callback(xml);
+      try{
+        callback(xml);
+      }catch(err){
+        console.error(err);
+      }
+
     };
 
     reader.readAsText(file);
@@ -173,4 +195,128 @@ $(function() {
   }, 500);
 
   bpmnModeler.on('commandStack.changed', exportArtifacts);
+
+
+  //// WebSocket to control simulation on request ////
+
+  // Create a WebSocket client
+  const ws = new WebSocket('ws://localhost:8082');
+
+  // Event handlers for WebSocket client
+  ws.onopen = function() {
+    console.log('Connected to WebSocket server');
+
+    // Send a message to the server
+    ws.send(JSON.stringify({type: 'info', message: 'Message from client'}));
+  };
+
+  ws.onmessage = function(event) {
+    console.log('Received message from server:', event.data);
+
+    var request;
+    try {
+      request = JSON.parse(event.data);
+    } catch (error) {
+      console.error('Error parsing message from server:', error);
+      return;
+    }
+    if(request.type==='info'){
+      return;
+    }
+
+    // Make sure simulation mode is active before invoking actions depending on that
+    if(!toggleMode._active){
+      toggleMode.toggleMode(true);
+    }
+
+    /// Different actions
+    if(request.type==='loadDiagram'){// LOAD DIAGRAM
+      // Open the passed diagram
+      openDiagram(request.parameters.diagram).then(() => {
+        // After a new diagram is opened we need to deactivate simulation mode once
+        toggleMode.toggleMode(false);
+        // Send info
+        ws.send(JSON.stringify({ type: 'response', requestId: request.id, message: 'load ok.'}));
+      }).catch(error => {
+        console.error('Error in openDiagram:', error);
+        // Send info
+        ws.send(JSON.stringify({ type: 'error', requestId: request.id, message: 'load failed. ' + error.message}));
+      });
+    }else if(request.type==='startSimulation'){// START SIMULATION
+      try {
+        // Find (the first) start event
+        const elements = elementRegistry.getAll();
+        const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
+
+        // Trigger start event
+        simulationSupport.triggerElement(startEvent.id);
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation started at ' + startEvent.id}));
+      }catch (error){
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'start failed. ' + error.message}));
+      }
+    }else if(request.type==='pauseSimulation') {// PAUSE SIMULATION
+      try {
+        // If not paused, pause simulation
+        if(!pauseSimulation.isPaused){
+          pauseSimulation.pause();
+        }else{
+          throw new Error('Simulation is already paused.');
+        }
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation paused.'}));
+      } catch (error) {
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'pause failed. ' + error.message}));
+      }
+    }else if(request.type==='resumeSimulation') {// RESUME SIMULATION
+      try {
+        // If paused, unpause simulation
+        if(pauseSimulation.isPaused){
+          pauseSimulation.unpause();
+        }else{
+          throw new Error('Simulation is not paused.');
+        }
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation resumed.'}));
+      } catch (error) {
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'resume failed. ' + error.message}));
+      }
+    }else if(request.type==='resetSimulation'){// RESET SIMULATION
+      try { // try-catch not needed here, but maybe later
+        // Trigger reset
+        eventBus.fire('tokenSimulation.resetSimulation');
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation reset.'}));
+      }catch (error){
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'reset failed. ' + error.message}));
+      }
+    }else if(request.type==='sendMessage'){// SEND MESSAGE
+      try{
+        // Get all elements
+        const elements = elementRegistry.getAll();
+
+        // Filter for events
+        const events = elements.filter(el => is(el, 'bpmn:Event'));
+
+        // Filter for events that have the messageReference of our message
+        const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === request.parameters.messageType));
+
+        // TODO: make sure when triggering one element fails, others are still executed
+        messageEvents.forEach(msgEvent => simulationSupport.triggerElement(msgEvent.id));
+
+        // trigger boundary events with message reference, only when attached to a running action
+
+        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'got request.'}));
+      }catch (error){
+        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'message could not be processed. ' + error.message}));
+      }
+    }
+  };
+
+  ws.onclose = function() {
+    console.log('Disconnected from WebSocket server');
+  };
+
+  ws.onerror = function(error) {
+    console.error('WebSocket error:', error);
+  };
 });

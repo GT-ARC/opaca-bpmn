@@ -1,0 +1,51 @@
+{
+  "containerId": null,
+  "image": null,
+  "agents": [
+    {
+      "agentId": "modeler-agent",
+      "agentType": "ModelerAgent",
+      "actions": [
+        {
+          "name": "LoadDiagram",
+          "parameters": {
+            "diagram": {"type" : "string"}
+          },
+          "result": "void"
+        },
+        {
+          "name": "StartSimulation",
+          "parameters": {},
+          "result": "void"
+        },
+        {
+          "name": "PauseSimulation",
+          "parameters": {},
+          "result": "void"
+        },
+        {
+          "name": "ResumeSimulation",
+          "parameters": {},
+          "result": "void"
+        },
+        {
+          "name": "ResetSimulation",
+          "parameters": {},
+          "result": "void"
+        },
+        {
+          "name": "SendMessage",
+          "parameters": {
+            "messageType": {"type": "string"},
+            "messageContent": {"type": "string"}
+          },
+          "result": "void"
+        }
+      ],
+      "streams": []
+    }
+  ],
+  "owner": null,
+  "runningSince": null,
+  "connectivity": null
+}

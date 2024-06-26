@@ -36,5 +36,6 @@ module.exports = {
         false,
         /.*\.json$/
     )
-  ]
+  ],
+  devtool: 'source-map'
 };
