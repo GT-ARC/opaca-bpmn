@@ -90,7 +90,7 @@ export function callService(element){
     return new Promise((resolve, reject) => {
         // Get serviceImplementation of service task
         const bpmnElement = element.di.bpmnElement;
-        const serviceImpl = bpmnElement.service;
+        const serviceImpl = bpmnElement.serviceImpl;
         if(!serviceImpl){
             reject(new Error('Service implementation not found'));
             return;

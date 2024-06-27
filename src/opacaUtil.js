@@ -7,7 +7,6 @@ useAuthBox.addEventListener('change', () => {toggleUseAuth()});
 
 // Get 'login-label' element
 const loginLabel = document.getElementById('login-label');
-//loginLabel.addEventListener('click', () => toggleUserInfo());
 
 // Switch to use authorization or not (and show/hide user input fields)
 function toggleUseAuth(){

@@ -23,7 +23,7 @@
       <bpmn2:incoming>Flow_0wpm2se</bpmn2:incoming>
     </bpmn2:endEvent>
     <bpmn2:sequenceFlow id="Flow_0wpm2se" sourceRef="Activity_0mg24wd" targetRef="Event_0ncdje2" />
-    <bpmn2:serviceTask id="Activity_0mg24wd" vsdt2:service="service_3d4qn3u">
+    <bpmn2:serviceTask id="Activity_0mg24wd" vsdt2:serviceImpl="service_3d4qn3u">
       <bpmn2:extensionElements>
         <vsdt2:assignments>
           <vsdt2:assignment variable="param1" expression="2.5" assignTime="START" />

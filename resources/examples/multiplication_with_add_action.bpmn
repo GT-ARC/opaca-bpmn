@@ -57,7 +57,7 @@
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">b&gt;0</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="Flow_1gt36o9" sourceRef="Activity_1k12dcx" targetRef="Gateway_095m57w" />
-    <bpmn2:serviceTask id="Activity_0pv3i6z" name="a+a" vsdt2:service="service_1sv6ivk">
+    <bpmn2:serviceTask id="Activity_0pv3i6z" name="a+a" vsdt2:serviceImpl="service_1sv6ivk">
       <bpmn2:extensionElements>
         <vsdt2:assignments>
           <vsdt2:assignment variable="y" expression="a" assignTime="START" />
@@ -68,7 +68,7 @@
       <bpmn2:incoming>Flow_0xig6q5</bpmn2:incoming>
       <bpmn2:outgoing>Flow_0kchq3i</bpmn2:outgoing>
     </bpmn2:serviceTask>
-    <bpmn2:serviceTask id="Activity_1k12dcx" name="b-1" vsdt2:service="service_1sv6ivk">
+    <bpmn2:serviceTask id="Activity_1k12dcx" name="b-1" vsdt2:serviceImpl="service_1sv6ivk">
       <bpmn2:extensionElements>
         <vsdt2:assignments>
           <vsdt2:assignment variable="y" expression="b" assignTime="START" />
@@ -83,7 +83,7 @@
       <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">b&lt;0</bpmn2:conditionExpression>
     </bpmn2:sequenceFlow>
     <bpmn2:sequenceFlow id="Flow_0xzkwbe" sourceRef="Activity_0fpi8og" targetRef="Gateway_095m57w" />
-    <bpmn2:serviceTask id="Activity_0fpi8og" name="b+1" vsdt2:service="service_1sv6ivk">
+    <bpmn2:serviceTask id="Activity_0fpi8og" name="b+1" vsdt2:serviceImpl="service_1sv6ivk">
       <bpmn2:extensionElements>
         <vsdt2:assignments>
           <vsdt2:assignment variable="x" expression="1" assignTime="START" />
