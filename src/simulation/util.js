@@ -47,20 +47,16 @@ export function initializeVariables(startEventContext){
             }
         });
     }
-    console.log('variableMapping: ');
-    for(let key in variableMapping){
-        console.log(key , ', ', variableMapping[key]);
-    }
 }
 
 // Evaluate condition
 export function evaluateCondition(condition){
 
-    console.log('Evaluating condition');
-    console.log('condition: ', condition);
+    //console.log('Evaluating condition');
+    //console.log('condition: ', condition);
     const processedCondition = preprocessExpression(condition);
-    console.log('processed condition: ', processedCondition);
-    console.log('evaluation: ', eval(processedCondition));
+    //console.log('processed condition: ', processedCondition);
+    //console.log('evaluation: ', eval(processedCondition));
     return eval(processedCondition);
 }
 
@@ -77,10 +73,6 @@ export function updateVariables(element, assignTime, scope){
                 logAssignment(assignment.variable, bpmnElement, scope);
             }
         });
-    }
-    console.log('at', bpmnElement, 'variableMapping: ');
-    for(let key in variableMapping){
-        console.log(key , ', ', variableMapping[key]);
     }
 }
 
@@ -100,7 +92,6 @@ export function callService(element){
         const root = getRootElement(element);
         const def = root.$parent;
         const service = getRelevantServiceProperty(def, serviceImpl);
-        console.log('service', service);
 
         // In case we want to call an opaca action /invoke/action is added
         var uri = service.uri;
@@ -133,7 +124,7 @@ export function callService(element){
                 resolve(); // Resolve the promise after assigning the result
             })
             .catch((error) => {
-                console.error('Error occurred:', error);
+                alert(error);
                 reject(error); // Reject the promise if there's an error
             });
     });
@@ -148,7 +139,6 @@ function isValidJSON(str) {
         const parsedJSON = JSON.parse(str);
         return parsedJSON && typeof parsedJSON === 'object';
     } catch (e) {
-        console.log(e);
         return false;
     }
 }

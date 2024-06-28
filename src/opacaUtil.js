@@ -33,22 +33,19 @@ function toggleUserInfo(){
 // (Only supports 1 runtime platform for now)
 async function login(location) {
     if (use_auth && token === null) {
-        console.log("LOGGING IN...");
         const url = document.getElementById('loginLocation').value;
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
-        console.log('username: ' + username + ', password: ' + password + ', url: ' + url);
+
         const response = await fetch(url, {
                     method: "POST",
                     headers: headers(),
                     body: JSON.stringify({username: username, password: password})
-                });
-        if (response.status === 200) {
-            token = await response.text();
-            console.log("TOKEN " + token);
-        } else {
-            console.error("ERROR " + (await response.text()));
+        });
+        if (!response.ok) {
+            throw new Error(`Login failed: ${response.statusText}`);
         }
+        token = await response.text();
     }
 }
 
@@ -65,7 +62,6 @@ function headers() {
     }
 }
 
-// TODO: Error Handling -> Message, Symbol or something?
 export async function call(uri, serviceMethod, params){
 
     // In case of GET request, add query parameters
@@ -83,9 +79,8 @@ export async function call(uri, serviceMethod, params){
         body: serviceMethod !== 'GET' ? JSON.stringify(params) : undefined,
         headers: headers()
     })
-
     if (!response.ok) {
-        throw new Error('Network response was not ok');
+        throw new Error(`Call failed: ${response.statusText}`);
     }
     return await response.text();
 }
@@ -97,7 +92,7 @@ export async function fetchOpacaServices(location) {
         headers: headers()
     });
     if (!response.ok) {
-        throw new Error(`Failed to load Services: ${response.statusText}`);
+        throw new Error(`Failed to load services: ${response.statusText}`);
     }
     return await response.json();
 }
