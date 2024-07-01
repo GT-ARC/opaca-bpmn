@@ -1,7 +1,7 @@
 {
   "name": "Vsdt2",
   "prefix": "vsdt2",
-  "uri": "http://vsdt2",
+  "uri": "https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-interpreter-vsdt2/-/raw/main/src/descriptors/vsdt2.json?ref_type=heads",
   "xml": {
     "tagAlias": "lowerCase"
   },
