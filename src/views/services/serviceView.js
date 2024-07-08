@@ -88,7 +88,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const existingService = existingServices.find(existing => existing.name === service.name);
         if (existingService) {
             // Service with the same name already exists, do not add it again
-            console.warn('Service with name', service.name, 'already exists.');
+            console.warn('Service with name ', service.name, ' already exists.');
             return;
         }
 
@@ -204,7 +204,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         dropdown.classList.add(`${placeholder.toLowerCase()}`);
 
         // Combine all types including the initial value's type
-        const allTypes = Array.from(new Set([initial_value, ...options]));
+        const allTypes = Array.from(new Set([initial_value, ...options].filter(Boolean)));
 
         dropdown.value = initial_value;
 
@@ -216,11 +216,13 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             dropdown.add(optionElement);
         });
 
-        // Add a custom option
-        const customOption = document.createElement('option');
-        customOption.value = 'custom';
-        customOption.text = 'Custom';
-        dropdown.add(customOption);
+        if(placeholder === 'result-type' || placeholder === 'parameter-type'){
+            // Add a custom option
+            const customOption = document.createElement('option');
+            customOption.value = 'custom';
+            customOption.text = 'Custom';
+            dropdown.add(customOption);
+        }
 
         // Add event listener to handle custom selection
         dropdown.addEventListener('change', (event) => {
@@ -231,7 +233,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 // Set default method
                 const methodType = entry.querySelector('.method-type');
                 methodType.value = 'POST';
-            } else if (dropdown.value === 'Custom') {
+            } else if (dropdown.value === 'custom') {
                 const customValue = prompt('Enter custom value:');
                 if (customValue !== null) {
                     // Add the custom value as a new option
@@ -261,7 +263,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const resultName = createInput(element, entry, 'Result-name', service, service.result.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String", "Custom"];
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
@@ -305,7 +307,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const paramName = createInput(element, entry, 'Parameter-name', service, initial_param.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String", "Custom"];
+        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
         // Create dropdown for parameter type
