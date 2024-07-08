@@ -324,9 +324,7 @@ $(function() {
   //// TIMER EVENT HANDLING ////
   // TODO: move this elsewhere, also maybe move every action handler... (to simulation)
 
-  eventBus.on('tokenSimulation.toggleMode', async () => {
-    // TODO: fix problems with resetting the simulation (token still there after simulation)
-    // TODO: maybe need to return something in promise
+  eventBus.on('tokenSimulation.toggleMode', () => {
     if(toggleMode._active){
       return;
     }
@@ -338,42 +336,64 @@ $(function() {
     const timerEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')));
 
     // Call triggerTimer for each timer event with its eventDefinition
-    await Promise.all(timerEvents.map(event => triggerTimerEvent(event.id, event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')))));
-    //.then(eventBus.fire('tokenSimulation.resetSimulation'));
-    //.then(toggleMode.toggleMode(false));
+    Promise.all(timerEvents.map(event => triggerTimerEvent(event.id, event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')))))
+        .catch((error) => alert(error));
   });
 
-  async function triggerTimerEvent(eventId, timerDefinition){
-    const now = new Date();
+  function triggerTimerEvent(eventId, timerDefinition){
+    return new Promise((resolve, reject) => {
+      const now = new Date();
 
-    if (timerDefinition.timeDate) {
-      const triggerTime = new Date(timerDefinition.timeDate.body); // Assuming body contains the date string
-      if (now === triggerTime) {
-        simulationSupport.triggerElement(eventId);
-      } else if(now <= triggerTime){
-        const delay = triggerTime - now;
-        setTimeout(async () => {
-          simulationSupport.triggerElement(eventId);
-        }, delay);
-      }
-    } else if (timerDefinition.timeDuration) {
-      const duration = parseISO8601Duration(timerDefinition.timeDuration.body); // Assuming body contains the duration string
-      const triggerTime = new Date(now.getTime() + duration);
-      setTimeout(async () => {
-        simulationSupport.triggerElement(eventId);
-      }, duration);
-    } else if (timerDefinition.timeCycle) {
-      const { repetitions, interval } = parseISO8601Cycle(timerDefinition.timeCycle.body); // Parse ISO 8601 cycle string
-      let count = 0;
-      const intervalId = setInterval(async () => {
-        if (count < repetitions) {
-          simulationSupport.triggerElement(eventId);
-          count++;
-        } else {
-          clearInterval(intervalId);
+      if (timerDefinition.timeDate) {
+        const triggerTime = new Date(timerDefinition.timeDate.body); // Assuming body contains the date string
+        if (now === triggerTime) {
+          if (toggleMode._active) {
+            simulationSupport.triggerElement(eventId);
+            resolve();
+          } else {
+            reject(new Error(`Failed to trigger timer event ${eventId}: toggleMode deactivated`));
+          }
+        } else if (now <= triggerTime) {
+          const delay = triggerTime - now;
+          setTimeout(() => {
+            if (toggleMode._active) {
+              simulationSupport.triggerElement(eventId);
+              resolve();
+            } else {
+              reject(new Error(`Failed to trigger timer event ${eventId}: toggleMode deactivated`));
+            }
+          }, delay);
         }
-      }, interval);
-    }
+      } else if (timerDefinition.timeDuration) {
+        const duration = parseISO8601Duration(timerDefinition.timeDuration.body); // Assuming body contains the duration string
+        const triggerTime = new Date(now.getTime() + duration);
+        setTimeout(() => {
+          if (toggleMode._active) {
+            simulationSupport.triggerElement(eventId);
+            resolve();
+          } else {
+            reject(new Error(`Failed to trigger timer event ${eventId}: toggleMode deactivated`));
+          }
+        }, duration);
+      } else if (timerDefinition.timeCycle) {
+        const {repetitions, interval} = parseISO8601Cycle(timerDefinition.timeCycle.body); // Parse ISO 8601 cycle string
+        let count = 0;
+        const intervalId = setInterval(() => {
+          if (count < repetitions) {
+            if (toggleMode._active) {
+              simulationSupport.triggerElement(eventId);
+              count++;
+            } else {
+              clearInterval(intervalId);
+              reject(new Error(`Failed to trigger timer event ${eventId}: toggleMode deactivated`));
+            }
+          } else {
+            clearInterval(intervalId);
+            resolve();
+          }
+        }, interval);
+      }
+    });
   }
 
   function parseISO8601Duration(duration) {
