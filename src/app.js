@@ -197,6 +197,17 @@ $(function() {
   bpmnModeler.on('commandStack.changed', exportArtifacts);
 
 
+  // Confirm closing/refreshing window with unsaved changes
+  window.addEventListener('beforeunload', function(event) {
+    // If undo is possible there are unsaved changes
+    if (bpmnModeler.get('commandStack').canUndo()) {
+      const message = 'You have unsaved changes. Are you sure you want to leave?';
+      event.returnValue = message; // Standard for most browsers
+      return message;              // For some older browsers
+    }
+  });
+
+
   //// WebSocket to control simulation on request ////
 
   // Create a WebSocket client
