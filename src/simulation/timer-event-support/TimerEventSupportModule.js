@@ -28,8 +28,28 @@ export default function TimerEventSupport(
         Promise.all(timerEvents.map(event => this.triggerTimerEvent(event.id, event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')))))
             .catch((error) => alert(error));
     });
+
+    this.paused = false;
+
+    // On Pause
+    eventBus.on('tokenSimulation.pauseSimulation', () => {
+        this.pauseTimers();
+        this.paused = true;
+    });
+
+    // On Play
+    eventBus.on('tokenSimulation.playSimulation', () => {
+        /* This hack is needed, because playSimulation gets triggered unexpectedly, when an element is
+            triggered for the first time - TODO
+         */
+        if(this.paused){
+            this.resumeTimers();
+            this.paused = false;
+        }
+    });
 }
 
+// Creates timer for event based on timerDefinition
 TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinition) {
     return new Promise((resolve, reject) => {
         const now = new Date();
@@ -48,52 +68,91 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
                 const timeoutId = setTimeout(() => {
                     try{
                         this._simulationSupport.triggerElement(eventId);
+                        this.removeTimer(timeoutId);
                         resolve();
                     }catch(err){
+                        this.removeTimer(timeoutId);
                         reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                     }
                 }, delay);
-                this.activeTimers.push(timeoutId);
+                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay});
             }
         } else if (timerDefinition.timeDuration) { // DURATION
             const duration = parseISO8601Duration(timerDefinition.timeDuration.body); // Parse ISO 8601 duration string
             const timeoutId = setTimeout(() => {
                 try{
                     this._simulationSupport.triggerElement(eventId);
+                    this.removeTimer(timeoutId);
                     resolve();
                 }catch(err){
+                    this.removeTimer(timeoutId);
                     reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                 }
             }, duration);
-            this.activeTimers.push(timeoutId);
+            this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: duration});
         } else if (timerDefinition.timeCycle) { // CYCLE (INTERVAL)
             const {repetitions, interval} = parseISO8601Cycle(timerDefinition.timeCycle.body); // Parse ISO 8601 cycle string
-            let count = 0;
-            const intervalId = setInterval(() => {
-                if (count < repetitions) {
+            for (let i = 0; i < repetitions; i++) {
+                const timeoutId = setTimeout(() => {
                     try{
                         this._simulationSupport.triggerElement(eventId);
-                        count++;
+                        this.removeTimer(timeoutId);
                     }catch(err){
+                        this.removeTimer(timeoutId);
                         reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                     }
-                } else {
-                    clearInterval(intervalId);
-                    resolve();
-                }
-            }, interval);
-            this.activeTimers.push(intervalId);
+                }, interval * (i + 1));
+                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: interval * (i + 1)});
+            }
+            resolve();
         }
+        // TODO add support for repeating day time definition (i.e every day @8:00)
     });
 }
 
+// Clears and removes all timers
 TimerEventSupport.prototype.clearActiveTimers = function() {
-    this.activeTimers.forEach(timerId => {
-        clearTimeout(timerId);
-        clearInterval(timerId);
+    this.activeTimers.forEach(timer => {
+        // Clear timers
+        clearTimeout(timer.id);
     });
+    // Empty list
     this.activeTimers = [];
 };
+
+// Clears timers and calculates passed time
+TimerEventSupport.prototype.pauseTimers = function() {
+    const now = Date.now();
+    this.activeTimers.forEach(timer => {
+        clearTimeout(timer.id);
+        timer.delay = timer.delay - (now - timer.startTime);
+    });
+};
+
+// Starts paused timers with new delay
+TimerEventSupport.prototype.resumeTimers = function() {
+    const now = Date.now();
+
+    this.activeTimers.forEach(timer => {
+        timer.startTime = now;
+        timer.id = setTimeout(() => {
+            try {
+                this._simulationSupport.triggerElement(timer.eventId);
+                this.removeTimer(timer.id);
+            } catch (err) {
+                this.removeTimer(timer.id);
+                alert(`Failed to trigger timer event ${timer.eventId}: ${err}`);
+            }
+        }, timer.delay);
+    });
+};
+
+// Clears and removes a timer by id
+TimerEventSupport.prototype.removeTimer = function(timeoutId) {
+    clearTimeout(timeoutId);
+    this.activeTimers = this.activeTimers.filter(timer => timer.id !== timeoutId);
+};
+
 
 function parseISO8601Duration(duration) {
     // Simple parser for ISO 8601 duration strings
