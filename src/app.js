@@ -246,6 +246,7 @@ $(function() {
       openDiagram(request.parameters.diagram).then(() => {
         // After a new diagram is opened we need to deactivate simulation mode once
         toggleMode.toggleMode(false);
+        toggleMode.toggleMode(true);
         // Send info
         ws.send(JSON.stringify({ type: 'response', requestId: request.id, message: 'load ok.'}));
       }).catch(error => {
