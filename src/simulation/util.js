@@ -154,18 +154,21 @@ function preprocessExpression(expression){
 }
 
 // Evaluate assignment of different expressions
-function makeAssignment(assignment){
-    if(isValidJSON(assignment.expression)){
-        // Object (JSON), collection
-        variableMapping[assignment.variable] = JSON.parse(assignment.expression);
-    }else if(assignment.expression.startsWith('"')){
-        // String
-        const unquoted = assignment.expression.replace(/"(.*)"/g, "$1");
-        variableMapping[assignment.variable] = unquoted;
-    }else{
-        // Other (primitive, operations)
-        const processedAssignment = preprocessExpression(assignment.expression);
-        variableMapping[assignment.variable] = eval(processedAssignment);
+function makeAssignment(assignment) {
+    try {
+        if (isValidJSON(assignment.expression)) {
+            // Object (JSON), collection
+            variableMapping[assignment.variable] = JSON.parse(assignment.expression);
+        } else if (assignment.expression.startsWith('"')) {
+            // String (unquoted)
+            variableMapping[assignment.variable] = assignment.expression.replace(/"(.*)"/g, "$1");
+        } else {
+            // Other (primitive, operations)
+            const processedAssignment = preprocessExpression(assignment.expression);
+            variableMapping[assignment.variable] = eval(processedAssignment);
+        }
+    }catch (err){
+        alert(`Assignment failed: ${err}`);
     }
 }
 
