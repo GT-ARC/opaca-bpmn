@@ -12,7 +12,7 @@ import {evaluateCondition} from "../util";
 const SELECTED_COLOR = '--token-simulation-grey-darken-30';
 const NOT_SELECTED_COLOR = '--token-simulation-grey-lighten-56';
 
-function getNext(gateway) {
+function getNext(gateway, scope) {
     var outgoing = gateway.outgoing.filter(isSequenceFlow);
 
     var next = null;
@@ -22,7 +22,7 @@ function getNext(gateway) {
        // If there is a condition defined, evaluate it
        if(conditionExpression){
            // Return, if the condition holds true
-           if(evaluateCondition(conditionExpression.body)){
+           if(evaluateCondition(conditionExpression.body, scope)){
                next = sequenceFlow;
            }
        // If there is no condition defined, it is interpreted as default flow
@@ -37,6 +37,8 @@ function getNext(gateway) {
     if(next !== null){
         return next;
     }
+
+    alert('No condition evaluates to true - Check defined condition expressions!');
     return outgoing[0];
 }
 
@@ -65,18 +67,18 @@ export default function ExclusiveGatewaySettings(
     });
     // While exiting a gateway the next sequence flow gets set
     eventBus.on('tokenSimulation.exitExclusiveGateway', event => {
-        this.setSequenceFlowsDefault();
+        const { scope } = event;
+        this.setSequenceFlowsDefault(scope);
     });
 }
 
-ExclusiveGatewaySettings.prototype.setSequenceFlowsDefault = function() {
+ExclusiveGatewaySettings.prototype.setSequenceFlowsDefault = function(scope) {
     const exclusiveGateways = this._elementRegistry.filter(element => {
         return is(element, 'bpmn:ExclusiveGateway');
     });
-    console.log('exclusiveGateways', exclusiveGateways);
 
     for (const gateway of exclusiveGateways) {
-        this.setSequenceFlow(gateway);
+        this.setSequenceFlow(gateway, scope);
     }
 };
 
@@ -97,20 +99,17 @@ ExclusiveGatewaySettings.prototype.resetSequenceFlow = function(gateway) {
     this._simulator.setConfig(gateway, { activeOutgoing: undefined });
 };
 
-ExclusiveGatewaySettings.prototype.setSequenceFlow = function(gateway) {
+ExclusiveGatewaySettings.prototype.setSequenceFlow = function(gateway, scope) {
 
     const outgoing = gateway.outgoing.filter(isSequenceFlow);
-
-    console.log('outgoing:', outgoing);
 
     // not forking
     if (outgoing.length < 2) {
         return;
     }
-    console.log('more than 2 outgoing!')
 
     let newActiveOutgoing;
-    newActiveOutgoing = getNext(gateway);
+    newActiveOutgoing = getNext(gateway, scope);
 
     this._simulator.setConfig(gateway, { activeOutgoing: newActiveOutgoing });
 
