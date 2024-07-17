@@ -32,19 +32,19 @@ export default function InclusiveGatewaySettings(
     });
     // While exiting a gateway the next sequence flow(s) gets set
     eventBus.on('tokenSimulation.exitInclusiveGateway', event => {
-        console.log('triggered!');
-        this.setDefaults();
+        const { scope } = event;
+        this.setDefaults(scope);
     });
 }
 
-InclusiveGatewaySettings.prototype.setDefaults = function() {
+InclusiveGatewaySettings.prototype.setDefaults = function(scope) {
     const inclusiveGateways = this._elementRegistry.filter(element => {
         return is(element, 'bpmn:InclusiveGateway');
     });
 
     inclusiveGateways.forEach(inclusiveGateway => {
         if (inclusiveGateway.outgoing.filter(isSequenceFlow).length > 1) {
-            this._setGatewayDefaults(inclusiveGateway);
+            this._setGatewayDefaults(inclusiveGateway, scope);
         }
     });
 };
@@ -87,7 +87,7 @@ InclusiveGatewaySettings.prototype._setActiveOutgoing = function(gateway, active
     });
 };
 
-InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway) {
+InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway, scope) {
     const sequenceFlows = gateway.outgoing.filter(isSequenceFlow);
 
     const validFlows = [];
@@ -97,7 +97,7 @@ InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway) {
         const conditionExpression = flow.businessObject.get('conditionExpression');
         if (conditionExpression) {
             // Evaluate the condition expression
-            if(evaluateCondition(conditionExpression.body)){
+            if(evaluateCondition(conditionExpression.body, scope)){
                 validFlows.push(flow);
             }
         } else {
@@ -113,6 +113,7 @@ InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway) {
         this._setActiveOutgoing(gateway, defaultFlows);
     }else{
         // If none, first sequenceFlow
+        alert('No condition evaluates to true - Check defined condition expressions!');
         this._setActiveOutgoing(sequenceFlows[0]);
     }
 };
