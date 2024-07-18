@@ -167,12 +167,11 @@ function parseISO8601Duration(duration) {
 }
 
 function parseISO8601Cycle(cycle) {
-    const match = cycle.match(/R(\d*)\/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?\/P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    const match = cycle.match(/R(\d*)\/(?:((?:\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?))\/)?P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     let repetitions = 100000;
     let interval = 0;
     let delay = 0;
     if (match) {
-        console.log('Matched');
         if (match[1]) repetitions = parseInt(match[1]);
         if (match[2]) {
             const startTime = new Date(match[2]);
@@ -183,7 +182,10 @@ function parseISO8601Cycle(cycle) {
         if (match[5]) interval += parseInt(match[5]) * 60 * 1000; // Minutes
         if (match[6]) interval += parseInt(match[6]) * 1000; // Seconds
     }
-    console.log(`repetitions: ${repetitions}, interval: ${interval}, delay: ${delay}`);
+    //console.log(`repetitions: ${repetitions}, interval: ${interval}, delay: ${delay}`);
+    if(delay === 0){
+        delay = interval;
+    }
     return { repetitions, interval, delay };
 }
 
