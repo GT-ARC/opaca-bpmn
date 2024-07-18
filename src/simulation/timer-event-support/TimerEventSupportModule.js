@@ -91,7 +91,7 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
             }, duration);
             this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: duration});
         } else if (timerDefinition.timeCycle) { // CYCLE (INTERVAL)
-            const {repetitions, interval} = parseISO8601Cycle(timerDefinition.timeCycle.body); // Parse ISO 8601 cycle string
+            const { repetitions, interval, delay } = parseISO8601Cycle(timerDefinition.timeCycle.body); // Parse ISO 8601 cycle string
             for (let i = 0; i < repetitions; i++) {
                 const timeoutId = setTimeout(() => {
                     try{
@@ -101,12 +101,11 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
                         this.removeTimer(timeoutId);
                         reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                     }
-                }, interval * (i + 1));
-                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: interval * (i + 1)});
+                }, delay + interval * i);
+                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: delay + interval * i });
             }
             resolve();
         }
-        // TODO add support for repeating day time definition (i.e every day @8:00)
     });
 }
 
@@ -168,17 +167,24 @@ function parseISO8601Duration(duration) {
 }
 
 function parseISO8601Cycle(cycle) {
-    const match = cycle.match(/R(\d*)\/P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
-    let repetitions = Infinity;
-    let milliseconds = 0;
+    const match = cycle.match(/R(\d*)\/(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,3})?)?(?:Z|[+-]\d{2}:\d{2})?)?\/P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+    let repetitions = 100000;
+    let interval = 0;
+    let delay = 0;
     if (match) {
-        if (match[1]) repetitions = parseInt(match[1]); // Repetitions
-        if (match[2]) milliseconds += parseInt(match[2]) * 24 * 60 * 60 * 1000; // Days
-        if (match[3]) milliseconds += parseInt(match[3]) * 60 * 60 * 1000; // Hours
-        if (match[4]) milliseconds += parseInt(match[4]) * 60 * 1000; // Minutes
-        if (match[5]) milliseconds += parseInt(match[5]) * 1000; // Seconds
+        console.log('Matched');
+        if (match[1]) repetitions = parseInt(match[1]);
+        if (match[2]) {
+            const startTime = new Date(match[2]);
+            delay = startTime - new Date();
+        }
+        if (match[3]) interval += parseInt(match[3]) * 24 * 60 * 60 * 1000; // Days
+        if (match[4]) interval += parseInt(match[4]) * 60 * 60 * 1000; // Hours
+        if (match[5]) interval += parseInt(match[5]) * 60 * 1000; // Minutes
+        if (match[6]) interval += parseInt(match[6]) * 1000; // Seconds
     }
-    return { repetitions, interval: milliseconds };
+    console.log(`repetitions: ${repetitions}, interval: ${interval}, delay: ${delay}`);
+    return { repetitions, interval, delay };
 }
 
 TimerEventSupport.$inject = [
