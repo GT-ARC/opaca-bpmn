@@ -5,13 +5,18 @@ import {getAssignments} from "../provider/assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {call} from "../opacaUtil";
 
-// variable, value
+// variable, value mapped to each scope (variableMapping[scopeId][variableName])
 const variableMapping = {};
 
 // Create local mapping for variables defined in root
 // and parameters and results of services.
 // Called in StartEvent
 export function initializeVariables(startEventContext){
+    const parentScopeId = startEventContext.parentScope.id;
+
+    if (!variableMapping[parentScopeId]) {
+        variableMapping[parentScopeId] = {};
+    }
     const root = getRootElement(startEventContext.element.di.bpmnElement);
     const parent = getParentElement(startEventContext.element.di.bpmnElement);
 
@@ -21,7 +26,7 @@ export function initializeVariables(startEventContext){
         const variables = getVariables(parent);
         if(variables){
             variables.forEach(variable => {
-                variableMapping[variable.name] = {};
+                variableMapping[parentScopeId][variable.name] = {};
             });
         }
         return;
@@ -31,7 +36,7 @@ export function initializeVariables(startEventContext){
     const variables = getVariables(root);
     if(variables){
         variables.forEach(variable => {
-            variableMapping[variable.name] = {};
+            variableMapping[parentScopeId][variable.name] = {};
         });
     }
     const services = getServices(def);
@@ -39,38 +44,36 @@ export function initializeVariables(startEventContext){
         services.forEach(service => {
             if(service.parameters){
                 service.parameters.forEach(parameter => {
-                    variableMapping[parameter.name] = {};
+                    variableMapping[parentScopeId][parameter.name] = {};
                 });
             }
             if(service.result){
-                variableMapping[service.result.name] = {};
+                variableMapping[parentScopeId][service.result.name] = {};
             }
         });
     }
 }
 
 // Evaluate condition
-export function evaluateCondition(condition){
-
-    //console.log('Evaluating condition');
-    //console.log('condition: ', condition);
-    const processedCondition = preprocessExpression(condition);
-    //console.log('processed condition: ', processedCondition);
-    //console.log('evaluation: ', eval(processedCondition));
+export function evaluateCondition(condition, scope){
+    const parentScopeId = scope.parent.id;
+    const processedCondition = preprocessExpression(condition, parentScopeId);
     return eval(processedCondition);
 }
 
 // Make assignment to a variable at assignTime
 export function updateVariables(element, assignTime, scope){
+    const parentScope = scope.parent;
+
     const bpmnElement = element.di.bpmnElement;
 
     const assignments = getAssignments(bpmnElement);
     if(assignments){
         assignments.forEach(assignment => {
             if(assignment.assignTime === assignTime){
-                makeAssignment(assignment);
+                makeAssignment(assignment, parentScope.id);
 
-                logAssignment(assignment.variable, bpmnElement, scope);
+                logAssignment(assignment.variable, bpmnElement, parentScope);
             }
         });
     }
@@ -78,7 +81,8 @@ export function updateVariables(element, assignTime, scope){
 
 // Call service defined in ServiceTask.
 // Update result value
-export function callService(element){
+export function callService(element, scope) {
+    const parentScope = scope.parent;
     return new Promise((resolve, reject) => {
         // Get serviceImplementation of service task
         const bpmnElement = element.di.bpmnElement;
@@ -107,8 +111,8 @@ export function callService(element){
         // Collect parameters needed for the request
         const params = {};
         service.parameters.forEach(parameter => {
-            if(parameter.name in variableMapping){
-                params[parameter.name] = variableMapping[parameter.name];
+            if (parameter.name in variableMapping[parentScope.id]) {
+                params[parameter.name] = variableMapping[parentScope.id][parameter.name];
             }
         });
 
@@ -118,8 +122,8 @@ export function callService(element){
                 console.log('Response from service:', response);
                 // Assign result
                 if(resName){
-                    makeAssignment({variable: resName, expression: response});
-                    logAssignment(resName, element, ' '); //TODO scope
+                    makeAssignment({variable: resName, expression: response}, parentScope.id);
+                    logAssignment(resName, element, parentScope);
                 }
                 resolve(); // Resolve the promise after assigning the result
             })
@@ -145,27 +149,27 @@ function isValidJSON(str) {
 
 // Replace variable names inside expression with local mapping.
 // May not work for some variable types
-function preprocessExpression(expression){
-    for (const variable in variableMapping) {
+function preprocessExpression(expression, parentScopeId) {
+    for (const variable in variableMapping[parentScopeId]) {
         const regex = new RegExp(`\\b${variable}\\b`, 'g'); // Match whole word
-        expression = expression.replace(regex, `variableMapping['${variable}']`);
+        expression = expression.replace(regex, `variableMapping['${parentScopeId}']['${variable}']`);
     }
     return expression;
 }
 
 // Evaluate assignment of different expressions
-function makeAssignment(assignment) {
+function makeAssignment(assignment, parentScopeId) {
     try {
         if (isValidJSON(assignment.expression)) {
             // Object (JSON), collection
-            variableMapping[assignment.variable] = JSON.parse(assignment.expression);
+            variableMapping[parentScopeId][assignment.variable] = JSON.parse(assignment.expression);
         } else if (assignment.expression.startsWith('"')) {
             // String (unquoted)
-            variableMapping[assignment.variable] = assignment.expression.replace(/"(.*)"/g, "$1");
+            variableMapping[parentScopeId][assignment.variable] = assignment.expression.replace(/"(.*)"/g, "$1");
         } else {
             // Other (primitive, operations)
-            const processedAssignment = preprocessExpression(assignment.expression);
-            variableMapping[assignment.variable] = eval(processedAssignment);
+            const processedAssignment = preprocessExpression(assignment.expression, parentScopeId);
+            variableMapping[parentScopeId][assignment.variable] = eval(processedAssignment);
         }
     }catch (err){
         alert(`Assignment failed: ${err}`);
@@ -173,13 +177,13 @@ function makeAssignment(assignment) {
 }
 
 // Create log element with assignment info and trigger log event
-function logAssignment(variable, element, scope){
+function logAssignment(variable, element, parentScope){
 
     const log = {
         // indent text
-        text: '&nbsp;&nbsp;&nbsp;&nbsp;' + variable + ' = ' + variableMapping[variable],
+        text: '&nbsp;&nbsp;&nbsp;&nbsp;' + variable + ' = ' + variableMapping[parentScope.id][variable],
         icon: 'bpmn-icon-task',
-        scope: scope
+        scope: parentScope
     }
 
     // Adjust icon

@@ -1,5 +1,5 @@
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
-index a44cb67..8a3de93 100644
+index a44cb67..07d0ab6 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
 +++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
 @@ -3,6 +3,8 @@ import {
@@ -11,7 +11,7 @@ index a44cb67..8a3de93 100644
  
  
  export default function ActivityBehavior(
-@@ -53,6 +55,36 @@ ActivityBehavior.prototype.enter = function(context) {
+@@ -53,6 +55,35 @@ ActivityBehavior.prototype.enter = function(context) {
      element
    } = context;
  
@@ -20,9 +20,8 @@ index a44cb67..8a3de93 100644
 +
 +  // Make service call
 +  if(is(element, 'bpmn:ServiceTask')){
-+    console.log('ACTIVITY BEHAVIOR, calling service');
 +
-+    return callService(element)
++    return callService(element, context.scope)
 +        .then(() => {
 +          const continueEvent = this.waitAtElement(element);
 +
@@ -40,7 +39,7 @@ index a44cb67..8a3de93 100644
 +          this._simulator.exit(context);
 +        })
 +        .catch(error => {
-+          console.error('Error occurred while calling service:', error);
++          alert('Error occurred while calling service:', error);
 +          this._simulator.exit(context); // Exit even in case of error
 +        });
 +  }
@@ -48,7 +47,7 @@ index a44cb67..8a3de93 100644
    const continueEvent = this.waitAtElement(element);
  
    if (continueEvent) {
-@@ -76,6 +108,9 @@ ActivityBehavior.prototype.exit = function(context) {
+@@ -76,6 +107,9 @@ ActivityBehavior.prototype.exit = function(context) {
      scope
    } = context;
  
@@ -59,7 +58,7 @@ index a44cb67..8a3de93 100644
  
    // TODO(nikku): if a outgoing flow is conditional,
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
-index 1d2cbe0..26f2292 100644
+index 1d2cbe0..0130d8f 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
 +++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
 @@ -3,9 +3,10 @@ import {
@@ -79,7 +78,7 @@ index 1d2cbe0..26f2292 100644
    } = context;
  
 +  // Fire event for setting gateway automatically
-+  this._eventBus.fire('tokenSimulation.exitExclusiveGateway');
++  this._eventBus.fire('tokenSimulation.exitExclusiveGateway', {scope: scope});
 +
    // depends on UI to properly configure activeOutgoing for
    // each exclusive gateway
@@ -94,7 +93,7 @@ index 1d2cbe0..26f2292 100644
  ];
 \ No newline at end of file
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
-index d05bc96..d68018f 100644
+index d05bc96..8c6aa93 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
 +++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/InclusiveGatewayBehavior.js
 @@ -5,10 +5,12 @@ import {
@@ -116,7 +115,7 @@ index d05bc96..d68018f 100644
    } = context;
  
 +  // Fire event for setting gateway automatically
-+  this._eventBus.fire('tokenSimulation.exitInclusiveGateway');
++  this._eventBus.fire('tokenSimulation.exitInclusiveGateway', {scope: scope});
 +
    // depends on UI to properly configure activeOutgoing for
    // each inclusive gateway
