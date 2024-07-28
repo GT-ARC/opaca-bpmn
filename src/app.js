@@ -24,6 +24,7 @@ var canvas = $('#js-canvas');
 
 var bpmnModeler = new BpmnModeler({
   container: canvas,
+  keyboard: { bindTo: document },
   propertiesPanel: {
     parent: '#js-properties-panel'
   },
