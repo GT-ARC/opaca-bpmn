@@ -263,7 +263,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const resultName = createInput(element, entry, 'Result-name', service, service.result.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        const predefinedTypes = ["integer", "number", "boolean", "string", "array", "object"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
@@ -307,7 +307,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const paramName = createInput(element, entry, 'Parameter-name', service, initial_param.name);
 
         // Basic types
-        const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+        const predefinedTypes = ["integer", "number", "boolean", "string", "array", "object"];
         // Add custom types
         const allTypes = [].concat(getDataTypes(), predefinedTypes);
         // Create dropdown for parameter type

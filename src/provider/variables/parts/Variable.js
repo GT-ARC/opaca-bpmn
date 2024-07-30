@@ -74,7 +74,7 @@ function Type(props) {
     const debounce = useService('debounceInput');
 
     // Basic types
-    const predefinedTypes = ["int", "long", "double", "float", "boolean", "char", "String"];
+    const predefinedTypes = ["integer", "number", "boolean", "string", "array", "object"];
     // Add custom types
     const allTypes = [].concat(getDataTypes(), predefinedTypes);
 
