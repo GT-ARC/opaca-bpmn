@@ -17,26 +17,65 @@ import vsdtModdleDescriptor from './descriptors/vsdt2';
 import conditionPropsProviderModule from './provider/conditions';
 // import Views
 import serviceViewModule from './views/services';
+import {getAssignments} from "./provider/assignments/util";
+import {getVariables} from "./provider/variables/util";
 
 // Native Copy-Paste Module
 const nativeCopyModule = {
-  __init__: [ 'nativeCopyPaste' ],
-  nativeCopyPaste: [ 'type', function(
+  __init__: ['nativeCopyPaste'],
+  nativeCopyPaste: ['type', function (
       keyboard, eventBus,
       moddle, clipboard
   ) {
 
-    // persist into local storage whenever copy took place
+    function collectReferences(elements, references) {
+      if (!elements){
+        console.error('Expected an array of elements');
+        return;
+      }
+
+      const process = elementRegistry.get('Process_1');
+      const variables = getVariables(process);
+      // TODO also collect other references (processes)
+      console.log(elements);
+      elements.forEach(element => {
+        const assignments = getAssignments(element);
+        if(assignments){
+          assignments.forEach(assignment => {
+            if(variables){
+              variables.forEach(variable => {
+                if(variable.name === assignment.variable){
+                  references[variable.name] = variable;
+                }
+              });
+            }
+          });
+        }
+      });
+    }
+
+    // Persist into local storage whenever copy takes place
     eventBus.on('copyPaste.elementsCopied', event => {
       const { tree } = event;
 
-      console.log('PUT localStorage', tree);
+      // Collect all references
+      const references = {};
+      collectReferences(tree[0], references);
+      console.log(references);
 
-      // persist in local storage, encoded as json
-      localStorage.setItem('bpmnClipboard', JSON.stringify(tree));
+      // Combine tree and references
+      const copyPayload = {
+        tree,
+        references
+      };
+
+      console.log('PUT localStorage', tree, references);
+
+      // Persist in local storage, encoded as JSON
+      localStorage.setItem('bpmnClipboard', JSON.stringify(copyPayload));
     });
 
-    // intercept global paste keybindings and inject reified pasted stack
+    // Intercept global paste keybindings and inject reified pasted stack
     keyboard.addListener(2000, event => {
       const { keyEvent } = event;
 
@@ -44,22 +83,46 @@ const nativeCopyModule = {
         return;
       }
 
-      // retrieve from local storage
+      // Retrieve from local storage
       const serializedCopy = localStorage.getItem('bpmnClipboard');
 
       if (!serializedCopy) {
         return;
       }
 
-      // parse tree, re-instantiating contained objects
-      const parsedCopy = JSON.parse(serializedCopy, createReviver(moddle));
+      // Parse tree, re-instantiating contained objects
+      const { tree, references } = JSON.parse(serializedCopy, createReviver(moddle));
 
-      console.log('GET localStorage', parsedCopy);
+      console.log('GET localStorage', tree, references);
 
-      // put into clipboard
-      clipboard.set(parsedCopy);
+      // TODO make sure it works for processes with other names
+      const targetProcess = elementRegistry.get('Process_1');
+
+      console.log('targetProcess', targetProcess);
+      // TODO add undo support
+      // Add missing variables to the target process
+      Object.keys(references).forEach(key => {
+        const reference = references[key];
+
+        if(!targetProcess.businessObject.get('extensionElements')){
+          targetProcess.businessObject.extensionElements = moddle.create('bpmn:ExtensionElements', {values : []});
+        }
+        console.log('target extensionElements', targetProcess.businessObject.extensionElements);
+        if (!getVariables(targetProcess)) {
+          targetProcess.businessObject.extensionElements.values.push(moddle.create('vsdt2:Variables', {values: []}));
+        }
+        console.log('target extensionElements', targetProcess.businessObject.extensionElements);
+
+        if (!getVariables(targetProcess).find(variable => variable.name === key)) {
+          // Add the reference to the target process variables
+          // TODO make sure values[0] is variables extension
+          targetProcess.businessObject.extensionElements.values[0].values.push(reference);
+        }
+      });
+      // Put into clipboard
+      clipboard.set(tree);
     });
-  } ]
+  }]
 };
 
 function createReviver(moddle) {
