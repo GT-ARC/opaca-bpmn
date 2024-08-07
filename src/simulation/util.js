@@ -57,7 +57,7 @@ export function initializeVariables(startEventContext){
 // Evaluate condition
 export function evaluateCondition(condition, scope){
     const parentScopeId = scope.parent.id;
-    const processedCondition = preprocessExpression(condition, parentScopeId);
+    const processedCondition = preprocessExpression(condition, parentScopeId); //TODO
     return eval(processedCondition);
 }
 
@@ -154,7 +154,7 @@ const context = {
 }
 
 // List of allowed operators
-const operators = [',', '+', '-', '*', '/', '(', ')', '>', '<', '>=', '<=', '==', '!=', '===', '!==', '&&', '||', ',', ':', '{', '}', '[', ']'];
+const operators = ['+', '-', '*', '/', '(', ')', '>', '<', '!', '=', ',', ':', ';', '{', '}', '[', ']', '|', '&', 'true', 'false'];
 
 function isNumber(token) {
     return !isNaN(parseFloat(token)) && isFinite(token);
@@ -173,7 +173,7 @@ function validateAndReplaceTokens(tokens, parentScope){
     return tokens.map(token => {
         if (isNumber(token) || isOperator(token) || isString(token)) {
             return token; // Valid number, operator, or string
-        } else if(token.startsWith('.')){
+        } else if(token.startsWith('.') || token.endsWith(':')) {
             return token; // Property access
         } else if (variableMapping[parentScope] && variableMapping[parentScope].hasOwnProperty(token)) {
             return `variableMapping['${parentScope}']['${token}']`; // Replace with variable mapping
@@ -187,7 +187,7 @@ function validateAndReplaceTokens(tokens, parentScope){
 
 function tokenizeExpression(expression){
     // Split the expression into tokens
-    const tokens = expression.match(/(\d+|\w+|\.\w+|[+*\/(),:{}\[\]-]|"[^"]*"|'[^']*')/g);
+    const tokens = expression.match(/("[^"]*"|'[^']*'|\w+:|\d+|\w+|\.\w+|[^\w\s])/g);
     console.log(tokens);
     return tokens;
 }
@@ -203,6 +203,7 @@ function restrictedEval(expression, parentScope){
     }catch(err){
         return eval(validatedExpression);
     }
+    //return eval(validatedExpression);
 }
 
 // Create log element with assignment info and trigger log event
@@ -227,4 +228,19 @@ function logAssignment(variable, element, parentScope){
     }
     // Dispatch
     document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
+}
+
+//// For testing variableUpdates only ////
+export function addVariable(variable, parentScopeId){
+    if(!variableMapping[parentScopeId]){
+        variableMapping[parentScopeId] = {};
+    }
+    variableMapping[parentScopeId][variable.name] = variable.value;
+}
+
+export function assignAndGet(assignment, parentScopeId){
+    makeAssignment(assignment, parentScopeId);
+    console.log(variableMapping);
+    console.log(+"303030"/10);
+    return variableMapping[parentScopeId][assignment.variable];
 }
