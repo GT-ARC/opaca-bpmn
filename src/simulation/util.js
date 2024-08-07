@@ -164,14 +164,18 @@ function isOperator(token) {
     return operators.includes(token);
 }
 
+function isBoolean(token) {
+    return token === "true" || token === "false";
+}
+
 function isString(token){
-    return /^["'][^"']*["']$/.test(token);
+    return /^(["][^"]*["]|["][^"]*["])$/.test(token);
 }
 
 // Replace variable by variableMapping or predefined function
 function validateAndReplaceTokens(tokens, parentScope){
     return tokens.map(token => {
-        if (isNumber(token) || isOperator(token) || isString(token)) {
+        if (isNumber(token) || isOperator(token) || isBoolean(token) || isString(token)) {
             return token; // Valid number, operator, or string
         } else if(token.startsWith('.') || token.endsWith(':')) {
             return token; // Property access
