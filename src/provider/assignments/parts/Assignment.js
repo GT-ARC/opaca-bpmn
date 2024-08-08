@@ -3,6 +3,7 @@ import { useService } from 'bpmn-js-properties-panel';
 import { SelectEntry } from "@bpmn-io/properties-panel";
 import { useEffect, useState } from '@bpmn-io/properties-panel/preact/hooks';
 import { getAllVariables } from "../util";
+import { is } from 'bpmn-js/lib/util/ModelUtil';
 
 export default function Assignment(props) {
 
@@ -155,7 +156,15 @@ function AssignTime(props){
 
     // Drop-down options (start or end)
     const getOptions = () => {
-        return ["START", "END"].map(type => ({
+        // Only able to assign in StartEvent, when exiting
+        // and in EndEvent, when entering
+        const types = is(element, 'bpmn:StartEvent')
+            ? ["END"]
+            : is(element, 'bpmn:EndEvent')
+            ? ["START"]
+            : ["START", "END"];
+
+        return types.map(type => ({
             value: type,
             label: type
         }));

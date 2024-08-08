@@ -6,9 +6,8 @@ import {
 import {
     createElement, getRelevantBusinessObject
 } from '../../util';
-
+import { is } from 'bpmn-js/lib/util/ModelUtil';
 import Assignment from './Assignment';
-
 import { without } from 'min-dash';
 
 
@@ -141,7 +140,7 @@ function addFactory({ element, bpmnFactory, commandStack }) {
         const newAssignment = createElement('vsdt2:Assignment', {
             variable : '', // default
             expression: '',
-            assignTime: 'START'
+            assignTime: is(element, 'bpmn:StartEvent') ? 'END' : 'START'
         }, extension, bpmnFactory);
 
         // (4) add assignment to list
