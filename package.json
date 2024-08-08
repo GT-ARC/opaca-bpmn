@@ -12,7 +12,8 @@
     "build:less": "lessc src/app.less public/app.css",
     "build:js": "webpack -c webpack.config.js",
     "watch:js": "run-s \"build:js -- --watch\"",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package",
+    "test": "jest"
   },
   "repository": {
     "type": "git",
@@ -59,7 +60,14 @@
     "ws": "^8.17.1"
   },
   "devDependencies": {
+    "@babel/core": "^7.25.2",
+    "@babel/preset-env": "^7.25.3",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.4.8",
+    "babel-jest": "^29.7.0",
     "copy-webpack-plugin": "^12.0.2",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
     "less": "^4.1.0",
     "npm-run-all": "^4.1.5",
     "patch-package": "^8.0.0",
