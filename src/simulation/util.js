@@ -57,8 +57,7 @@ export function initializeVariables(startEventContext){
 // Evaluate condition
 export function evaluateCondition(condition, scope){
     const parentScopeId = scope.parent.id;
-    const processedCondition = preprocessExpression(condition, parentScopeId); //TODO
-    return eval(processedCondition);
+    return restrictedEval(condition, parentScopeId);
 }
 
 // Make assignment to a variable at assignTime
@@ -154,7 +153,7 @@ const context = {
 }
 
 // List of allowed operators
-const operators = ['+', '-', '*', '/', '(', ')', '>', '<', '!', '=', ',', ':', ';', '{', '}', '[', ']', '|', '&', 'true', 'false'];
+const operators = ['+', '-', '*', '/', '(', ')', '>', '<', '!', '=', ',', ':', ';', '{', '}', '[', ']', '|', '&'];
 
 function isNumber(token) {
     return !isNaN(parseFloat(token)) && isFinite(token);
@@ -169,14 +168,14 @@ function isBoolean(token) {
 }
 
 function isString(token){
-    return /^(["][^"]*["]|["][^"]*["])$/.test(token);
+    return /^("[^"]*"|'[^']*')$/.test(token);
 }
 
 // Replace variable by variableMapping or predefined function
 function validateAndReplaceTokens(tokens, parentScope){
     return tokens.map(token => {
         if (isNumber(token) || isOperator(token) || isBoolean(token) || isString(token)) {
-            return token; // Valid number, operator, or string
+            return token; // Valid number, operator, boolean or string
         } else if(token.startsWith('.') || token.endsWith(':')) {
             return token; // Property access
         } else if (variableMapping[parentScope] && variableMapping[parentScope].hasOwnProperty(token)) {
@@ -192,7 +191,7 @@ function validateAndReplaceTokens(tokens, parentScope){
 function tokenizeExpression(expression){
     // Split the expression into tokens
     const tokens = expression.match(/("[^"]*"|'[^']*'|\w+:|\d+|\w+|\.\w+|[^\w\s])/g);
-    console.log(tokens);
+    //console.log(tokens);
     return tokens;
 }
 
@@ -201,13 +200,10 @@ function restrictedEval(expression, parentScope){
     const tokens = tokenizeExpression(expression, parentScope);
     const validatedTokens = validateAndReplaceTokens(tokens, parentScope);
     const validatedExpression = validatedTokens.join('');
-    console.log('Validated: ', validatedExpression);
-    try{
-        return eval(JSON.parse(validatedExpression));
-    }catch(err){
-        return eval(validatedExpression);
-    }
-    //return eval(validatedExpression);
+    //console.log('Validated: ', validatedExpression);
+
+    // Parentheses ensure it is treated as an expression, not a block
+    return eval('(' + validatedExpression + ')');
 }
 
 // Create log element with assignment info and trigger log event
@@ -244,7 +240,5 @@ export function addVariable(variable, parentScopeId){
 
 export function assignAndGet(assignment, parentScopeId){
     makeAssignment(assignment, parentScopeId);
-    console.log(variableMapping);
-    console.log(+"303030"/10);
     return variableMapping[parentScopeId][assignment.variable];
 }
