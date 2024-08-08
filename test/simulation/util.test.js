@@ -109,10 +109,22 @@ test('complexExpression', () => {
     expect(assignAndGet(assignment, scope.id)).toBe('303030');
 
     assignment.variable = 'obj1';
-    //assignment.expression = '{field1: +str1 / 10, field2: obj1.field2 + " hello"}';
-    assignment.expression = '{field1: obj1.field1, field2: obj1.field2 + " hello"}';
+    assignment.expression = '{field1: +str1 / 10, field2: obj1.field2 + " hello"}';
     // +'303030' / 10 = 30303
     // world = world
-    //expect(assignAndGet(assignment, scope.id)).toBe({field1: 30303, field2: 'world hello'});
-    expect(assignAndGet(assignment, scope.id)).toStrictEqual({field1: 10, field2: 'world hello'});
+    expect(assignAndGet(assignment, scope.id)).toStrictEqual({field1: 30303, field2: 'world hello'});
 });
+
+test('evaluateCondition', () => {
+    var condition = '2+2 === 4';
+    expect(evaluateCondition(condition, scope)).toBe(true);
+
+    condition = 'str1 === "hello"';
+    expect(evaluateCondition(condition, scope)).toBe(true);
+
+    condition = 'obj1.field2 === "hello"';
+    expect(evaluateCondition(condition, scope)).toBe(false);
+
+    condition = 'obj1.field1 - 1 < 10 && obj1.field1 >= 9';
+    expect(evaluateCondition(condition, scope)).toBe(true);
+})
