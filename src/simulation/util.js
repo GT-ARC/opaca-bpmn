@@ -57,8 +57,7 @@ export function initializeVariables(startEventContext){
 // Evaluate condition
 export function evaluateCondition(condition, scope){
     const parentScopeId = scope.parent.id;
-    const processedCondition = preprocessExpression(condition, parentScopeId);
-    return eval(processedCondition);
+    return restrictedEval(condition, parentScopeId);
 }
 
 // Make assignment to a variable at assignTime
@@ -137,43 +136,74 @@ export function callService(element, scope) {
 
 //// Helpers ////
 
-// Check if string is valid JSON
-function isValidJSON(str) {
-    try {
-        const parsedJSON = JSON.parse(str);
-        return parsedJSON && typeof parsedJSON === 'object';
-    } catch (e) {
-        return false;
-    }
-}
-
-// Replace variable names inside expression with local mapping.
-// May not work for some variable types
-function preprocessExpression(expression, parentScopeId) {
-    for (const variable in variableMapping[parentScopeId]) {
-        const regex = new RegExp(`\\b${variable}\\b`, 'g'); // Match whole word
-        expression = expression.replace(regex, `variableMapping['${parentScopeId}']['${variable}']`);
-    }
-    return expression;
-}
-
 // Evaluate assignment of different expressions
 function makeAssignment(assignment, parentScopeId) {
     try {
-        if (isValidJSON(assignment.expression)) {
-            // Object (JSON), collection
-            variableMapping[parentScopeId][assignment.variable] = JSON.parse(assignment.expression);
-        } else if (assignment.expression.startsWith('"')) {
-            // String (unquoted)
-            variableMapping[parentScopeId][assignment.variable] = assignment.expression.replace(/"(.*)"/g, "$1");
-        } else {
-            // Other (primitive, operations)
-            const processedAssignment = preprocessExpression(assignment.expression, parentScopeId);
-            variableMapping[parentScopeId][assignment.variable] = eval(processedAssignment);
-        }
+        variableMapping[parentScopeId][assignment.variable] = restrictedEval(assignment.expression, parentScopeId);
     }catch (err){
         alert(`Assignment failed: ${err}`);
     }
+}
+
+// Here we can put functions to be assigned in the process design
+const context = {
+    log: (msg) => console.log(msg),
+    alert: (msg) => alert(msg),
+    sum: (a, b) => a+b
+}
+
+// List of allowed operators
+const operators = ['+', '-', '*', '/', '(', ')', '>', '<', '!', '=', ',', ':', ';', '{', '}', '[', ']', '|', '&'];
+
+function isNumber(token) {
+    return !isNaN(parseFloat(token)) && isFinite(token);
+}
+
+function isOperator(token) {
+    return operators.includes(token);
+}
+
+function isBoolean(token) {
+    return token === "true" || token === "false";
+}
+
+function isString(token){
+    return /^("[^"]*"|'[^']*')$/.test(token);
+}
+
+// Replace variable by variableMapping or predefined function
+function validateAndReplaceTokens(tokens, parentScope){
+    return tokens.map(token => {
+        if (isNumber(token) || isOperator(token) || isBoolean(token) || isString(token)) {
+            return token; // Valid number, operator, boolean or string
+        } else if(token.startsWith('.') || token.endsWith(':')) {
+            return token; // Property access
+        } else if (variableMapping[parentScope] && variableMapping[parentScope].hasOwnProperty(token)) {
+            return `variableMapping['${parentScope}']['${token}']`; // Replace with variable mapping
+        } else if (context.hasOwnProperty(token)) {
+            return `context['${token}']`; // Allow function from context
+        } else {
+            throw new Error(`No access to ${token}!`); // Invalid token
+        }
+    });
+}
+
+function tokenizeExpression(expression){
+    // Split the expression into tokens
+    const tokens = expression.match(/("[^"]*"|'[^']*'|\w+:|\d+|\w+|\.\w+|[^\w\s])/g);
+    //console.log(tokens);
+    return tokens;
+}
+
+// Match expression before calling eval
+function restrictedEval(expression, parentScope){
+    const tokens = tokenizeExpression(expression, parentScope);
+    const validatedTokens = validateAndReplaceTokens(tokens, parentScope);
+    const validatedExpression = validatedTokens.join('');
+    //console.log('Validated: ', validatedExpression);
+
+    // Parentheses ensure it is treated as an expression, not a block
+    return eval('(' + validatedExpression + ')');
 }
 
 // Create log element with assignment info and trigger log event
@@ -198,4 +228,17 @@ function logAssignment(variable, element, parentScope){
     }
     // Dispatch
     document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
+}
+
+//// For testing variableUpdates only ////
+export function addVariable(variable, parentScopeId){
+    if(!variableMapping[parentScopeId]){
+        variableMapping[parentScopeId] = {};
+    }
+    variableMapping[parentScopeId][variable.name] = variable.value;
+}
+
+export function assignAndGet(assignment, parentScopeId){
+    makeAssignment(assignment, parentScopeId);
+    return variableMapping[parentScopeId][assignment.variable];
 }
