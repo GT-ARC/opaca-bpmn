@@ -1,39 +1,59 @@
 import { getAssignments } from './provider/assignments/util';
-import { getVariables } from './provider/variables/util';
+import {getVariables, getVariablesExtension} from './provider/variables/util';
 import { isPaste } from 'diagram-js/lib/features/keyboard/KeyboardUtil';
+import {is} from "bpmn-js-token-simulation/lib/simulator/util/ModelUtil";
+import {getServices, getServicesExtension} from "./views/services/util";
+import {createElement, getRootElement} from "./provider/util";
 
 // Native Copy-Paste Module
 export const nativeCopyModule = {
     __init__: ['nativeCopyPaste'],
     nativeCopyPaste: ['type', function (
         keyboard, eventBus,
-        moddle, clipboard, elementRegistry
+        moddle, clipboard, elementRegistry, bpmnFactory, commandStack
     ) {
 
-        function collectReferences(elements, references) {
+        function collectReferences(elements) {
+            // Here elements are only the copied elements
             if (!elements){
                 console.error('Expected an array of elements');
                 return;
             }
+            const varRefs = {}, serviceRefs = {};
 
-            const process = elementRegistry.get('Process_1');
+            const firstElement = elements[0];
+            const process = getRootElement(elementRegistry.get(firstElement.id));
             const variables = getVariables(process);
-            // TODO also collect other references (processes)
-            console.log(elements);
+
+            const definitions = process.$parent;
+            const services = getServices(definitions);
+
             elements.forEach(element => {
+                // See which variables have assignments in copied elements
                 const assignments = getAssignments(element);
                 if(assignments){
                     assignments.forEach(assignment => {
                         if(variables){
                             variables.forEach(variable => {
                                 if(variable.name === assignment.variable){
-                                    references[variable.name] = variable;
+                                    varRefs[variable.name] = variable;
                                 }
                             });
                         }
                     });
                 }
+                // See which services are referenced in copied service tasks
+                if(is(element, 'bpmn:ServiceTask')){
+                    const serviceImpl = element.businessObject.serviceImpl;
+                    services.forEach(service => {
+                        if(service.id === serviceImpl){
+                            // Service is referenced by id, but we use name as key
+                            serviceRefs[service.name] = service;
+                        }
+                    })
+                }
             });
+            return {varRefs, serviceRefs};
         }
 
         // Persist into local storage whenever copy takes place
@@ -41,17 +61,15 @@ export const nativeCopyModule = {
             const { tree } = event;
 
             // Collect all references
-            const references = {};
-            collectReferences(tree[0], references);
-            console.log(references);
+            const {varRefs, serviceRefs} = collectReferences(tree[0]);
 
             // Combine tree and references
             const copyPayload = {
                 tree,
-                references
+                varRefs,
+                serviceRefs
             };
-
-            console.log('PUT localStorage', tree, references);
+            //console.log('PUT localStorage', tree, varRefs, serviceRefs);
 
             // Persist in local storage, encoded as JSON
             localStorage.setItem('bpmnClipboard', JSON.stringify(copyPayload));
@@ -73,35 +91,201 @@ export const nativeCopyModule = {
             }
 
             // Parse tree, re-instantiating contained objects
-            const { tree, references } = JSON.parse(serializedCopy, createReviver(moddle));
+            const { tree, varRefs, serviceRefs } = JSON.parse(serializedCopy, createReviver(moddle));
+            //console.log('GET localStorage', tree, varRefs, serviceRefs);
 
-            console.log('GET localStorage', tree, references);
+            if (Object.keys(varRefs).length < 1 && Object.keys(serviceRefs).length < 1) {
+                clipboard.set(tree);
+                //console.log('no refs found.');
+                return;
+            }
 
-            // TODO make sure it works for processes with other names
-            const targetProcess = elementRegistry.get('Process_1');
+            const commands = [];
 
-            console.log('targetProcess', targetProcess);
-            // TODO add undo support
-            // Add missing variables to the target process
-            Object.keys(references).forEach(key => {
-                const reference = references[key];
+            const targetProcess = elementRegistry.getAll()[0];
+            const processBusinessObj = targetProcess.businessObject;
+            const definitions = processBusinessObj.$parent;
 
-                if(!targetProcess.businessObject.get('extensionElements')){
-                    targetProcess.businessObject.extensionElements = moddle.create('bpmn:ExtensionElements', {values : []});
+            // Ensure extensionElements for process
+            let extensionElements = processBusinessObj.get('extensionElements');
+            if (!extensionElements && Object.keys(varRefs).length > 0) {
+                extensionElements = createElement(
+                    'bpmn:ExtensionElements',
+                    { values: [] },
+                    processBusinessObj,
+                    bpmnFactory
+                );
+                commands.push({
+                    cmd: 'element.updateModdleProperties',
+                    context: {
+                        element: targetProcess,
+                        moddleElement: processBusinessObj,
+                        properties: { extensionElements }
+                    }
+                });
+            }
+            // Ensure extensionElements for definitions
+            let defExtensionElements = definitions.get('extensionElements');
+            if (!defExtensionElements && Object.keys(serviceRefs).length > 0) {
+                defExtensionElements = createElement(
+                    'bpmn:ExtensionElements',
+                    { values: [] },
+                    definitions,
+                    bpmnFactory
+                );
+
+                commands.push({
+                    cmd: 'element.updateModdleProperties',
+                    context: {
+                        element: targetProcess,
+                        moddleElement: definitions,
+                        properties: { extensionElements: defExtensionElements }
+                    }
+                });
+            }
+
+            // Ensure variablesExtension
+            let variablesExtension = getVariablesExtension(processBusinessObj);
+            if (!variablesExtension && Object.keys(varRefs).length > 0) {
+                variablesExtension = createElement(
+                    'vsdt2:Variables',
+                    { values: [] },
+                    extensionElements,
+                    bpmnFactory
+                );
+                commands.push({
+                    cmd: 'element.updateModdleProperties',
+                    context: {
+                        element: targetProcess,
+                        moddleElement: extensionElements,
+                        properties: {
+                            values: [...extensionElements.get('values'), variablesExtension]
+                        }
+                    }
+                });
+            }
+
+            // Ensure servicesExtension
+            let servicesExtension = getServicesExtension(definitions);
+            if (!servicesExtension && Object.keys(serviceRefs).length > 0) {
+                servicesExtension = createElement(
+                    'vsdt2:Services',
+                    { values: [] },
+                    defExtensionElements,
+                    bpmnFactory
+                );
+
+                commands.push({
+                    cmd: 'element.updateModdleProperties',
+                    context: {
+                        element: targetProcess,
+                        moddleElement: defExtensionElements,
+                        properties: {
+                            values: [...defExtensionElements.get('values'), servicesExtension]
+                        }
+                    }
+                });
+            }
+
+            // Create new variables
+            const newVariables = Object.keys(varRefs).map(key => {
+
+                const reference = varRefs[key];
+                // If not already existing
+                if(!getVariables(targetProcess) || !getVariables(targetProcess).find(variable => variable.name === key)){
+
+                    return createElement('vsdt2:Variable', {
+                        name: reference.name,
+                        type: reference.type
+                    }, variablesExtension, bpmnFactory);
                 }
-                console.log('target extensionElements', targetProcess.businessObject.extensionElements);
-                if (!getVariables(targetProcess)) {
-                    targetProcess.businessObject.extensionElements.values.push(moddle.create('vsdt2:Variables', {values: []}));
-                }
-                console.log('target extensionElements', targetProcess.businessObject.extensionElements);
+            }).filter(Boolean);  // Remove undefined/null entries
 
-                if (!getVariables(targetProcess).find(variable => variable.name === key)) {
-                    // Add the reference to the target process variables
-                    // TODO make sure values[0] is variables extension
-                    targetProcess.businessObject.extensionElements.values[0].values.push(reference);
+            // Create new services
+            const newServices = Object.keys(serviceRefs).map(key => {
+
+                const reference = serviceRefs[key];
+                const existingServices = getServices(definitions);
+                // If not already existing
+                if(!existingServices || !existingServices.find(service => service.name === key)){
+                    const newService = createElement('vsdt2:Service', {
+                        type: reference.type,
+                        uri: reference.uri,
+                        method: reference.method,
+                        name: reference.name,
+                        id: reference.id
+                    }, servicesExtension, bpmnFactory);
+
+                    if (reference.result && reference.result.name !== '') {
+                        const newResult = createElement('vsdt2:Result', {
+                            name: reference.result.name,
+                            type: reference.result.type
+                        }, newService, bpmnFactory);
+
+                        newService.result = newResult;
+                    }
+
+                    if (reference.parameters) {
+                        const params = reference.parameters.map(param =>
+                            createElement('vsdt2:Parameter', {
+                                name: param.name,
+                                type: param.type
+                            }, newService, bpmnFactory)
+                        );
+                        newService.parameters = params;
+                    }
+                    return newService;
+                }else{
+                    // Adjust serviceImpl to existing service
+
+                    const existingService = existingServices.find(service => service.name === key);
+
+                    // In tree, find serviceTask with serviceImpl === reference.id
+                    tree[0].forEach(element => {
+                        if (element.businessObject.$type === 'bpmn:ServiceTask' && element.businessObject.serviceImpl === reference.id) {
+                            // Set serviceImpl of serviceTask to the existing service's id
+                            element.businessObject.serviceImpl = existingService.id;
+                            console.log(`Updated serviceImpl of ServiceTask to ${existingService.id}`);
+                        }
+                    });
                 }
-            });
-            // Put into clipboard
+            }).filter(Boolean);  // Remove undefined/null entries
+
+            // Update variablesExtension
+            if(newVariables && newVariables.length > 0){
+                commands.push({
+                    cmd: 'element.updateModdleProperties',
+                    context: {
+                        element: targetProcess,
+                        moddleElement: variablesExtension,
+                        properties: {
+                            values: [...variablesExtension.get('values'), ...newVariables]
+                        }
+                    }
+                });
+            }
+
+            // Update servicesExtension
+            if(newServices && newServices.length > 0){
+                commands.push({
+                    cmd: 'element.updateModdleProperties',
+                    context: {
+                        element: targetProcess,
+                        moddleElement: servicesExtension,
+                        properties: {
+                            values: [...servicesExtension.get('values'), ...newServices]
+                        }
+                    }
+                });
+            }
+
+            // Execute commands (Set properties)
+            commandStack.execute('properties-panel.multi-command-executor', commands);
+
+            // Create entries in service view
+            eventBus.fire('import.done');
+
+            // Put into clipboard (Paste elements)
             clipboard.set(tree);
         });
     }]
