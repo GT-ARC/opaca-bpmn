@@ -78,6 +78,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const firstElement = elementRegistry.getAll()[0];
         const root = getRootElement(firstElement);
 
+        // (TODO): Maybe element should be RootImpl, its bO would then be a process/collaboration
         // Get bpmn:Definitions (where we want to define services)
         const element = root.$parent;
 
@@ -388,7 +389,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             // Get bpmn:Definitions
             const def = root.$parent;
 
-            // Create entries in the service view for initial services (in bpmn:Definitions)
+            // Remove existing entries
+            content.replaceChildren();
+
+            // Create entries in the service view for initial/copied services (in bpmn:Definitions)
             const services = getServices(def) || [];
             services.forEach((service) => {
                 const newEntry = {
