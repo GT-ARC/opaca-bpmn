@@ -1,15 +1,18 @@
 import {isSelectEntryEdited, SelectEntry} from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 import {useEffect, useState} from '@bpmn-io/properties-panel/preact/hooks';
-import {getRootElement} from "../util";
+import {createElement, getRelevantBusinessObject, getRootElement} from "../util";
 import {getServices} from "../../views/services/util";
+import {createAssignments, getAssignmentsExtension} from "../assignments/util";
+import {is} from "bpmn-js/lib/util/ModelUtil";
 
-export default function ServiceImplementation(element) {
+export default function ServiceImplementation(element, injector) {
 
     return [
         {
             id: 'serviceImpl',
             element,
+            injector,
             component: Service,
             isEdited: isSelectEntryEdited
         }
@@ -19,7 +22,8 @@ export default function ServiceImplementation(element) {
 function Service(props) {
     const {
         element,
-        id
+        id,
+        injector
     } = props;
 
     const modeling = useService('modeling');
@@ -31,6 +35,14 @@ function Service(props) {
     };
 
     const setValue = value => {
+
+        // Confirm window for automatic parameter assignment
+        if(confirm('Create empty assignments for service parameters?')){
+            const service = services.find(service => service.id === value);
+            service.parameters.forEach(param => {
+                simpleParameterAssignments(element, injector, param.name);
+            });
+        }
         return modeling.updateProperties(element, { serviceImpl: value });
     };
 
@@ -44,7 +56,7 @@ function Service(props) {
             setServices(definedServices);
 
         } catch (error) {
-            console.error('Error fetching variables:', error);
+            console.error('Error fetching services:', error);
         }
     }, [element]);
 
@@ -65,4 +77,79 @@ function Service(props) {
         setValue,
         debounce
     });
+}
+
+
+
+/// Create empty parameter assignments
+
+function simpleParameterAssignments(element, injector, paramName){
+    const commands = [];
+
+    const bpmnFactory = injector.get('bpmnFactory'),
+        commandStack = injector.get('commandStack');
+
+    const businessObject = getRelevantBusinessObject(element);
+
+    let extensionElements = businessObject.get('extensionElements');
+
+    // (1) ensure extension elements
+    if (!extensionElements) {
+        extensionElements = createElement(
+            'bpmn:ExtensionElements',
+            { values: [] },
+            businessObject,
+            bpmnFactory
+        );
+
+        commands.push({
+            cmd: 'element.updateModdleProperties',
+            context: {
+                element,
+                moddleElement: businessObject,
+                properties: { extensionElements }
+            }
+        });
+    }
+
+    // (2) ensure assignments extension
+    let extension = getAssignmentsExtension(element);
+
+    if (!extension) {
+        extension = createAssignments({
+            values: []
+        }, extensionElements, bpmnFactory);
+
+        commands.push({
+            cmd: 'element.updateModdleProperties',
+            context: {
+                element,
+                moddleElement: extensionElements,
+                properties: {
+                    values: [ ...extensionElements.get('values'), extension ]
+                }
+            }
+        });
+    }
+
+    // (3) create assignment
+    const newAssignment = createElement('vsdt2:Assignment', {
+        variable : paramName,
+        expression: '',
+        assignTime: 'START'
+    }, extension, bpmnFactory);
+
+    // (4) add assignment to list
+    commands.push({
+        cmd: 'element.updateModdleProperties',
+        context: {
+            element,
+            moddleElement: extension,
+            properties: {
+                values: [ ...extension.get('values'), newAssignment ]
+            }
+        }
+    });
+
+    commandStack.execute('properties-panel.multi-command-executor', commands);
 }

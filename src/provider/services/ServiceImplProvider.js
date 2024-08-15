@@ -13,7 +13,7 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
  */
-export default function ServiceImplProvider(propertiesPanel, translate) {
+export default function ServiceImplProvider(propertiesPanel, injector, translate) {
 
     // API ////////
 
@@ -38,7 +38,7 @@ export default function ServiceImplProvider(propertiesPanel, translate) {
 
             // Add the "ServiceImplementation" group
             if (is(element, 'bpmn:ServiceTask')) {
-                groups.push(createServiceImplGroup(element, translate));
+                groups.push(createServiceImplGroup(element, injector, translate));
             }
 
             return groups;
@@ -54,15 +54,15 @@ export default function ServiceImplProvider(propertiesPanel, translate) {
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
 }
 
-ServiceImplProvider.$inject = [ 'propertiesPanel', 'translate' ];
+ServiceImplProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 
 // Create the "ServiceImplementation" group
-function createServiceImplGroup(element, translate) {
+function createServiceImplGroup(element, injector, translate) {
 
     // Return group
     return {
         id: 'serviceImplementation',
         label: translate('Service Implementation'),
-        entries: serviceImplementation(element)
+        entries: serviceImplementation(element, injector)
     };
 }
