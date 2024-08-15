@@ -182,7 +182,6 @@ function parseISO8601Cycle(cycle) {
         if (match[5]) interval += parseInt(match[5]) * 60 * 1000; // Minutes
         if (match[6]) interval += parseInt(match[6]) * 1000; // Seconds
     }
-    //console.log(`repetitions: ${repetitions}, interval: ${interval}, delay: ${delay}`);
     if(delay === 0){
         delay = interval;
     }
@@ -195,3 +194,12 @@ TimerEventSupport.$inject = [
     'toggleMode',
     'simulationSupport'
 ];
+
+// For testing only
+export function testTimerDefinition(isCycle, definition){
+    if(isCycle){
+        return parseISO8601Cycle(definition);
+    }else{
+        return parseISO8601Duration(definition);
+    }
+}
