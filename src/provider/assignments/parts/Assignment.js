@@ -75,10 +75,21 @@ function Variable(props) {
 
     // Drop-down options (defined variables)
     const getOptions = () => {
-        return Array.isArray(variables) ? variables.map(variable => ({
-            value: variable.name,
-            label: variable.name + ' (' + variable.type + ')'
-        })) : [];
+        return Array.isArray(variables) ? variables.map(variable => {
+            if (variable.category === 'serviceParameter' || variable.category === 'serviceResult') {
+                // For service parameters and results, include the service name and data type
+                return {
+                    value: variable.name,
+                    label: `${variable.name} (${variable.type}) [${variable.serviceName}]`
+                };
+            } else {
+                // For standard variables, include just the name and data type
+                return {
+                    value: variable.name,
+                    label: `${variable.name} (${variable.type})`
+                };
+            }
+        }) : [];
     };
 
     return SelectEntry({

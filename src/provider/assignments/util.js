@@ -21,7 +21,6 @@ export function createAssignments(properties, parent, bpmnFactory) {
 
 // Get all defined process/ subprocess variables for drop-down
 export function getAllVariables(element) {
-
     const rootElement = getParentElement(element);
 
     const variables = [];
@@ -31,7 +30,11 @@ export function getAllVariables(element) {
 
         if (extension) {
             const currentVariables = extension.values || [];
-            variables.push(...currentVariables);
+            variables.push(...currentVariables.map(variable => ({
+                name: variable.name,
+                type: variable.type,
+                category: 'variable' // Mark as a standard variable
+            })));
         }
 
         // Check if the current element has a parent
@@ -39,13 +42,32 @@ export function getAllVariables(element) {
 
         if (parent && parent.$parent) {
             collectVariables(parent);
-        }else{
+        } else {
             // No parent means we are in bpmn:Definitions
             // Get parameters and results from services
-            if(getServicesExtension(parent)){
+            const servicesExtension = getServicesExtension(parent);
+            if (servicesExtension) {
                 getServices(parent).forEach(service => {
-                    variables.push(...service.parameters);
-                    variables.push(...(service.result !== undefined ? [service.result] : []));
+
+                    // Add service parameters
+                    service.parameters.forEach(param => {
+                        variables.push({
+                            name: param.name,
+                            type: param.type, // Keep the data type
+                            category: 'serviceParameter',
+                            serviceName: service.name
+                        });
+                    });
+
+                    // Add service result if it exists
+                    if (service.result) {
+                        variables.push({
+                            name: service.result.name,
+                            type: service.result.type, // Keep the data type
+                            category: 'serviceResult',
+                            serviceName: service.name
+                        });
+                    }
                 });
             }
         }
