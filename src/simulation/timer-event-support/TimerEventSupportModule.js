@@ -19,13 +19,14 @@ export default function TimerEventSupport(
         }
         // Get all elements
         const elements = elementRegistry.getAll();
-        // Filter for events
-        const events = elements.filter(el => is(el, 'bpmn:Event'));
+        // Filter for start events
+        const startEvents = elements.filter(el => is(el, 'bpmn:StartEvent'));
+
         // Filter for events with timerEventDefinition
-        const timerEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')));
+        const timerStartEvents = startEvents.filter(el => el.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')));
 
         // Call triggerTimer for each timer event with its eventDefinition
-        Promise.all(timerEvents.map(event => this.triggerTimerEvent(event.id, event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')))))
+        Promise.all(timerStartEvents.map(event => this.triggerTimerEvent(event.id, event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')))))
             .catch((error) => alert(error));
     });
 
@@ -45,6 +46,17 @@ export default function TimerEventSupport(
         if(this.paused){
             this.resumeTimers();
             this.paused = false;
+        }
+    });
+    
+    eventBus.on('trace.elementEnter', (event) => {
+        const element = event.element;
+        if(is(element, 'bpmn:IntermediateCatchEvent')){
+            const timerDefinition = element.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));
+            if(timerDefinition){
+                console.log('found timer definition', timerDefinition);
+                this.triggerTimerEvent(element.id, timerDefinition);
+            }
         }
     });
 }
