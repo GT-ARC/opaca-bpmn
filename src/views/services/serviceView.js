@@ -112,7 +112,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         serviceEntryLabel.addEventListener('click', toggleServiceEntry);
 
         const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'input-wrapper';
+        inputWrapper.className = 'input-wrapper collapsible-content';
+        if(!service.name){
+            toggleServiceEntry();
+        }
 
         // Input Fields
         const typeInput = createDropdown(element, entry, 'Service-type', service, ['OPACA Action', 'REST Service', 'BPMN Process'], service.type);
@@ -134,7 +137,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             content.removeChild(entry);
         });
 
-        // Add entry to the content
+        // Put together entry
         entry.appendChild(serviceEntryLabel);
         inputWrapper.appendChild(typeInput);
         inputWrapper.appendChild(uriInput);
@@ -144,7 +147,8 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         inputWrapper.appendChild(parametersInput);
         inputWrapper.appendChild(removeButton);
         entry.appendChild(inputWrapper);
-        content.appendChild(entry);
+        // Add entry to the top of the list
+        content.insertBefore(entry, content.firstChild);
 
         // Select the correct result type in the dropdown
         resultInput.querySelector('.result-type').value = service.result.type;

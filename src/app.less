@@ -156,8 +156,14 @@ a:link {
   right: 0;
   max-width: 400px; /* Set the maximum width for the views */
   height: fit-content;
+  flex-direction: column;
   z-index: 1;
   position: absolute; /* place relative to canvas */
+}
+
+#service-view {
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .view-label {
@@ -236,10 +242,6 @@ input, select {
   padding: 10px;
   font-size: 14px;
   cursor: pointer;
-}
-
-.input-wrapper {
-  display: block;
 }
 
 #login-label {
