@@ -211,7 +211,7 @@ function logAssignment(variable, element, parentScope){
 
     const log = {
         // indent text
-        text: '&nbsp;&nbsp;&nbsp;&nbsp;' + variable + ' = ' + variableMapping[parentScope.id][variable],
+        text: '&nbsp;&nbsp;' + variable + ' = ' + JSON.stringify(variableMapping[parentScope.id][variable]),
         icon: 'bpmn-icon-task',
         scope: parentScope
     }
