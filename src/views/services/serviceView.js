@@ -17,10 +17,18 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
     // Open / Close service view
     function toggleServiceView() {
+        const arrowSvg = toggleViewButton.querySelector('svg');
         if (content.style.display === 'none' || !content.style.display) {
+            if(content.childElementCount === 0){
+                return; // Nothing to show
+            }
             content.style.display = 'block';
+            arrowSvg.classList.remove('bio-properties-panel-arrow-right');
+            arrowSvg.classList.add('bio-properties-panel-arrow-down');
         } else {
             content.style.display = 'none';
+            arrowSvg.classList.remove('bio-properties-panel-arrow-down');
+            arrowSvg.classList.add('bio-properties-panel-arrow-right');
         }
     }
 
@@ -28,7 +36,9 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     const addServiceButton = document.getElementById('addServiceButton');
     addServiceButton.addEventListener('click', function (){
         createNewService();
-        content.style.display = 'block';
+        if(content.style.display !== 'block'){
+            toggleServiceView();
+        }
     });
 
     // Set up the click event for loading OPACA Actions
@@ -107,14 +117,50 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         // Create label for displaying the name (always visible)
         const serviceEntryLabel = document.createElement('div');
-        serviceEntryLabel.textContent = service.name ? service.name : 'New Service';
         serviceEntryLabel.className = 'service-entry-label';
-        serviceEntryLabel.addEventListener('click', toggleServiceEntry);
+
+        // Button for opening/closing the service
+        const collapseButton = document.createElement('button');
+        collapseButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bio-properties-panel-arrow-right">
+                            <path fill-rule="evenodd" d="m11.657 8-4.95 4.95a1 1 0 0 1-1.414-1.414L8.828 8 5.293 4.464A1 1 0 1 1 6.707 3.05L11.657 8Z"></path>
+                        </svg>`;
+        collapseButton.className = 'view-button collapse-service-button bio-properties-panel-collapsible-entry-arrow';
+        collapseButton.addEventListener('click', toggleServiceEntry);
+
+        // Span for the service name (this will update, but buttons remain)
+        const serviceNameSpan = document.createElement('span');
+        serviceNameSpan.textContent = service.name ? service.name : 'New Service';
+        serviceNameSpan.className = 'service-name';
+
+        // Button for removing a service
+        const removeButton = document.createElement('button');
+        removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                <path fill-rule="evenodd" d="M12 6v7c0 1.1-.4 1.55-1.5 1.55h-5C4.4 14.55 4 14.1 4 13V6h8Zm-1.5 1.5h-5v4.3c0 .66.5 1.2 1.111 1.2H9.39c.611 0 1.111-.54 1.111-1.2V7.5ZM13 3h-2l-1-1H6L5 3H3v1.5h10V3Z"></path>
+              </svg>`;
+        removeButton.title = 'Delete service';
+        removeButton.className = 'bio-properties-panel-remove-entry remove-item-button';
+        removeButton.addEventListener('click', () => {
+            // Get property by id
+            const serviceToRemove = getRelevantServiceProperty(element, service.id);
+            // Remove property from XML
+            removeFactory(commandStack, element, serviceToRemove);
+            // Remove the entry from the DOM
+            content.removeChild(entry);
+            // If no services are left close service view
+            if(content.childElementCount === 0){
+                toggleServiceView();
+            }
+        });
+
+        // Put together the label (collapse button, service name, remove button)
+        serviceEntryLabel.appendChild(collapseButton);
+        serviceEntryLabel.appendChild(serviceNameSpan);
+        serviceEntryLabel.appendChild(removeButton);
 
         const inputWrapper = document.createElement('div');
         inputWrapper.className = 'input-wrapper collapsible-content';
-        if(!service.name){
-            toggleServiceEntry();
+        if (!service.name) {
+            toggleServiceEntry();  // If it's a new service, expand it
         }
 
         // Input Fields
@@ -125,28 +171,23 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const resultInput = createResultGroup(element, entry, service);
         const parametersInput = createParametersGroup(element, entry, service);
 
-        // Button for removing a service
-        const removeButton = document.createElement('button');
-        removeButton.innerHTML = 'x';
-        removeButton.addEventListener('click', () => {
-            // Get property by id
-            const serviceToRemove = getRelevantServiceProperty(element, service.id);
-            // Remove property from XML
-            removeFactory(commandStack, element, serviceToRemove);
-            // Remove the entry from the DOM
-            content.removeChild(entry);
+        // When the service name input changes, update only the service name span
+        nameInput.addEventListener('input', () => {
+            serviceNameSpan.textContent = nameInput.value;
         });
 
-        // Put together entry
-        entry.appendChild(serviceEntryLabel);
+        // Build the input wrapper
+        inputWrapper.appendChild(nameInput);
         inputWrapper.appendChild(typeInput);
         inputWrapper.appendChild(uriInput);
         inputWrapper.appendChild(methodInput);
-        inputWrapper.appendChild(nameInput);
         inputWrapper.appendChild(resultInput);
         inputWrapper.appendChild(parametersInput);
-        inputWrapper.appendChild(removeButton);
+
+        // Add everything to the entry
+        entry.appendChild(serviceEntryLabel);
         entry.appendChild(inputWrapper);
+
         // Add entry to the top of the list
         content.insertBefore(entry, content.firstChild);
 
@@ -159,16 +200,23 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             parameterEntry.querySelector('.parameter-type').value = service.parameters[index].type;
         });
 
-        // Open / Close service entry
+        // Function to toggle the collapse/expand of the service entry
         function toggleServiceEntry() {
             const computedStyle = window.getComputedStyle(inputWrapper);
             if (computedStyle.display === 'none' || !computedStyle.display) {
                 inputWrapper.style.display = 'block';
+                collapseButton.classList.remove('bio-properties-panel-arrow-right');
+                collapseButton.classList.add('bio-properties-panel-arrow-down');
+                collapseButton.title = 'Close';
             } else {
                 inputWrapper.style.display = 'none';
+                collapseButton.classList.remove('bio-properties-panel-arrow-down');
+                collapseButton.classList.add('bio-properties-panel-arrow-right');
+                collapseButton.title = 'Open';
             }
         }
     }
+
 
 
     // Function to create an element for URI / name input
@@ -186,10 +234,6 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         input.addEventListener('change', () => {
             // Get current inputs
             const newService = getCurrentServiceValues(entry, service)
-
-            // Make sure entry label is updated
-            const nameLabel = entry.querySelector('.service-entry-label');
-            nameLabel.textContent = newService.name;
 
             // Update XML
             updateModel(element, service.id, newService);
@@ -284,22 +328,35 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         const paramsGroup = document.createElement('div');
         paramsGroup.classList.add('parameters-group');
 
-        // Add initial parameters
-        service.parameters.forEach(parameter => {
-            const paramEntry = createParameterEntry(element, entry, service, paramsGroup, parameter);
-            paramsGroup.appendChild(paramEntry);
-        });
+        // Header for label and add button
+        const paramsHeader = document.createElement('div');
+        paramsHeader.id = 'parameters-header';
+        // Label
+        const paramsLabel = document.createElement('span');
+        paramsLabel.innerHTML = 'Parameters';
 
         const addParameterButton = document.createElement('button');
-        addParameterButton.innerHTML = '+';
-        addParameterButton.classList.add('createEntry');
+        addParameterButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                            <path fill-rule="evenodd" d="M9 13V9h4a1 1 0 0 0 0-2H9V3a1 1 0 1 0-2 0v4H3a1 1 0 1 0 0 2h4v4a1 1 0 0 0 2 0Z"></path>
+                        </svg>`
+        addParameterButton.className = 'add-item-button view-button bio-properties-panel-add-entry';
         addParameterButton.title = 'Add parameter';
         addParameterButton.addEventListener('click', () => {
             // Add entry on click
             const paramEntry = createParameterEntry(element, entry, service, paramsGroup, {name: '', type: ''});
             paramsGroup.appendChild(paramEntry);
         });
-        paramsGroup.appendChild(addParameterButton);
+        // Put together header
+        paramsHeader.appendChild(paramsLabel);
+        paramsHeader.appendChild(addParameterButton);
+        // Add header to group
+        paramsGroup.appendChild(paramsHeader);
+
+        // Add initial parameters
+        service.parameters.forEach(parameter => {
+            const paramEntry = createParameterEntry(element, entry, service, paramsGroup, parameter);
+            paramsGroup.appendChild(paramEntry);
+        });
 
         return paramsGroup;
     }
@@ -320,7 +377,12 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         // Button for removing a parameter
         const removeButton = document.createElement('button');
-        removeButton.innerHTML = 'x';
+        removeButton.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16">
+                <path fill-rule="evenodd" d="M12 6v7c0 1.1-.4 1.55-1.5 1.55h-5C4.4 14.55 4 14.1 4 13V6h8Zm-1.5 1.5h-5v4.3c0 .66.5 1.2 1.111 1.2H9.39c.611 0 1.111-.54 1.111-1.2V7.5ZM13 3h-2l-1-1H6L5 3H3v1.5h10V3Z"></path>
+              </svg>`;
+        removeButton.title = 'Delete parameter';
+        //removeButton.type = 'button';
+        removeButton.className = 'bio-properties-panel-remove-entry remove-item-button';
         removeButton.addEventListener('click', () => {
             // Remove the entry from the DOM
             paramsGroup.removeChild(paramEntry);

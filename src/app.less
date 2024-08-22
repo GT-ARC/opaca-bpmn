@@ -164,6 +164,7 @@ a:link {
 #service-view {
   max-height: 90vh;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .view-label {
@@ -174,6 +175,12 @@ a:link {
   border-bottom: 1px solid hsl(225, 10%, 75%);
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.service-header-buttons {
+  display: flex;
+  gap: 10px;
 }
 
 .custom-properties-label img {
@@ -182,8 +189,9 @@ a:link {
   margin-right: 10px;
 }
 
-.view-label span {
+#service-view-title {
   font-weight: bold;
+  margin-right: 10px;
 }
 
 .collapsible-content {
@@ -194,6 +202,7 @@ a:link {
 
 .service-entry {
   border-bottom: 1px solid hsl(225, 10%, 75%);
+  width: 340px;
 }
 
 .param-entry {
@@ -206,29 +215,62 @@ a:link {
 }
 
 .view-button {
-  border-radius: 20px;
+  border-radius: 11px;
   border: none;
-  font-size: 20px;
-  background: transparent;
-  color: hsl(225, 10%, 35%);
+  background: none;
+  fill: hsl(225, 10%, 35%);
   overflow: hidden;
+  box-sizing: border-box;
+  height: 22px;
+  line-height: 22px;
+  min-width: 22px;
+  align-self: center;
+  align-items: center;
+  display: inline-flex;
+  padding: 0 3px;
 }
-#loadServiceButton {
-  font-size: 16px;
+#loadServiceButton, #use-auth-label {
+  font-size: 14px;
+  color: hsl(225, 10%, 35%);
 }
-#addServiceButton:hover, #loadServiceButton:hover {
-  background: hsl(205, 100%, 50%);
+#loadServiceButton:hover {
   color: white;
 }
+#useAuthCheckbox {
+  height: 14px;
+}
+
+.add-item-button:hover {
+  background: hsl(205, 100%, 50%);
+  fill: white;
+}
+.remove-item-button {
+  fill: hsl(360, 100%, 45%);
+  visibility: visible;
+  &:hover {
+    background: hsl(360, 100%, 92%);
+  }
+}
+.collapse-service-button {
+  position: static;
+  &:hover {
+    background: hsl(225, 10%, 95%);
+  }
+}
+#toggle-service-view {
+  position: static;
+}
+
 #toggle-service-view:hover {
   background: hsl(225, 10%, 35%);
-  color: white;
+  fill: white;
 }
 
 input, select {
   height: 26px;
   padding: 2px;
   margin-bottom: 5px;
+  margin-left: 10px;
   background: hsl(225, 10%, 97%);
   border: 1px solid hsl(225, 10%, 75%);
   border-radius: 2px;
@@ -237,13 +279,37 @@ input, select {
     border-color: hsl(205, 100%, 50%);
   }
 }
+select {
+  width: 110px;
+}
 
 .service-entry-label {
   padding: 10px;
   font-size: 14px;
-  cursor: pointer;
+  display: flex;
+  align-items: center;
 }
 
-#login-label {
-  cursor: pointer
+.service-entry-label .service-name {
+  flex-grow: 1; /* Make the name span take up available space */
+  margin: 0 10px; /* Add some margin between the name and buttons */
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#auth-container {
+  display: flex;
+  align-items: center;
+}
+
+#parameters-header {
+  margin-bottom: 5px;
+  margin-left: 15px;
+  margin-right: 5px;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  span {
+    margin-right: 10px;
+  }
 }
