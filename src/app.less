@@ -167,15 +167,18 @@ a:link {
   overflow-x: hidden;
 }
 
-.view-label {
+.view-header {
   background-color: hsl(225, 10%, 95%);
   font-size: var(--text-size-base);
-
   padding: 10px;
   border-bottom: 1px solid hsl(225, 10%, 75%);
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+#service-view-header {
+  padding: 16px 10px;
 }
 
 .service-header-buttons {
@@ -189,7 +192,7 @@ a:link {
   margin-right: 10px;
 }
 
-#service-view-title {
+#service-view-label {
   font-weight: bold;
   margin-right: 10px;
 }
@@ -283,14 +286,14 @@ select {
   width: 110px;
 }
 
-.service-entry-label {
-  padding: 10px;
+.service-entry-header {
+  padding: 5px;
   font-size: 14px;
   display: flex;
   align-items: center;
 }
 
-.service-entry-label .service-name {
+.service-entry-header .service-label {
   flex-grow: 1; /* Make the name span take up available space */
   margin: 0 10px; /* Add some margin between the name and buttons */
   overflow: hidden;

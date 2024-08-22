@@ -116,8 +116,8 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.className = 'service-entry';
 
         // Create label for displaying the name (always visible)
-        const serviceEntryLabel = document.createElement('div');
-        serviceEntryLabel.className = 'service-entry-label';
+        const serviceEntryHeader = document.createElement('div');
+        serviceEntryHeader.className = 'service-entry-header';
 
         // Button for opening/closing the service
         const collapseButton = document.createElement('button');
@@ -130,7 +130,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         // Span for the service name (this will update, but buttons remain)
         const serviceNameSpan = document.createElement('span');
         serviceNameSpan.textContent = service.name ? service.name : 'New Service';
-        serviceNameSpan.className = 'service-name';
+        serviceNameSpan.className = 'service-label';
 
         // Button for removing a service
         const removeButton = document.createElement('button');
@@ -153,9 +153,9 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         });
 
         // Put together the label (collapse button, service name, remove button)
-        serviceEntryLabel.appendChild(collapseButton);
-        serviceEntryLabel.appendChild(serviceNameSpan);
-        serviceEntryLabel.appendChild(removeButton);
+        serviceEntryHeader.appendChild(collapseButton);
+        serviceEntryHeader.appendChild(serviceNameSpan);
+        serviceEntryHeader.appendChild(removeButton);
 
         const inputWrapper = document.createElement('div');
         inputWrapper.className = 'input-wrapper collapsible-content';
@@ -185,7 +185,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         inputWrapper.appendChild(parametersInput);
 
         // Add everything to the entry
-        entry.appendChild(serviceEntryLabel);
+        entry.appendChild(serviceEntryHeader);
         entry.appendChild(inputWrapper);
 
         // Add entry to the top of the list

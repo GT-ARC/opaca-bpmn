@@ -12,9 +12,9 @@ const loginLabel = document.getElementById('login-label');
 function toggleUseAuth(){
     use_auth = !use_auth;
     if(use_auth){
-        document.getElementById('login-label').style.display = 'block';
+        document.getElementById('login-header').style.display = 'block';
     }else{
-        document.getElementById('login-label').style.display = 'none';
+        document.getElementById('login-header').style.display = 'none';
     }
 }
 // Show/hide user info
