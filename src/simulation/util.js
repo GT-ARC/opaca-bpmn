@@ -209,9 +209,11 @@ function restrictedEval(expression, parentScope){
 // Create log element with assignment info and trigger log event
 function logAssignment(variable, element, parentScope){
 
+    // the " -> ' is needed because otherwise the tooltip ends with the first "
+    const readableValue = JSON.stringify(variableMapping[parentScope.id][variable], null, 2).replace(/"/g, "'")
     const log = {
         // indent text
-        text: '&nbsp;&nbsp;' + variable + ' = ' + JSON.stringify(variableMapping[parentScope.id][variable]),
+        text: `&nbsp;&nbsp; ${variable} = ${readableValue}`,
         icon: 'bpmn-icon-task',
         scope: parentScope
     }
