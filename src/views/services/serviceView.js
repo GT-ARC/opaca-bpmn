@@ -53,11 +53,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
     // Load all OPACA Actions from Runtime Platform
     async function loadRunningServices() {
-        // Ask the user for the location, with a default value of 'http://localhost:8000/agents'
-        const location = prompt('Load services from:', 'http://localhost:8000/agents');
+        // Ask the user for the location, with a default value of 'http://localhost:8000'
+        const location = prompt('Load services from:', 'http://localhost:8000') + '/agents';
 
         // If the user cancels the prompt, exit the function
-        if (location === null) {
+        if (location === null || location === '/agents') {
             return;
         }
 

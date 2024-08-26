@@ -40,6 +40,12 @@
         <!-- Service View -->
         <div class="properties-panel-parent" id="service-view">
             <div class="view-header" id="service-view-header">
+                <!-- Open/Close Service View -->
+                <button id="toggle-service-view" title="open or collapse" class="view-button bio-properties-panel-collapsible-entry-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bio-properties-panel-arrow-right">
+                        <path fill-rule="evenodd" d="m11.657 8-4.95 4.95a1 1 0 0 1-1.414-1.414L8.828 8 5.293 4.464A1 1 0 1 1 6.707 3.05L11.657 8Z"></path>
+                    </svg>
+                </button>
                 <div id="service-view-label">SERVICES</div>
                 <div class="service-header-buttons">
                     <!-- Add Service Button -->
@@ -55,12 +61,6 @@
                         <span id="use-auth-label">Use Auth</span>
                         <input type="checkbox" id="useAuthCheckbox" title="Use authentication?" class="view-button">
                     </div>
-                    <!-- Open/Close Service View -->
-                    <button id="toggle-service-view" title="open or collapse" class="view-button bio-properties-panel-collapsible-entry-arrow">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" class="bio-properties-panel-arrow-right">
-                            <path fill-rule="evenodd" d="m11.657 8-4.95 4.95a1 1 0 0 1-1.414-1.414L8.828 8 5.293 4.464A1 1 0 1 1 6.707 3.05L11.657 8Z"></path>
-                        </svg>
-                    </button>
                 </div>
             </div>
             <div class="view-header collapsible-content" id="login-header">
@@ -68,7 +68,7 @@
                 <div id="userInfo" class="input-wrapper">
                     <div>
                         Login Location
-                        <input type="text" id="loginLocation" value="http://localhost:8000/login">
+                        <input type="text" id="loginLocation" value="http://localhost:8000">
                     </div>
                     <div>
                         Username

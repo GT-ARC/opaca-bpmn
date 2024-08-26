@@ -31,9 +31,9 @@ function toggleUserInfo(){
 // OPACA Login
 // Takes username and password from the service view
 // (Only supports 1 runtime platform for now)
-async function login(location) {
+async function login() {
     if (use_auth && token === null) {
-        const url = document.getElementById('loginLocation').value;
+        const url = document.getElementById('loginLocation').value + '/login';
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
 
