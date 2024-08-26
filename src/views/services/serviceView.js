@@ -64,17 +64,38 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         try {
             const result = await fetchOpacaServices(location);
             for (const agent of result) {
-                for (const action of agent["actions"]) {
-                    const newService = {
-                        type: 'OPACA Action',
-                        uri: location.split('/agents', 1)[0],
-                        method: 'POST',
-                        name: action["name"],
-                        result: {name: 'result', type: action["result"] != null ? action["result"]["type"] : "void"},
-                        parameters: Object.entries(action["parameters"]).map(e => ({"name": e[0], "type": e[1]["type"]})),
-                        id: nextId('service_')
-                    };
-                    createService(newService);
+
+                var createdEntries = false;
+
+                if (agent.actions && agent.actions.length > 0) {
+                    // TODO: rethink this header approach
+                    const agentHeader = document.createElement('div');
+                    agentHeader.className = 'agent-header';
+                    agentHeader.innerHTML = agent.agentId;
+
+                    for (const action of agent["actions"]) {
+                        const newService = {
+                            type: 'OPACA Action',
+                            uri: location.split('/agents', 1)[0],
+                            method: 'POST',
+                            name: action["name"],
+                            result: {
+                                name: 'result',
+                                type: action["result"] != null ? action["result"]["type"] : "void"
+                            },
+                            parameters: Object.entries(action["parameters"]).map(e => ({
+                                "name": e[0],
+                                "type": e[1]["type"]
+                            })),
+                            id: nextId('service_')
+                        };
+                        if(createService(newService)){
+                            createdEntries = true;
+                        }
+                    }
+                    if(createdEntries){
+                        content.insertBefore(agentHeader, content.firstChild);
+                    }
                 }
             }
         } catch (error) {
@@ -100,13 +121,14 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         if (existingService) {
             // Service with the same name already exists, do not add it again
             console.warn('Service with name ', service.name, ' already exists.');
-            return;
+            return false;
         }
 
         addFactory(element, bpmnFactory, commandStack, service);
 
         // Create a new service entry in service view
         createServiceEntry(element, service);
+        return true;
     }
 
     // Function to create a service entry
