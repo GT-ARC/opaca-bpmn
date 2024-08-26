@@ -12,9 +12,9 @@ const loginLabel = document.getElementById('login-label');
 function toggleUseAuth(){
     use_auth = !use_auth;
     if(use_auth){
-        document.getElementById('login-label').style.display = 'block';
+        document.getElementById('login-header').style.display = 'block';
     }else{
-        document.getElementById('login-label').style.display = 'none';
+        document.getElementById('login-header').style.display = 'none';
     }
 }
 // Show/hide user info
@@ -31,9 +31,9 @@ function toggleUserInfo(){
 // OPACA Login
 // Takes username and password from the service view
 // (Only supports 1 runtime platform for now)
-async function login(location) {
+async function login() {
     if (use_auth && token === null) {
-        const url = document.getElementById('loginLocation').value;
+        const url = document.getElementById('loginLocation').value + '/login';
         const username = document.getElementById('loginUsername').value;
         const password = document.getElementById('loginPassword').value;
 
