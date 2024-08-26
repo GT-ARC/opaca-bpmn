@@ -4,7 +4,6 @@
   "description": "A bpmn-js modeler with properties panel and token-simulator and some extensions for interpretation",
   "main": "app/index.js",
   "scripts": {
-    "all": "run-s build",
     "dev": "webpack-dev-server --open --host 0.0.0.0",
     "start": "run-s dev",
     "serve": "sirv public --dev",

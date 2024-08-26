@@ -29,7 +29,7 @@ npm install
 Build the example using [webpack](https://webpack.js.org/) via
 
 ```sh
-npm run all
+npm run build
 ```
 
 That generates the distribution ready client-side modeler application into the `public` folder.
