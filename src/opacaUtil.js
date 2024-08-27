@@ -43,7 +43,14 @@ async function login() {
                     body: JSON.stringify({username: username, password: password})
         });
         if (!response.ok) {
-            throw new Error(`Login failed: ${response.statusText}`);
+            const body = await response.json();
+            console.log(body);
+            // In case authentication is falsely enabled
+            if(body.status === 403 && body.error === 'Forbidden'){
+                alert(`Login failed: ${JSON.stringify(body)}`);
+                return;
+            }
+            throw new Error(`Login failed: ${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
         }
         token = await response.text();
     }
@@ -70,7 +77,11 @@ export async function call(uri, serviceMethod, params){
     }
 
     // call login and await response
-    await login();
+    try{
+        await login();
+    }catch (loginError){
+        throw loginError;
+    }
 
     // Make a request using fetch API
     const response = await fetch(uri, {
@@ -80,19 +91,25 @@ export async function call(uri, serviceMethod, params){
         headers: headers()
     })
     if (!response.ok) {
-        throw new Error(`Call failed: ${response.statusText}`);
+        const body = await response.json();
+        throw new Error(`${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
     }
     return await response.text();
 }
 
 // Load all OPACA Actions from Runtime Platform
 export async function fetchOpacaServices(location) {
-    await login(location);
+    try{
+        await login();
+    }catch (loginError){
+        throw loginError;
+    }
     const response = await fetch(location, {
         headers: headers()
     });
     if (!response.ok) {
-        throw new Error(`Failed to load services: ${response.statusText}`);
+        const body = await response.json();
+        throw new Error(`Failed to load services: ${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
     }
     return await response.json();
 }

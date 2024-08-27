@@ -127,7 +127,7 @@ export function callService(element, scope) {
                 resolve(); // Resolve the promise after assigning the result
             })
             .catch((error) => {
-                alert(error);
+                //alert(error);
                 reject(error); // Reject the promise if there's an error
             });
     });
