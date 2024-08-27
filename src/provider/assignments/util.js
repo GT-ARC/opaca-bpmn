@@ -50,14 +50,16 @@ export function getAllVariables(element) {
                 getServices(parent).forEach(service => {
 
                     // Add service parameters
-                    service.parameters.forEach(param => {
-                        variables.push({
-                            name: param.name,
-                            type: param.type, // Keep the data type
-                            category: 'serviceParameter',
-                            serviceName: service.name
+                    if(service.parameters){
+                        service.parameters.forEach(param => {
+                            variables.push({
+                                name: param.name,
+                                type: param.type, // Keep the data type
+                                category: 'serviceParameter',
+                                serviceName: service.name
+                            });
                         });
-                    });
+                    }
 
                     // Add service result if it exists
                     if (service.result) {
