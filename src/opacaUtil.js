@@ -44,6 +44,12 @@ async function login() {
         });
         if (!response.ok) {
             const body = await response.json();
+            console.log(body);
+            // In case authentication is falsely enabled
+            if(body.status === 403 && body.error === 'Forbidden'){
+                alert(`Login failed: ${JSON.stringify(body)}`);
+                return;
+            }
             throw new Error(`Login failed: ${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
         }
         token = await response.text();
