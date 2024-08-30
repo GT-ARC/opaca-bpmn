@@ -10,7 +10,7 @@ import {is} from "bpmn-js/lib/util/ModelUtil";
 import {getRootElement, createElement, getRelevantBusinessObject, nextId} from "../../util";
 
 
-export default function Variables({ element, injector }) {
+export default function Variables({ element, injector, type }) {
     const businessObject = getRelevantBusinessObject(element);
     const variables = getVariables(businessObject) || [];
 

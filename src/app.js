@@ -14,6 +14,7 @@ import assignmentsListProviderModule from './provider/assignments';
 import serviceImplProviderModule from './provider/services';
 import vsdtModdleDescriptor from './descriptors/vsdt2';
 import conditionPropsProviderModule from './provider/conditions';
+import userTaskInfoProviderModule from './provider/userTaskInformation';
 // import Views
 import serviceViewModule from './views/services';
 
@@ -39,6 +40,7 @@ var bpmnModeler = new BpmnModeler({
     simulationSupportModule,
     serviceViewModule,
     conditionPropsProviderModule,
+    userTaskInfoProviderModule,
     nativeCopyModule
   ],
   moddleExtensions: {
