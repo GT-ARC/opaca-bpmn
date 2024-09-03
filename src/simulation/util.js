@@ -139,7 +139,6 @@ export function createUserTask(element, scope){
 
     return new Promise((resolve, reject) => {
 
-        console.log('user task: ', element);
         const parentScope = scope.parent;
 
         // Get UserTaskInfo
@@ -180,12 +179,7 @@ export function createUserTask(element, scope){
                 label.textContent = target.name;
 
                 let inputElement;
-                //if (input.type === 'textarea') {
-                //  inputElement = document.createElement('textarea');
-                //} else {
                 inputElement = document.createElement('input');
-                inputElement.setAttribute('type', target.type);
-                //}
 
                 inputElement.setAttribute('id', target.name);
                 inputElement.setAttribute('name', target.name);
@@ -201,7 +195,6 @@ export function createUserTask(element, scope){
 
         dialog.addEventListener('close', () => {
             const formData = new FormData(dialog.querySelector('form'));
-            const result = {};
             if(targets){
                 targets.forEach(target => {
                     let value = formData.get(target.name);
@@ -211,13 +204,13 @@ export function createUserTask(element, scope){
                         // Convert the value to the appropriate type
                         switch (target.type) {
                             case 'integer':
-                            case 'number':
                                 value = parseInt(value, 10);
                                 if (isNaN(value)) {
                                     reject(new Error(`${target.name} is not a valid number.`));
                                 }
                                 break;
                             case 'float':
+                            case 'number':
                                 value = parseFloat(value);
                                 if (isNaN(value)) {
                                     reject(new Error(`${target.name} is not a valid number.`));
@@ -245,13 +238,15 @@ export function createUserTask(element, scope){
                     } else {
                         reject(new Error(`Expected a string for ${target.name}, but got a file.`));
                     }
-                    result[target.name] = value;
+                    // Convert the value back to a string
+                    if (typeof value !== 'string') {
+                        value = JSON.stringify(value);
+                    }
+                    makeAssignment({variable: target.name, expression: value}, parentScope.id);
+                    logAssignment(target.name, element, parentScope);
                 });
             }
-            //TODO make assignments (targets must be added to mapping)
-            // log assignments
-            resolve(result);
-            console.log('result', result);
+            resolve();
         });
     });
 }
