@@ -61,8 +61,8 @@ UserTaskInfoProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
 // Create the "UserTaskInfo" group
 function createUserTaskInfoGroup(element, injector, translate) {
 
-    const userTaskTypeEntry = UserTaskType({ element });
-    const userTaskMessageEntry = UserTaskMessage({ element });
+    const userTaskTypeEntry = UserTaskType(element);
+    const userTaskMessageEntry = UserTaskMessage(element);
 
     // Generate the Targets list component
 
@@ -77,6 +77,6 @@ function createUserTaskInfoGroup(element, injector, translate) {
     return {
         id: 'userTaskInformation',
         label: translate('UserTask Information'),
-        entries: [...userTaskTypeEntry, ...userTaskMessageEntry, targetsGroup]
+        entries: [...UserTaskType(element), ...UserTaskMessage(element), targetsGroup]
     };
 }

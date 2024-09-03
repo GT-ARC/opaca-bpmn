@@ -5,7 +5,7 @@ export default function UserTaskType(element) {
 
     return [
         {
-            id: 'userTaskType',
+            id: 'type',
             element,
             component: Type,
             isEdited: isSelectEntryEdited
@@ -24,11 +24,11 @@ function Type(props) {
     const debounce = useService('debounceInput');
 
     const getValue = () => {
-        return element.businessObject.userTaskType;
+        return element.businessObject.type;
     };
 
     const setValue = value => {
-        return modeling.updateProperties(element, { userTaskType: value });
+        return modeling.updateProperties(element, { type: value });
     };
 
     // Drop-down options (information/input)

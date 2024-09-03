@@ -5,7 +5,7 @@ export default function UserTaskMessage(element) {
 
     return [
         {
-            id: 'userTaskMessage',
+            id: 'message',
             element,
             component: Message,
             isEdited: isSelectEntryEdited
@@ -24,11 +24,11 @@ function Message(props) {
     const debounce = useService('debounceInput');
 
     const getValue = () => {
-        return element.businessObject.userTaskMessage;
+        return element.businessObject.message;
     };
 
     const setValue = value => {
-        return modeling.updateProperties(element, { userTaskMessage: value });
+        return modeling.updateProperties(element, { message: value });
     };
 
     return TextFieldEntry({

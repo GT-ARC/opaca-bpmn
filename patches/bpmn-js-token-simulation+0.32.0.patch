@@ -1,53 +1,77 @@
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
-index a44cb67..62f321e 100644
+index a44cb67..fc1bb4c 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
 +++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ActivityBehavior.js
 @@ -3,6 +3,8 @@ import {
    isMessageFlow,
    isSequenceFlow
  } from '../util/ModelUtil';
-+import {addVariables, callService, updateVariables} from "../../../../../src/simulation/util";
++import {callService, createUserTask, updateVariables} from "../../../../../src/simulation/util";
 +import {is} from "bpmn-js/lib/util/ModelUtil";
  
  
  export default function ActivityBehavior(
-@@ -53,6 +55,35 @@ ActivityBehavior.prototype.enter = function(context) {
-     element
-   } = context;
+@@ -48,20 +50,45 @@ ActivityBehavior.prototype.signal = function(context) {
+ };
  
+ ActivityBehavior.prototype.enter = function(context) {
++  const { element } = context;
++
 +  // Handle assignments at Start
 +  updateVariables(element, 'START', context.scope);
 +
-+  // Make service call
-+  if(is(element, 'bpmn:ServiceTask')){
-+
-+    return callService(element, context.scope)
-+        .then(() => {
-+          const continueEvent = this.waitAtElement(element);
-+
-+          if (continueEvent) {
-+            return this.signalOnEvent(context, continueEvent);
-+          }
-+
-+          // trigger messages that are pending send
-+          const event = this._triggerMessages(context);
-+
-+          if (event) {
-+            return this.signalOnEvent(context, event);
-+          }
-+
-+          this._simulator.exit(context);
-+        })
++  // Common function to handle service calls or user tasks
++  const handleTask = taskHandler => {
++    return taskHandler(element, context.scope)
++        .then(() => this.continueOrExit(context))
 +        .catch(error => {
 +          alert(error);
 +          this._simulator.exit(context); // Exit even in case of error
 +        });
-+  }
-+
-   const continueEvent = this.waitAtElement(element);
++  };
  
+-  const {
+-    element
+-  } = context;
++  // Make service call
++  if (is(element, 'bpmn:ServiceTask')) {
++    return handleTask(callService);
++  }
+ 
+-  const continueEvent = this.waitAtElement(element);
++  // Create user task dialog
++  if (is(element, 'bpmn:UserTask')) {
++    return handleTask(createUserTask);
++  }
+ 
++  return this.continueOrExit(context);
++};
++
++// Helper method to handle continuation or exit
++ActivityBehavior.prototype.continueOrExit = function(context) {
++  const { element } = context;
++
++  const continueEvent = this.waitAtElement(element);
    if (continueEvent) {
-@@ -76,6 +107,9 @@ ActivityBehavior.prototype.exit = function(context) {
+     return this.signalOnEvent(context, continueEvent);
+   }
+ 
+-  // trigger messages that are pending send
++  // Trigger messages that are pending send
+   const event = this._triggerMessages(context);
+-
+   if (event) {
+     return this.signalOnEvent(context, event);
+   }
+@@ -69,6 +96,7 @@ ActivityBehavior.prototype.enter = function(context) {
+   this._simulator.exit(context);
+ };
+ 
++
+ ActivityBehavior.prototype.exit = function(context) {
+ 
+   const {
+@@ -76,6 +104,9 @@ ActivityBehavior.prototype.exit = function(context) {
      scope
    } = context;
  

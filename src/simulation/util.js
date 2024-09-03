@@ -4,6 +4,7 @@ import {getVariables} from "../provider/variables/util";
 import {getAssignments} from "../provider/assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {call} from "../opacaUtil";
+import {getTargets} from "../provider/targets/util";
 
 // variable, value mapped to each scope (variableMapping[scopeId][variableName])
 const variableMapping = {};
@@ -130,6 +131,128 @@ export function callService(element, scope) {
                 //alert(error);
                 reject(error); // Reject the promise if there's an error
             });
+    });
+}
+
+// Create User Task dialogue
+export function createUserTask(element, scope){
+
+    return new Promise((resolve, reject) => {
+
+        console.log('user task: ', element);
+        const parentScope = scope.parent;
+
+        // Get UserTaskInfo
+        const bpmnElement = element.di.bpmnElement;
+        const taskType = bpmnElement.type;
+        const taskMessage = bpmnElement.message;
+
+        if(!taskType){
+            //alert('UserTask is not defined. Missing UserTaskType!');
+            return reject(new Error('UserTask is not defined. Missing UserTaskType!'));
+        }
+
+        // Get dialog element
+        const dialog = document.getElementById('dynamicInputDialog');
+        const dialogContent = document.getElementById('dialogContent');
+        const dialogMessage = document.getElementById('dialogMessage');
+
+        dialogMessage.innerHTML = taskMessage;
+        dialogContent.innerHTML = '';
+
+        // Get targets
+        const targets = getTargets(bpmnElement);
+
+        // If type is input, create input fields
+        if(taskType === 'input'){
+
+            if(!targets){
+                //alert('No targets defined for input type UserTask.');
+                return reject(new Error('No targets defined for input type UserTask.'));
+            }
+
+            targets.forEach(target => {
+                const formGroup = document.createElement('div');
+                formGroup.classList.add('form-group', 'entry');  // Use the 'entry' class here
+
+                const label = document.createElement('label');
+                label.setAttribute('for', target.name);
+                label.textContent = target.name;
+
+                let inputElement;
+                //if (input.type === 'textarea') {
+                //  inputElement = document.createElement('textarea');
+                //} else {
+                inputElement = document.createElement('input');
+                inputElement.setAttribute('type', target.type);
+                //}
+
+                inputElement.setAttribute('id', target.name);
+                inputElement.setAttribute('name', target.name);
+                inputElement.required = true;
+
+                formGroup.appendChild(label);
+                formGroup.appendChild(inputElement);
+                dialogContent.appendChild(formGroup);
+            });
+        }
+
+        dialog.showModal();
+
+        dialog.addEventListener('close', () => {
+            const formData = new FormData(dialog.querySelector('form'));
+            const result = {};
+            if(targets){
+                targets.forEach(target => {
+                    let value = formData.get(target.name);
+
+                    // Ensure value is a string before proceeding
+                    if (typeof value === 'string') {
+                        // Convert the value to the appropriate type
+                        switch (target.type) {
+                            case 'integer':
+                            case 'number':
+                                value = parseInt(value, 10);
+                                if (isNaN(value)) {
+                                    reject(new Error(`${target.name} is not a valid number.`));
+                                }
+                                break;
+                            case 'float':
+                                value = parseFloat(value);
+                                if (isNaN(value)) {
+                                    reject(new Error(`${target.name} is not a valid number.`));
+                                }
+                                break;
+                            case 'boolean':
+                                value = value.toLowerCase() === 'true';
+                                break;
+                            case 'array':
+                                value = value.split(',').map(item => item.trim());
+                                if (!Array.isArray(value)) {
+                                    reject(new Error(`${target.name} could not be parsed into an array.`));
+                                }
+                                break;
+                            case 'object':
+                                try {
+                                    value = JSON.parse(value);
+                                } catch (e) {
+                                    reject(new Error(`${target.name} is not a valid JSON object.`));
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        reject(new Error(`Expected a string for ${target.name}, but got a file.`));
+                    }
+                    result[target.name] = value;
+                });
+            }
+            //TODO make assignments (targets must be added to mapping)
+            // log assignments
+            resolve(result);
+            console.log('result', result);
+        });
     });
 }
 
