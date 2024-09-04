@@ -4,7 +4,7 @@ import {getVariables} from "../provider/variables/util";
 import {getAssignments} from "../provider/assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {call} from "../opacaUtil";
-import {getTargets} from "../provider/targets/util";
+import {getTargets} from "../provider/userTaskInformation/targets/util";
 
 // variable, value mapped to each scope (variableMapping[scopeId][variableName])
 const variableMapping = {};

@@ -1,6 +1,6 @@
 import UserTaskType from './UserTaskType';
 import UserTaskMessage from './UserTaskMessage';
-import targetsList from '../targets/Targets';
+import targetsList from './targets/Targets';
 import { ListGroup } from '@bpmn-io/properties-panel';
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 
@@ -64,19 +64,23 @@ function createUserTaskInfoGroup(element, injector, translate) {
     const userTaskTypeEntry = UserTaskType(element);
     const userTaskMessageEntry = UserTaskMessage(element);
 
-    // Generate the Targets list component
+    const entries = [...userTaskTypeEntry, ...userTaskMessageEntry];
 
-    const targetsGroup = {
-        id: 'targets',
-        label: translate('Targets'),
-        component: ListGroup,
-        ...targetsList({ element, injector })
-    };
+    if(element.businessObject.type === 'input'){
+        // Generate the Targets list component
+        const targetsGroup = {
+            id: 'targets',
+            label: translate('Targets'),
+            component: ListGroup,
+            ...targetsList({ element, injector })
+        };
+        entries.push(targetsGroup);
+    }
 
     // Return group
     return {
         id: 'userTaskInformation',
         label: translate('UserTask Information'),
-        entries: [...UserTaskType(element), ...UserTaskMessage(element), targetsGroup]
+        entries: entries
     };
 }

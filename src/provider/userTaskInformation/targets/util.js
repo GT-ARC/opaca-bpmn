@@ -1,4 +1,4 @@
-import {getExtension, getRelevantBusinessObject, createElement} from "../util";
+import {getExtension, getRelevantBusinessObject, createElement} from "../../util";
 
 // Get targets list extension
 export function getTargetsExtension(element) {

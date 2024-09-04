@@ -154,7 +154,7 @@ a:link {
   display: flex;
   top: 0;
   right: 0;
-  max-width: 400px; /* Set the maximum width for the views */
+  max-width: 400px;
   height: fit-content;
   flex-direction: column;
   z-index: 1;
@@ -198,7 +198,7 @@ a:link {
 }
 
 .collapsible-content {
-  display: none; /* Initially hide the content */
+  display: none;
   right: 0;
   z-index: 999;
 }
@@ -294,8 +294,8 @@ select {
 }
 
 .service-entry-header .service-label {
-  flex-grow: 1; /* Make the name span take up available space */
-  margin: 0 10px; /* Add some margin between the name and buttons */
+  flex-grow: 1;
+  margin: 0 10px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -367,7 +367,11 @@ select {
   padding: 5px;
 }
 
-#submit-button{
+#submit-button {
   display: block;
   margin: 10px auto 0 auto;
+}
+
+[data-group-id="group-targets"] {
+  margin-bottom: -1px;
 }

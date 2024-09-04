@@ -4,9 +4,9 @@ import {
     getTargetsExtension
 } from './util';
 
-import Variable from '../variables/parts/Variable'; // Reusing the Variable component
+import Variable from '../../variables/parts/Variable'; // Reusing the Variable component
 import { without } from 'min-dash';
-import { getRelevantBusinessObject, createElement, nextId } from "../util";
+import { getRelevantBusinessObject, createElement, nextId } from "../../util";
 
 export default function Targets({ element, injector }) {
     const businessObject = getRelevantBusinessObject(element);
