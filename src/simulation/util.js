@@ -193,7 +193,7 @@ export function createUserTask(element, scope){
 
         dialog.showModal();
 
-        dialog.addEventListener('close', () => {
+        const onClose = () => {
             const formData = new FormData(dialog.querySelector('form'));
             if(targets){
                 targets.forEach(target => {
@@ -204,50 +204,46 @@ export function createUserTask(element, scope){
                         // Convert the value to the appropriate type
                         switch (target.type) {
                             case 'integer':
-                                value = parseInt(value, 10);
-                                if (isNaN(value)) {
-                                    reject(new Error(`${target.name} is not a valid number.`));
+                                if (isNaN(parseInt(value, 10))) {
+                                    return reject(new Error(`${target.name} is not a valid number.`));
                                 }
                                 break;
                             case 'float':
                             case 'number':
-                                value = parseFloat(value);
-                                if (isNaN(value)) {
-                                    reject(new Error(`${target.name} is not a valid number.`));
+                                if (isNaN(parseFloat(value))) {
+                                    return reject(new Error(`${target.name} is not a valid number.`));
                                 }
                                 break;
                             case 'boolean':
                                 value = value.toLowerCase() === 'true';
                                 break;
                             case 'array':
-                                value = value.split(',').map(item => item.trim());
-                                if (!Array.isArray(value)) {
-                                    reject(new Error(`${target.name} could not be parsed into an array.`));
+                                // Just a simple validation
+                                if (!value.includes('[') || !value.includes(']')|| !value.includes(',') || !value.split(',').every(item => item.trim().length > 0)) {
+                                    return reject(new Error(`${target.name} could not be parsed into an array.`));
                                 }
                                 break;
                             case 'object':
                                 try {
-                                    value = JSON.parse(value);
+                                    JSON.parse(value);
                                 } catch (e) {
-                                    reject(new Error(`${target.name} is not a valid JSON object.`));
+                                    return reject(new Error(`${target.name} is not a valid JSON object.`));
                                 }
                                 break;
                             default:
                                 break;
                         }
                     } else {
-                        reject(new Error(`Expected a string for ${target.name}, but got a file.`));
+                        return reject(new Error(`Expected a string for ${target.name}, but got a file.`));
                     }
-                    // Convert the value back to a string
-                    if (typeof value !== 'string') {
-                        value = JSON.stringify(value);
-                    }
+
                     makeAssignment({variable: target.name, expression: value}, parentScope.id);
                     logAssignment(target.name, element, parentScope);
                 });
             }
             resolve();
-        });
+        };
+        dialog.addEventListener('close', onClose, {once: true});
     });
 }
 
@@ -327,27 +323,33 @@ function restrictedEval(expression, parentScope){
 // Create log element with assignment info and trigger log event
 function logAssignment(variable, element, parentScope){
 
-    // the " -> ' is needed because otherwise the tooltip ends with the first "
-    const readableValue = JSON.stringify(variableMapping[parentScope.id][variable], null, 2).replace(/"/g, "'")
-    const log = {
-        // indent text
-        text: `&nbsp;&nbsp; ${variable} = ${readableValue}`,
-        icon: 'bpmn-icon-task',
-        scope: parentScope
+    try {
+        // the " -> ' is needed because otherwise the tooltip ends with the first "
+        const readableValue = JSON.stringify(variableMapping[parentScope.id][variable], null, 2).replace(/"/g, "'")
+        const log = {
+            // indent text
+            text: `&nbsp;&nbsp; ${variable} = ${readableValue}`,
+            icon: 'bpmn-icon-task',
+            scope: parentScope
+        }
+
+        // Adjust icon
+        if(is(element, 'bpmn:StartEvent')){
+            log.icon = 'bpmn-icon-start-event-none';
+
+        }else if(is(element, 'bpmn:ServiceTask')){
+            log.icon = 'bpmn-icon-service';
+
+        }else if(is(element, 'bpmn:EndEvent')){
+            log.icon = 'bpmn-icon-end-event-none';
+        }else if(is(element, 'bpmn:UserTask')){
+            log.icon = 'bpmn-icon-user';
+        }
+        // Dispatch
+        document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
+    }catch (error){
+        console.error(error);
     }
-
-    // Adjust icon
-    if(is(element, 'bpmn:StartEvent')){
-        log.icon = 'bpmn-icon-start-event-none';
-
-    }else if(is(element, 'bpmn:ServiceTask')){
-        log.icon = 'bpmn-icon-service';
-
-    }else if(is(element, 'bpmn:EndEvent')){
-        log.icon = 'bpmn-icon-end-event-none';
-    }
-    // Dispatch
-    document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
 }
 
 //// For testing variableUpdates only ////
