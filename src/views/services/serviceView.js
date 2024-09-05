@@ -1,6 +1,6 @@
 import {addFactory, removeFactory} from "./Services";
 import {getRootElement, nextId} from "../../provider/util";
-import {getDataTypes} from "../../provider/variables/util";
+import {getDataTypes} from "../../provider/util";
 import {getRelevantServiceProperty, getServices, } from "./util";
 import {fetchOpacaServices} from "../../opacaUtil";
 

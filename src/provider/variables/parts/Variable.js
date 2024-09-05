@@ -1,7 +1,7 @@
 import { TextFieldEntry } from '@bpmn-io/properties-panel';
 import { useService } from 'bpmn-js-properties-panel';
 import { SelectEntry } from "@bpmn-io/properties-panel";
-import { getDataTypes } from "../util";
+import { getDataTypes } from "../../util";
 
 export default function Variable(props) {
 
