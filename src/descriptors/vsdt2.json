@@ -138,6 +138,40 @@
       "name": "Result",
       "superClass": [ "Variable" ],
       "properties": []
+    },
+    {
+      "name": "UserTaskInformation",
+      "extends": [ "bpmn:UserTask" ],
+      "properties": [
+        {
+          "name": "type",
+          "isAttr": true,
+          "type": "String",
+          "description": "Information or input"
+        },
+        {
+          "name": "message",
+          "isAttr": true,
+          "type": "String",
+          "description": "Message shown to user in the dialogue"
+        }
+      ]
+    },
+    {
+      "name": "Targets",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "values",
+          "isMany": true,
+          "type": "Target"
+        }
+      ]
+    },
+    {
+      "name": "Target",
+      "superClass": [ "Variable" ],
+      "properties": []
     }
   ]
 }

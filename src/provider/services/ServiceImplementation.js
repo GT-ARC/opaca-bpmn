@@ -4,7 +4,6 @@ import {useEffect, useState} from '@bpmn-io/properties-panel/preact/hooks';
 import {createElement, getRelevantBusinessObject, getRootElement} from "../util";
 import {getServices} from "../../views/services/util";
 import {createAssignments, getAssignmentsExtension} from "../assignments/util";
-import {is} from "bpmn-js/lib/util/ModelUtil";
 
 export default function ServiceImplementation(element, injector) {
 

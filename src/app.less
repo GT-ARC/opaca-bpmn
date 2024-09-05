@@ -154,7 +154,7 @@ a:link {
   display: flex;
   top: 0;
   right: 0;
-  max-width: 400px; /* Set the maximum width for the views */
+  max-width: 400px;
   height: fit-content;
   flex-direction: column;
   z-index: 1;
@@ -198,7 +198,7 @@ a:link {
 }
 
 .collapsible-content {
-  display: none; /* Initially hide the content */
+  display: none;
   right: 0;
   z-index: 999;
 }
@@ -294,8 +294,8 @@ select {
 }
 
 .service-entry-header .service-label {
-  flex-grow: 1; /* Make the name span take up available space */
-  margin: 0 10px; /* Add some margin between the name and buttons */
+  flex-grow: 1;
+  margin: 0 10px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -325,4 +325,53 @@ select {
   font-size: 16px;
   text-align: center;
   margin: 5px;
+}
+
+#dynamicInputDialog {
+  border-radius: 10px;
+  border: 1px solid hsl(225, 10%, 75%);
+  padding: 10px;
+  max-width: 400px;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+#userTaskDialogIcon {
+  font-size: 36px;
+  line-height: 36px;
+  height: 36px;
+}
+
+#dialogMessage {
+  margin-top: 5px;
+  margin-bottom: 10px;
+  padding: 5px;
+  border-bottom: 1px solid hsl(225, 10%, 75%);
+  white-space: normal;
+}
+
+.form-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.form-group label {
+  flex: 1;
+  text-align: left;
+}
+
+.form-group input,
+.form-group textarea {
+  flex: 2;
+  padding: 5px;
+}
+
+#submit-button {
+  display: block;
+  margin: 10px auto 0 auto;
+}
+
+[data-group-id="group-targets"] {
+  margin-bottom: -1px;
 }

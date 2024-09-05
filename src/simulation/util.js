@@ -4,6 +4,7 @@ import {getVariables} from "../provider/variables/util";
 import {getAssignments} from "../provider/assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {call} from "../opacaUtil";
+import {getTargets} from "../provider/userTaskInformation/targets/util";
 
 // variable, value mapped to each scope (variableMapping[scopeId][variableName])
 const variableMapping = {};
@@ -133,6 +134,119 @@ export function callService(element, scope) {
     });
 }
 
+// Create User Task dialogue
+export function createUserTask(element, scope){
+
+    return new Promise((resolve, reject) => {
+
+        const parentScope = scope.parent;
+
+        // Get UserTaskInfo
+        const bpmnElement = element.di.bpmnElement;
+        const taskType = bpmnElement.type;
+        const taskMessage = bpmnElement.message;
+
+        if(!taskType){
+            //alert('UserTask is not defined. Missing UserTaskType!');
+            return reject(new Error('UserTask is not defined. Missing UserTaskType!'));
+        }
+
+        // Get dialog element
+        const dialog = document.getElementById('dynamicInputDialog');
+        const dialogContent = document.getElementById('dialogContent');
+        const dialogMessage = document.getElementById('dialogMessage');
+
+        dialogMessage.innerHTML = taskMessage;
+        dialogContent.innerHTML = '';
+
+        // Get targets
+        const targets = getTargets(bpmnElement);
+
+        // If type is input, create input fields
+        if(taskType === 'input'){
+
+            if(!targets){
+                //alert('No targets defined for input type UserTask.');
+                return reject(new Error('No targets defined for input type UserTask.'));
+            }
+
+            targets.forEach(target => {
+                const formGroup = document.createElement('div');
+                formGroup.classList.add('form-group', 'entry');  // Use the 'entry' class here
+
+                const label = document.createElement('label');
+                label.setAttribute('for', target.name);
+                label.textContent = target.name;
+
+                let inputElement;
+                inputElement = document.createElement('input');
+
+                inputElement.setAttribute('id', target.name);
+                inputElement.setAttribute('name', target.name);
+                inputElement.required = true;
+
+                formGroup.appendChild(label);
+                formGroup.appendChild(inputElement);
+                dialogContent.appendChild(formGroup);
+            });
+        }
+
+        dialog.showModal();
+
+        const onClose = () => {
+            const formData = new FormData(dialog.querySelector('form'));
+            if(targets){
+                targets.forEach(target => {
+                    let value = formData.get(target.name);
+
+                    // Ensure value is a string before proceeding
+                    if (typeof value === 'string') {
+                        // Convert the value to the appropriate type
+                        switch (target.type) {
+                            case 'integer':
+                                if (isNaN(parseInt(value, 10))) {
+                                    return reject(new Error(`${target.name} is not a valid number.`));
+                                }
+                                break;
+                            case 'float':
+                            case 'number':
+                                if (isNaN(parseFloat(value))) {
+                                    return reject(new Error(`${target.name} is not a valid number.`));
+                                }
+                                break;
+                            case 'boolean':
+                                value = value.toLowerCase() === 'true';
+                                break;
+                            case 'array':
+                                // Just a simple validation
+                                if (!value.includes('[') || !value.includes(']')|| !value.includes(',') || !value.split(',').every(item => item.trim().length > 0)) {
+                                    return reject(new Error(`${target.name} could not be parsed into an array.`));
+                                }
+                                break;
+                            case 'object':
+                                try {
+                                    JSON.parse(value);
+                                } catch (e) {
+                                    return reject(new Error(`${target.name} is not a valid JSON object.`));
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    } else {
+                        return reject(new Error(`Expected a string for ${target.name}, but got a file.`));
+                    }
+
+                    makeAssignment({variable: target.name, expression: value}, parentScope.id);
+                    logAssignment(target.name, element, parentScope);
+                });
+            }
+            resolve();
+        };
+        dialog.addEventListener('close', onClose, {once: true});
+    });
+}
+
 
 //// Helpers ////
 
@@ -209,27 +323,33 @@ function restrictedEval(expression, parentScope){
 // Create log element with assignment info and trigger log event
 function logAssignment(variable, element, parentScope){
 
-    // the " -> ' is needed because otherwise the tooltip ends with the first "
-    const readableValue = JSON.stringify(variableMapping[parentScope.id][variable], null, 2).replace(/"/g, "'")
-    const log = {
-        // indent text
-        text: `&nbsp;&nbsp; ${variable} = ${readableValue}`,
-        icon: 'bpmn-icon-task',
-        scope: parentScope
+    try {
+        // the " -> ' is needed because otherwise the tooltip ends with the first "
+        const readableValue = JSON.stringify(variableMapping[parentScope.id][variable], null, 2).replace(/"/g, "'")
+        const log = {
+            // indent text
+            text: `&nbsp;&nbsp; ${variable} = ${readableValue}`,
+            icon: 'bpmn-icon-task',
+            scope: parentScope
+        }
+
+        // Adjust icon
+        if(is(element, 'bpmn:StartEvent')){
+            log.icon = 'bpmn-icon-start-event-none';
+
+        }else if(is(element, 'bpmn:ServiceTask')){
+            log.icon = 'bpmn-icon-service';
+
+        }else if(is(element, 'bpmn:EndEvent')){
+            log.icon = 'bpmn-icon-end-event-none';
+        }else if(is(element, 'bpmn:UserTask')){
+            log.icon = 'bpmn-icon-user';
+        }
+        // Dispatch
+        document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
+    }catch (error){
+        console.error(error);
     }
-
-    // Adjust icon
-    if(is(element, 'bpmn:StartEvent')){
-        log.icon = 'bpmn-icon-start-event-none';
-
-    }else if(is(element, 'bpmn:ServiceTask')){
-        log.icon = 'bpmn-icon-service';
-
-    }else if(is(element, 'bpmn:EndEvent')){
-        log.icon = 'bpmn-icon-end-event-none';
-    }
-    // Dispatch
-    document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
 }
 
 //// For testing variableUpdates only ////
