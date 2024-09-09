@@ -7,11 +7,12 @@ export default function Variable(props) {
 
     const {
         idPrefix,
-        variable
+        variable,
+        addDescription
     } = props;
 
     // return entries
-    return [
+    const entries = [
         {
             id: idPrefix + '-name',
             component: Name,
@@ -25,6 +26,15 @@ export default function Variable(props) {
             variable
         }
     ];
+    if(addDescription){
+        entries.push({
+            id: idPrefix + '-description',
+            component: Description,
+            idPrefix,
+            variable
+        });
+    }
+    return entries;
 }
 
 function Name(props) {
@@ -104,6 +114,41 @@ function Type(props) {
         id: idPrefix + '-type',
         label: translate('Type'),
         getOptions,
+        getValue,
+        setValue,
+        debounce
+    });
+}
+
+function Description(props) {
+    const {
+        idPrefix,
+        element,
+        variable
+    } = props;
+
+    const commandStack = useService('commandStack');
+    const translate = useService('translate');
+    const debounce = useService('debounceInput');
+
+    const setValue = (value) => {
+        commandStack.execute('element.updateModdleProperties', {
+            element,
+            moddleElement: variable,
+            properties: {
+                description: value
+            }
+        });
+    };
+
+    const getValue = (variable) => {
+        return variable.description;
+    };
+
+    return TextFieldEntry({
+        element: variable,
+        id: idPrefix + '-description',
+        label: translate('Description'),
         getValue,
         setValue,
         debounce

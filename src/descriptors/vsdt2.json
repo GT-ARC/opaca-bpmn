@@ -171,7 +171,14 @@
     {
       "name": "Target",
       "superClass": [ "Variable" ],
-      "properties": []
+      "properties": [
+        {
+          "name": "description",
+          "isAttr": true,
+          "type": "String",
+          "description": "Description of the expected input"
+        }
+      ]
     }
   ]
 }

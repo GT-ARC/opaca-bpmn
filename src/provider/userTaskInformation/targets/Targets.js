@@ -24,7 +24,8 @@ export default function Targets({ element, injector }) {
             entries: Variable({ // Reusing the Variable component
                 idPrefix: id,
                 element,
-                variable: target
+                variable: target,
+                addDescription: true // Adding description
             }),
             autoFocusEntry: id + '-name',
             remove: removeFactory({ commandStack, element, target })
@@ -131,7 +132,8 @@ function addFactory({ element, bpmnFactory, commandStack }) {
 
         const newTarget = createElement('vsdt2:Target', {
             name: nextId('Target_'),
-            type: ''
+            type: '',
+            description: ''
         }, extension, bpmnFactory);
 
         commands.push({

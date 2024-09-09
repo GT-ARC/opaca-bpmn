@@ -147,7 +147,6 @@ export function createUserTask(element, scope){
         const taskMessage = bpmnElement.message;
 
         if(!taskType){
-            //alert('UserTask is not defined. Missing UserTaskType!');
             return reject(new Error('UserTask is not defined. Missing UserTaskType!'));
         }
 
@@ -166,21 +165,19 @@ export function createUserTask(element, scope){
         if(taskType === 'input'){
 
             if(!targets){
-                //alert('No targets defined for input type UserTask.');
                 return reject(new Error('No targets defined for input type UserTask.'));
             }
 
             targets.forEach(target => {
                 const formGroup = document.createElement('div');
-                formGroup.classList.add('form-group', 'entry');  // Use the 'entry' class here
+                formGroup.classList.add('form-group', 'entry');
 
                 const label = document.createElement('label');
                 label.setAttribute('for', target.name);
-                label.textContent = target.name;
+                label.textContent = `${target.name} (${target.type})`;
+                label.title = target.description; // Add description as tooltip
 
-                let inputElement;
-                inputElement = document.createElement('input');
-
+                let inputElement = document.createElement('input');
                 inputElement.setAttribute('id', target.name);
                 inputElement.setAttribute('name', target.name);
                 inputElement.required = true;
