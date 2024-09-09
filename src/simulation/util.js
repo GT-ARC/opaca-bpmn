@@ -155,7 +155,7 @@ export function createUserTask(element, scope){
         const dialogContent = document.getElementById('dialogContent');
         const dialogMessage = document.getElementById('dialogMessage');
 
-        dialogMessage.innerHTML = taskMessage;
+        dialogMessage.innerHTML = restrictedEval(taskMessage, parentScope.id);
         dialogContent.innerHTML = '';
 
         // Get targets
@@ -175,7 +175,8 @@ export function createUserTask(element, scope){
                 const label = document.createElement('label');
                 label.setAttribute('for', target.name);
                 label.textContent = `${target.name} (${target.type})`;
-                label.title = target.description; // Add description as tooltip
+                // Add description as tooltip
+                label.title = restrictedEval(target.description, parentScope.id);
 
                 let inputElement = document.createElement('input');
                 inputElement.setAttribute('id', target.name);
@@ -339,6 +340,7 @@ function logAssignment(variable, element, parentScope){
 
         }else if(is(element, 'bpmn:EndEvent')){
             log.icon = 'bpmn-icon-end-event-none';
+
         }else if(is(element, 'bpmn:UserTask')){
             log.icon = 'bpmn-icon-user';
         }
