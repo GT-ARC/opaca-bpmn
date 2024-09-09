@@ -110,11 +110,13 @@ export function callService(element, scope) {
 
         // Collect parameters needed for the request
         const params = {};
-        service.parameters.forEach(parameter => {
-            if (parameter.name in variableMapping[parentScope.id]) {
-                params[parameter.name] = variableMapping[parentScope.id][parameter.name];
-            }
-        });
+        if(service.parameters){
+            service.parameters.forEach(parameter => {
+                if (parameter.name in variableMapping[parentScope.id]) {
+                    params[parameter.name] = variableMapping[parentScope.id][parameter.name];
+                }
+            });
+        }
 
         // Make service call
         call(uri, service.method, params)
@@ -129,6 +131,7 @@ export function callService(element, scope) {
             })
             .catch((error) => {
                 //alert(error);
+                console.log('got this error', error);
                 reject(error); // Reject the promise if there's an error
             });
     });

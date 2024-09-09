@@ -44,13 +44,16 @@ async function login() {
         });
         if (!response.ok) {
             const body = await response.json();
-            console.log(body);
-            // In case authentication is falsely enabled
+
+            // In case authentication is falsely enabled OR credentials are unknown
             if(body.status === 403 && body.error === 'Forbidden'){
-                alert(`Login failed: ${JSON.stringify(body)}`);
+                // Show alert, but don't throw error
+                alert(`Login failed: ${JSON.stringify(body)}. Continuing without login...`);
                 return;
+            }else{
+                // Other errors
+                throw new Error(`Error during login: ${JSON.stringify(body)}`);
             }
-            throw new Error(`Login failed: ${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
         }
         token = await response.text();
     }
@@ -83,18 +86,30 @@ export async function call(uri, serviceMethod, params){
         throw loginError;
     }
 
-    // Make a request using fetch API
-    const response = await fetch(uri, {
-        method: serviceMethod,
-        // In case of POST/ PUT/ DELETE add body with parameters
-        body: serviceMethod !== 'GET' ? JSON.stringify(params) : undefined,
-        headers: headers()
-    })
-    if (!response.ok) {
-        const body = await response.json();
-        throw new Error(`${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
+    try{
+        // Make a request using fetch API
+        const response = await fetch(uri, {
+            method: serviceMethod,
+            // In case of POST/ PUT/ DELETE add body with parameters
+            body: serviceMethod !== 'GET' ? JSON.stringify(params) : undefined,
+            headers: headers()
+        })
+        if (!response.ok) {
+            const body = await response.json();
+            if(body.status === 403 && body.error === 'Forbidden'){
+                throw new Error('Failed to call service: Login required.');
+            }
+            throw new Error(`${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
+        }
+        return await response.text();
+    }catch (networkError){
+        // Network error, e.g. service not reachable
+        if(networkError.name === 'TypeError'){
+            throw new Error(`Failed to reach the service at ${uri}. ${networkError.message}`);
+        }
+        // Rethrow other errors
+        throw networkError;
     }
-    return await response.text();
 }
 
 // Load all OPACA Actions from Runtime Platform
@@ -109,6 +124,10 @@ export async function fetchOpacaServices(location) {
     });
     if (!response.ok) {
         const body = await response.json();
+        console.log('body', body);
+        if(body.status === 403 && body.error === 'Forbidden'){
+            throw new Error('Failed to load services: Login required.');
+        }
         throw new Error(`Failed to load services: ${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
     }
     return await response.json();

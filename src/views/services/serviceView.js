@@ -99,7 +99,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                 }
             }
         } catch (error) {
-            alert(`Error loading services: ${error.message}`);
+            alert(error.message);
         }
     }
 
