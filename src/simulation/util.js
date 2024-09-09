@@ -161,6 +161,54 @@ export function createUserTask(element, scope){
         // Get targets
         const targets = getTargets(bpmnElement);
 
+        // Function to validate (not 100%) the input and display errors using HTML5 validation
+        function validateInput(target, inputElement) {
+            let value = inputElement.value;
+
+            // Clear previous validation messages
+            inputElement.setCustomValidity('');
+
+            if (typeof value === 'string') {
+                // Convert and validate based on target type
+                switch (target.type) {
+                    case 'integer':
+                        if (isNaN(parseInt(value, 10))) {
+                            inputElement.setCustomValidity(`${target.name} is not a valid number.`);
+                        }
+                        break;
+                    case 'float':
+                    case 'number':
+                        if (isNaN(parseFloat(value))) {
+                            inputElement.setCustomValidity(`${target.name} is not a valid number.`);
+                        }
+                        break;
+                    case 'boolean':
+                        if (!['true', 'false'].includes(value.toLowerCase())) {
+                            inputElement.setCustomValidity(`${target.name} should be 'true' or 'false'.`);
+                        }
+                        break;
+                    case 'array':
+                        if (!value.includes('[') || !value.includes(']') || !value.includes(',') || !value.split(',').every(item => item.trim().length > 0)) {
+                            inputElement.setCustomValidity(`${target.name} cannot be parsed into an array.`);
+                        }
+                        break;
+                    case 'object':
+                        try {
+                            JSON.parse(value);
+                        } catch (e) {
+                            inputElement.setCustomValidity(`${target.name} is not a valid JSON object.`);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            } else {
+                inputElement.setCustomValidity(`Expected a string for ${target.name}, but got a file.`);
+            }
+            // If there's a validation message, the input will be marked invalid
+            inputElement.reportValidity();
+        }
+
         // If type is input, create input fields
         if(taskType === 'input'){
 
@@ -175,13 +223,18 @@ export function createUserTask(element, scope){
                 const label = document.createElement('label');
                 label.setAttribute('for', target.name);
                 label.textContent = `${target.name} (${target.type})`;
-                // Add description as tooltip
-                label.title = restrictedEval(target.description, parentScope.id);
+                // Add description as tooltip, if it is defined
+                label.title = restrictedEval(target.description || `"${target.name}"`, parentScope.id);
 
                 let inputElement = document.createElement('input');
                 inputElement.setAttribute('id', target.name);
                 inputElement.setAttribute('name', target.name);
                 inputElement.required = true;
+
+                // Add blur event to trigger validation on focus loss
+                inputElement.addEventListener('blur', () => {
+                    validateInput(target, inputElement);
+                });
 
                 formGroup.appendChild(label);
                 formGroup.appendChild(inputElement);
@@ -196,44 +249,6 @@ export function createUserTask(element, scope){
             if(targets){
                 targets.forEach(target => {
                     let value = formData.get(target.name);
-
-                    // Ensure value is a string before proceeding
-                    if (typeof value === 'string') {
-                        // Convert the value to the appropriate type
-                        switch (target.type) {
-                            case 'integer':
-                                if (isNaN(parseInt(value, 10))) {
-                                    return reject(new Error(`${target.name} is not a valid number.`));
-                                }
-                                break;
-                            case 'float':
-                            case 'number':
-                                if (isNaN(parseFloat(value))) {
-                                    return reject(new Error(`${target.name} is not a valid number.`));
-                                }
-                                break;
-                            case 'boolean':
-                                value = value.toLowerCase() === 'true';
-                                break;
-                            case 'array':
-                                // Just a simple validation
-                                if (!value.includes('[') || !value.includes(']')|| !value.includes(',') || !value.split(',').every(item => item.trim().length > 0)) {
-                                    return reject(new Error(`${target.name} could not be parsed into an array.`));
-                                }
-                                break;
-                            case 'object':
-                                try {
-                                    JSON.parse(value);
-                                } catch (e) {
-                                    return reject(new Error(`${target.name} is not a valid JSON object.`));
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                    } else {
-                        return reject(new Error(`Expected a string for ${target.name}, but got a file.`));
-                    }
 
                     makeAssignment({variable: target.name, expression: value}, parentScope.id);
                     logAssignment(target.name, element, parentScope);
