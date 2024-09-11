@@ -109,6 +109,10 @@ export async function fetchOpacaServices(location) {
     });
     if (!response.ok) {
         const body = await response.json();
+
+        if(body.status === 403 && body.error === 'Forbidden'){
+            throw new Error('Failed to load services: Login required.');
+        }
         throw new Error(`Failed to load services: ${body.message}\n Cause: ${JSON.stringify(body.cause)}`);
     }
     return await response.json();

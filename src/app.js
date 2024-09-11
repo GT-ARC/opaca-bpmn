@@ -186,19 +186,17 @@ $(function() {
 
 
   //// WebSocket to control simulation on request ////
-
-  // Create a WebSocket client
-  const ws = new WebSocket('ws://localhost:8082');
+  let ws = '';
 
   // Event handlers for WebSocket client
-  ws.onopen = function() {
+  function wsOpen() {
     console.log('Connected to WebSocket server');
 
     // Send a message to the server
     ws.send(JSON.stringify({type: 'info', message: 'Message from client'}));
-  };
+  }
 
-  ws.onmessage = function(event) {
+  function wsMessage(event) {
     console.log('Received message from server:', event.data);
 
     var request;
@@ -295,13 +293,39 @@ $(function() {
         ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'message could not be processed. ' + error.message}));
       }
     }
-  };
+  }
 
-  ws.onclose = function() {
+  function wsClose() {
     console.log('Disconnected from WebSocket server');
-  };
+  }
 
-  ws.onerror = function(error) {
+  function wsError(error) {
     console.error('WebSocket error:', error);
-  };
+  }
+
+  // Check if the companion server has been started
+  function checkServerAvailability(){
+    return fetch('http://localhost:8082/info')
+        .then(response => {
+          return response.ok;
+        })
+        .catch(() => {
+          return false;
+        });
+  }
+
+  function connectWebSocket() {
+    checkServerAvailability().then(isAvailable => {
+      if(isAvailable){
+        ws = new WebSocket('ws://localhost:8082');
+        ws.onopen = wsOpen;
+        ws.onmessage = wsMessage;
+        ws.onerror = wsError;
+        ws.onclose = wsClose;
+      }
+    });
+  }
+
+  // Try to establish the connection
+  connectWebSocket();
 });

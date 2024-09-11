@@ -2,6 +2,7 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
+const cors = require('cors')
 
 const app = express();
 var webSocketClient = null;
@@ -12,6 +13,7 @@ const EXAMPLE = 'modeler'
 const PORT = 8082;
 
 app.use(express.json());
+app.use(cors({origin: 'http://localhost:8080'}));
 
 function getImage() {
     const filePath = path.join(__dirname, `${EXAMPLE}-image.json`);
