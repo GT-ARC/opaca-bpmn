@@ -328,6 +328,13 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     }
 
     function createResultGroup(element, entry, service){
+        // Header for label
+        const resultHeader = document.createElement('div');
+        resultHeader.id = 'entry-group-header';
+        // Label
+        const resultLabel = document.createElement('span');
+        resultLabel.innerHTML = 'Result';
+        // Input
         const resultInput = document.createElement('div');
         resultInput.classList.add('result-group');
 
@@ -340,6 +347,9 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         const resultType = createDropdown(element, entry, 'result-type', service, allTypes, service.result.type);
 
+        resultHeader.appendChild(resultLabel);
+
+        resultInput.appendChild(resultHeader);
         resultInput.appendChild(resultName);
         resultInput.appendChild(resultType);
 
@@ -352,7 +362,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         // Header for label and add button
         const paramsHeader = document.createElement('div');
-        paramsHeader.id = 'parameters-header';
+        paramsHeader.id = 'entry-group-header';
         // Label
         const paramsLabel = document.createElement('span');
         paramsLabel.innerHTML = 'Parameters';
