@@ -1,15 +1,15 @@
-var use_auth = false;
-var token = null;
+var use_auth = false; // TODO make it a map and adapt accesses
+var token = null; // TODO same
 
 // Get 'useAuthCheckbox' element
-const useAuthBox = document.getElementById('useAuthCheckbox');
-useAuthBox.addEventListener('change', () => {toggleUseAuth()});
+//const useAuthBox = document.getElementById('useAuthCheckbox'); // TODO
+//useAuthBox.addEventListener('change', () => {toggleUseAuth()});
 
 // Get 'login-label' element
-const loginLabel = document.getElementById('login-label');
+//const loginLabel = document.getElementById('login-label');
 
 // Switch to use authorization or not (and show/hide user input fields)
-function toggleUseAuth(){
+function toggleUseAuth(){ // TODO move
     use_auth = !use_auth;
     if(use_auth){
         document.getElementById('login-header').style.display = 'block';
@@ -18,7 +18,7 @@ function toggleUseAuth(){
     }
 }
 // Show/hide user info
-function toggleUserInfo(){
+function toggleUserInfo(){ // TODO move
     const userInfo = document.getElementById('userInfo');
     const computedStyle = window.getComputedStyle(userInfo);
     if(computedStyle.display === 'block'){

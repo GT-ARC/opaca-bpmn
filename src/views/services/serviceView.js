@@ -14,6 +14,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     toggleViewButton.addEventListener('click', toggleServiceView);
 
     const content = document.getElementById('service-view-groups');
+    const emptyGroup = document.getElementById('empty-services-group');
 
     // Open / Close service view
     function toggleServiceView() {
@@ -41,8 +42,85 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         }
     });
 
+    // Create or get group for services with the same URI
+    function createServicesGroup(uri){
+        // Return the empty group for new services
+        if(uri===''){
+            console.log('empty group: ', emptyGroup);
+            return emptyGroup;
+        }
+        // Check if the group already exists
+        const existingGroups = content.children;
+        const foundGroup = Array.from(existingGroups).find(group => group.id === uri);
+        if(foundGroup){
+            return foundGroup;
+        }
+
+        // TODO play with classes, also unify class names
+        // If not create it
+        const servicesGroup = document.createElement('div');
+        servicesGroup.id = uri;
+        servicesGroup.className = 'services-group';
+        // Group Header
+        const servicesGroupHeader = document.createElement('div');
+        servicesGroupHeader.className = 'view-header service-entry-header';
+        // GroupLabel
+        const servicesGroupLabel = document.createElement('span');
+        servicesGroupLabel.innerHTML = uri;
+        // Use Auth Checkbox
+        const useAuthContainer = document.createElement('div');
+        useAuthContainer.className = 'use-auth-container';
+        const useAuthLabel = document.createElement('span');
+        useAuthLabel.className = 'use-auth-label';
+        useAuthLabel.innerHTML = 'Use Auth';
+        const useAuthBox = document.createElement('input');
+        useAuthBox.type = 'checkbox';
+        useAuthBox.className = 'use-auth-checkbox view-button';
+        useAuthBox.title = 'Login for authentication?';
+
+        useAuthBox.addEventListener('click', () => {
+            if(useAuthBox.checked){
+                loginContainer.style.display = 'block';
+            }else{
+                loginContainer.style.display = 'none';
+            }
+        })
+        // Login
+        const loginContainer = document.createElement('div');
+        loginContainer.className = 'login-field collapsible-content';
+
+        const usernameInput = document.createElement('input');
+        usernameInput.type = 'text';
+        usernameInput.id = 'username_' + uri;
+        usernameInput.className = 'login-input-field';
+        usernameInput.placeholder = 'admin';
+        usernameInput.value = 'admin';
+        const passwordInput = document.createElement('input');
+        passwordInput.type = 'password';
+        passwordInput.id = 'password_' + uri;
+        passwordInput.className = 'login-input-field';
+        passwordInput.placeholder = 'password';
+
+        // Put together
+        useAuthContainer.appendChild(useAuthLabel);
+        useAuthContainer.appendChild(useAuthBox);
+
+        loginContainer.appendChild(usernameInput);
+        loginContainer.appendChild(passwordInput);
+
+        servicesGroupHeader.appendChild(servicesGroupLabel);
+        servicesGroupHeader.appendChild(useAuthContainer);
+
+        servicesGroup.appendChild(servicesGroupHeader);
+        servicesGroup.appendChild(loginContainer);
+
+        content.appendChild(servicesGroup);
+
+        return servicesGroup;
+    }
+
     // Set up the click event for loading OPACA Actions
-    const loadServicesButton = document.getElementById('loadServiceButton');
+    const loadServicesButton = document.getElementById('load-services-button');
     loadServicesButton.addEventListener('click', loadRunningServices);
 
     // Create new empty service
@@ -89,11 +167,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                             })),
                             id: nextId('service_')
                         };
-                        if(createService(newService)){
+                        if(createService(newService)){ // TODO
                             createdEntries = true;
                         }
                     }
-                    if(createdEntries){
+                    if(createdEntries){ // TODO
                         content.insertBefore(agentHeader, content.firstChild);
                     }
                 }
@@ -167,9 +245,15 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             // Remove property from XML
             removeFactory(commandStack, element, serviceToRemove);
             // Remove the entry from the DOM
-            content.removeChild(entry);
-            // If no services are left close service view
-            if(content.childElementCount === 0){
+            const parentGroup = entry.parentElement;
+            entry.remove();
+            // If no more entry in group, remove it as well
+            // < 3, because it always contains a header and login field
+            if(parentGroup.id !== 'empty-services-group' && parentGroup.childElementCount < 3){
+                parentGroup.remove();
+            }
+            // If no groups (other than 'empty-services-group') are left, close service view
+            if(content.childElementCount === 1){
                 toggleServiceView();
             }
         });
@@ -198,6 +282,19 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             serviceNameSpan.textContent = nameInput.value;
         });
 
+        uriInput.addEventListener('blur', () => {
+            const previousGroup = entry.parentElement;
+
+            const changeGroup = createServicesGroup(uriInput.value);
+            changeGroup.appendChild(entry);
+
+            // If old group is now empty, remove it.
+            // < 3, because it always contains a header and login field
+            if(previousGroup.id !== 'empty-services-group' && previousGroup.childElementCount < 3){
+                previousGroup.remove();
+            }
+        })
+
         // Build the input wrapper
         inputWrapper.appendChild(nameInput);
         inputWrapper.appendChild(typeInput);
@@ -210,8 +307,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.appendChild(serviceEntryHeader);
         entry.appendChild(inputWrapper);
 
-        // Add entry to the top of the list
-        content.insertBefore(entry, content.firstChild);
+        // Add new entry to the top of the list
+        const findGroup = createServicesGroup(service.uri);
+        findGroup.appendChild(entry);
+        content.insertBefore(findGroup, content.firstChild);
 
         // Select the correct result type in the dropdown
         resultInput.querySelector('.result-type').value = service.result.type;
@@ -417,7 +516,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         removeButton.className = 'bio-properties-panel-remove-entry remove-item-button';
         removeButton.addEventListener('click', () => {
             // Remove the entry from the DOM
-            paramsGroup.removeChild(paramEntry);
+            paramEntry.remove();
 
             // Update the XML
             const newService = getCurrentServiceValues(entry, service);
