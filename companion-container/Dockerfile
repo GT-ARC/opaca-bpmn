@@ -11,7 +11,7 @@ COPY package*.json ./
 RUN npm install
 
 # Copy the rest of the application code
-COPY server ./server
+COPY companion-container ./server
 
 EXPOSE 8082
 
