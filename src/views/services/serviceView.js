@@ -45,8 +45,8 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     // Create or get group for services with the same URI
     function createServicesGroup(uri){
         // Return the empty group for new services
+        // TODO maybe rather create it dynamically every time
         if(uri===''){
-            console.log('empty group: ', emptyGroup);
             return emptyGroup;
         }
         // Check if the group already exists
@@ -143,20 +143,14 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             const result = await fetchOpacaServices(location);
             for (const agent of result) {
 
-                var createdEntries = false;
-
                 if (agent.actions && agent.actions.length > 0) {
-                    // TODO: rethink this header approach
-                    const agentHeader = document.createElement('div');
-                    agentHeader.className = 'agent-header';
-                    agentHeader.innerHTML = agent.agentId;
 
                     for (const action of agent["actions"]) {
                         const newService = {
                             type: 'OPACA Action',
                             uri: location.split('/agents', 1)[0],
                             method: 'POST',
-                            name: action["name"],
+                            name: `${agent.agentId}::${action["name"]}`,
                             result: {
                                 name: 'result',
                                 type: action["result"] != null ? action["result"]["type"] : "void"
@@ -167,12 +161,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                             })),
                             id: nextId('service_')
                         };
-                        if(createService(newService)){ // TODO
-                            createdEntries = true;
-                        }
-                    }
-                    if(createdEntries){ // TODO
-                        content.insertBefore(agentHeader, content.firstChild);
+                        createService(newService);
                     }
                 }
             }

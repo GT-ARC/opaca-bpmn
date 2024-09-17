@@ -33,9 +33,13 @@ function toggleUserInfo(){ // TODO move
 // (Only supports 1 runtime platform for now)
 async function login() {
     if (use_auth && token === null) {
-        const url = document.getElementById('loginLocation').value + '/login';
-        const username = document.getElementById('loginUsername').value;
-        const password = document.getElementById('loginPassword').value;
+        //const url = document.getElementById('loginLocation').value + '/login';
+        //const username = document.getElementById('loginUsername').value;
+        //const password = document.getElementById('loginPassword').value;
+        // TODO hardcoded for now
+        const url = 'http://10.42.6.107:8000/login';
+        const username = 'admin';
+        const password = '12345';
 
         const response = await fetch(url, {
                     method: "POST",
