@@ -45,6 +45,21 @@
                 <button id="submit-button" type="submit" class="bpmn-button">Submit</button>
             </form>
         </dialog>
+        <!-- Dialog for loading running services -->
+        <dialog id="load-services-dialog">
+            <form method="dialog" id="load-services-form">
+                <label for="load-services-location">Location</label>
+                <input type="text" id="load-services-location" name="location" value="http://localhost:8000">
+                <label for="load-services-use-auth">UseAuth</label>
+                <input type="checkbox" id="load-services-use-auth" name="useAuth" checked>
+                <label for="load-services-user">User</label>
+                <input type="text" id="load-services-user" name="user" value="admin">
+                <label for="load-services-password">Password</label>
+                <input type="password" id="load-services-password" name="password" value="12345">
+                <button type="submit">Submit</button>
+                <button type="button" id="cancel-load-services">Cancel</button>
+            </form>
+        </dialog>
       <div class="views-container">
         <!-- Service View -->
         <div class="properties-panel-parent" id="service-view">
@@ -65,29 +80,7 @@
                 </svg>
               </button>
               <!-- Load Services Button -->
-              <button id="loadServiceButton" title="Load services" class="view-button add-item-button">Load...</button>
-              <!-- Auth Box -->
-              <div id="auth-container">
-                <span id="use-auth-label">Use Auth</span>
-                <input type="checkbox" id="useAuthCheckbox" title="Use authentication?" class="view-button">
-              </div>
-            </div>
-          </div>
-          <div class="view-header collapsible-content" id="login-header">
-            <span>USER</span>
-            <div id="userInfo" class="input-wrapper">
-              <div>
-                Login Location
-                <input type="text" id="loginLocation" value="http://localhost:8000">
-              </div>
-              <div>
-                Username
-                <input type="text" id="loginUsername" placeholder="username">
-              </div>
-              <div>
-                Password
-                <input type="password" id="loginPassword" placeholder="password">
-              </div>
+              <button id="load-services-button" title="Load all running services" class="view-button add-item-button">Load services</button>
             </div>
           </div>
           <div class="collapsible-content" id="service-view-groups"></div>

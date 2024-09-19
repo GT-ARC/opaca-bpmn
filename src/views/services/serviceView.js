@@ -41,8 +41,87 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         }
     });
 
+    // Create or get group for services with the same URI
+    function createServicesGroup(uri){
+        // Return empty group for new services
+        if(uri===''){
+            const emptyGroup = document.createElement('div');
+            emptyGroup.id = 'empty-services-group';
+            return emptyGroup;
+        }
+        // Check if the group already exists
+        const existingGroups = content.children;
+        const foundGroup = Array.from(existingGroups).find(group => group.id === uri);
+        if(foundGroup){
+            return foundGroup;
+        }
+
+        // TODO play with classes, also unify class names
+        // If not create it
+        const servicesGroup = document.createElement('div');
+        servicesGroup.id = uri;
+        servicesGroup.className = 'services-group';
+        // Group Header
+        const servicesGroupHeader = document.createElement('div');
+        servicesGroupHeader.className = 'view-header service-entry-header';
+        // GroupLabel
+        const servicesGroupLabel = document.createElement('span');
+        servicesGroupLabel.innerHTML = uri;
+        // Use Auth Checkbox
+        const useAuthContainer = document.createElement('div');
+        useAuthContainer.className = 'use-auth-container';
+        const useAuthLabel = document.createElement('span');
+        useAuthLabel.className = 'use-auth-label';
+        useAuthLabel.innerHTML = 'Use Auth';
+        const useAuthBox = document.createElement('input');
+        useAuthBox.type = 'checkbox';
+        useAuthBox.className = 'use-auth-checkbox view-button';
+        useAuthBox.title = 'Login for authentication?';
+        useAuthBox.id = `use-auth-${uri}`;
+
+        useAuthBox.addEventListener('click', () => {
+            if(useAuthBox.checked){
+                loginContainer.style.display = 'block';
+            }else{
+                loginContainer.style.display = 'none';
+            }
+        })
+        // Login
+        const loginContainer = document.createElement('div');
+        loginContainer.className = 'login-field collapsible-content';
+
+        const usernameInput = document.createElement('input');
+        usernameInput.type = 'text';
+        usernameInput.id = 'username-' + uri;
+        usernameInput.className = 'login-input-field';
+        usernameInput.placeholder = 'admin';
+        usernameInput.value = 'admin';
+        const passwordInput = document.createElement('input');
+        passwordInput.type = 'password';
+        passwordInput.id = 'password-' + uri;
+        passwordInput.className = 'login-input-field';
+        passwordInput.placeholder = 'password';
+
+        // Put together
+        useAuthContainer.appendChild(useAuthLabel);
+        useAuthContainer.appendChild(useAuthBox);
+
+        loginContainer.appendChild(usernameInput);
+        loginContainer.appendChild(passwordInput);
+
+        servicesGroupHeader.appendChild(servicesGroupLabel);
+        servicesGroupHeader.appendChild(useAuthContainer);
+
+        servicesGroup.appendChild(servicesGroupHeader);
+        servicesGroup.appendChild(loginContainer);
+
+        content.appendChild(servicesGroup);
+
+        return servicesGroup;
+    }
+
     // Set up the click event for loading OPACA Actions
-    const loadServicesButton = document.getElementById('loadServiceButton');
+    const loadServicesButton = document.getElementById('load-services-button');
     loadServicesButton.addEventListener('click', loadRunningServices);
 
     // Create new empty service
@@ -53,11 +132,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
     // Load all OPACA Actions from Runtime Platform
     async function loadRunningServices() {
-        // Ask the user for the location, with a default value of 'http://localhost:8000'
-        const location = prompt('Load services from:', 'http://localhost:8000') + '/agents';
+        // Show the dialog and wait for user input
+        const location = await showLoadServicesDialog();
 
-        // If the user cancels the prompt, exit the function
-        if (location === null || location === '/agents') {
+        // If the user cancels the dialog, formData will be null
+        if (location === null) {
             return;
         }
 
@@ -65,20 +144,14 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             const result = await fetchOpacaServices(location);
             for (const agent of result) {
 
-                var createdEntries = false;
-
                 if (agent.actions && agent.actions.length > 0) {
-                    // TODO: rethink this header approach
-                    const agentHeader = document.createElement('div');
-                    agentHeader.className = 'agent-header';
-                    agentHeader.innerHTML = agent.agentId;
 
                     for (const action of agent["actions"]) {
                         const newService = {
                             type: 'OPACA Action',
                             uri: location.split('/agents', 1)[0],
                             method: 'POST',
-                            name: action["name"],
+                            name: `${agent.agentId}::${action["name"]}`,
                             result: {
                                 name: 'result',
                                 type: action["result"] != null ? action["result"]["type"] : "void"
@@ -89,18 +162,39 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                             })),
                             id: nextId('service_')
                         };
-                        if(createService(newService)){
-                            createdEntries = true;
-                        }
-                    }
-                    if(createdEntries){
-                        content.insertBefore(agentHeader, content.firstChild);
+                        createService(newService);
                     }
                 }
             }
         } catch (error) {
             alert(error.message);
         }
+    }
+
+    function showLoadServicesDialog(){
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('load-services-dialog');
+            const form = document.getElementById('load-services-form');
+            const cancelButton = document.getElementById('cancel-load-services');
+            const locationInput = document.getElementById('load-services-location');
+
+            // Show the dialog
+            dialog.showModal();
+
+            // Handle form submission
+            form.addEventListener('submit', () => {
+                // Gather the form data and resolve the Promise
+                const location = locationInput.value
+                dialog.close();
+                resolve(location);
+            }, { once: true });
+
+            // Handle cancel button click
+            cancelButton.addEventListener('click', () => {
+                dialog.close();
+                resolve(null);
+            }, { once: true });
+        });
     }
 
     // add service to model and create widgets
@@ -167,8 +261,14 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             // Remove property from XML
             removeFactory(commandStack, element, serviceToRemove);
             // Remove the entry from the DOM
-            content.removeChild(entry);
-            // If no services are left close service view
+            const parentGroup = entry.parentElement;
+            entry.remove();
+            // If no more entry in group, remove it as well
+            // < 3, because it always contains a header and login field
+            if((parentGroup.id === 'empty-services-group' && parentGroup.childElementCount < 1) || parentGroup.childElementCount < 3){
+                parentGroup.remove();
+            }
+            // If no groups are left, close service view
             if(content.childElementCount === 0){
                 toggleServiceView();
             }
@@ -198,6 +298,22 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             serviceNameSpan.textContent = nameInput.value;
         });
 
+        uriInput.addEventListener('blur', handleUriChange);
+        typeInput.addEventListener('change', handleUriChange);
+
+        function handleUriChange(){
+            const previousGroup = entry.parentElement;
+
+            const changeGroup = createServicesGroup(uriInput.value);
+            changeGroup.appendChild(entry);
+
+            // If old group is now empty, remove it.
+            // < 3, because it always contains a header and login field
+            if((previousGroup.id === 'empty-services-group' && previousGroup.childElementCount < 1) || previousGroup.childElementCount < 3){
+                previousGroup.remove();
+            }
+        }
+
         // Build the input wrapper
         inputWrapper.appendChild(nameInput);
         inputWrapper.appendChild(typeInput);
@@ -210,8 +326,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         entry.appendChild(serviceEntryHeader);
         entry.appendChild(inputWrapper);
 
-        // Add entry to the top of the list
-        content.insertBefore(entry, content.firstChild);
+        // Add new entry to the top of the list
+        const findGroup = createServicesGroup(service.uri);
+        findGroup.appendChild(entry);
+        content.insertBefore(findGroup, content.firstChild);
 
         // Select the correct result type in the dropdown
         resultInput.querySelector('.result-type').value = service.result.type;
@@ -417,7 +535,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         removeButton.className = 'bio-properties-panel-remove-entry remove-item-button';
         removeButton.addEventListener('click', () => {
             // Remove the entry from the DOM
-            paramsGroup.removeChild(paramEntry);
+            paramEntry.remove();
 
             // Update the XML
             const newService = getCurrentServiceValues(entry, service);

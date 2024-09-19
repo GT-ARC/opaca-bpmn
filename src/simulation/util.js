@@ -97,10 +97,15 @@ export function callService(element, scope) {
         const def = root.$parent;
         const service = getRelevantServiceProperty(def, serviceImpl);
 
-        // In case we want to call an opaca action /invoke/action is added
+        // In case we want to call an opaca action /invoke/agent/action is added
         var uri = service.uri;
         if(service.type==='OPACA Action'){
-            uri = service.uri + '/invoke/' + service.name;
+            const splitAgentAction = service.name.split('::');
+            if(splitAgentAction.length > 1){
+                uri = service.uri + '/invoke/' + splitAgentAction[1] + '/' + splitAgentAction[0];
+            }else{
+                uri = service.uri + '/invoke/' + service.name;
+            }
         }
 
         var resName;
