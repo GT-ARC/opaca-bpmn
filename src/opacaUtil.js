@@ -1,8 +1,16 @@
 var token = {}
 
-async function getToken(url){
-    const username = document.getElementById(`username-${url}`)?.value || 'admin';
-    const password = document.getElementById(`password-${url}`)?.value|| '12345';
+async function getToken(url, loadServices = false){
+    let username;
+    let password;
+    if(loadServices){
+        username = document.getElementById('load-services-user').value;
+        password = document.getElementById('load-services-password').value;
+    }else{
+        username = document.getElementById(`username-${url}`)?.value || 'admin';
+        password = document.getElementById(`password-${url}`)?.value || '12345';
+    }
+
     const response = await fetch(`${url}/login`, {
         method: "POST",
         headers: headers(url),
@@ -24,32 +32,34 @@ async function getToken(url){
     token[url] = await response.text();
 }
 
-function useAuth(url){
+function useAuth(url, loadServices = false){
+    if(loadServices){
+        return document.getElementById('load-services-use-auth').checked;
+    }
     const useAuthBox = document.getElementById(`use-auth-${url}`);
-    // Default for loading services (because it has no login field) // TODO create custom dialog?
     if(!useAuthBox){
-        return url === 'http://10.42.6.107:8000';
+        return false;
     }
     return useAuthBox.checked;
 }
 
 // OPACA Login
-async function login(url) {
+async function login(url, loadServices = false) {
     // Replace (remove) path name
     const loginPath = new URL(url).origin.toString();
-    if (useAuth(loginPath) && !token[loginPath]){
+    if (useAuth(loginPath, loadServices) && !token[loginPath]){
         try{
-            return await getToken(loginPath);
+            return await getToken(loginPath, loadServices);
         }catch (error){
             throw error;
         }
     }
 }
 
-function headers(url) {
+function headers(url, loadServices = false) {
     // Replace (remove) path name
     const loginPath = new URL(url).origin.toString();
-    if (useAuth(loginPath) && token[loginPath]) {
+    if (useAuth(loginPath, loadServices) && token[loginPath]) {
         return {
             "Content-Type": "application/json",
             "Authorization": "Bearer " + token[loginPath]
@@ -104,12 +114,12 @@ export async function call(uri, serviceMethod, params){
 // Load all OPACA Actions from Runtime Platform
 export async function fetchOpacaServices(location) {
     try{
-        await login(location);
+        await login(location, true);
     }catch (loginError){
         throw loginError;
     }
     const response = await fetch(`${location}/agents`, {
-        headers: headers(location)
+        headers: headers(location, true)
     });
     if (!response.ok) {
         const body = await response.json();

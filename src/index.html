@@ -45,6 +45,21 @@
                 <button id="submit-button" type="submit" class="bpmn-button">Submit</button>
             </form>
         </dialog>
+        <!-- Dialog for loading running services -->
+        <dialog id="load-services-dialog">
+            <form method="dialog" id="load-services-form">
+                <label for="load-services-location">Location</label>
+                <input type="text" id="load-services-location" name="location" value="http://localhost:8000">
+                <label for="load-services-use-auth">UseAuth</label>
+                <input type="checkbox" id="load-services-use-auth" name="useAuth" checked>
+                <label for="load-services-user">User</label>
+                <input type="text" id="load-services-user" name="user" value="admin">
+                <label for="load-services-password">Password</label>
+                <input type="password" id="load-services-password" name="password" value="12345">
+                <button type="submit">Submit</button>
+                <button type="button" id="cancel-load-services">Cancel</button>
+            </form>
+        </dialog>
       <div class="views-container">
         <!-- Service View -->
         <div class="properties-panel-parent" id="service-view">

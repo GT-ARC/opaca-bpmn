@@ -132,10 +132,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
     // Load all OPACA Actions from Runtime Platform
     async function loadRunningServices() {
-        // Ask the user for the location, with a default value of 'http://localhost:8000'
-        const location = prompt('Load services from:', 'http://localhost:8000');
+        // Show the dialog and wait for user input
+        const location = await showLoadServicesDialog();
 
-        // If the user cancels the prompt, exit the function
+        // If the user cancels the dialog, formData will be null
         if (location === null) {
             return;
         }
@@ -169,6 +169,32 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         } catch (error) {
             alert(error.message);
         }
+    }
+
+    function showLoadServicesDialog(){
+        return new Promise((resolve) => {
+            const dialog = document.getElementById('load-services-dialog');
+            const form = document.getElementById('load-services-form');
+            const cancelButton = document.getElementById('cancel-load-services');
+            const locationInput = document.getElementById('load-services-location');
+
+            // Show the dialog
+            dialog.showModal();
+
+            // Handle form submission
+            form.addEventListener('submit', () => {
+                // Gather the form data and resolve the Promise
+                const location = locationInput.value
+                dialog.close();
+                resolve(location);
+            }, { once: true });
+
+            // Handle cancel button click
+            cancelButton.addEventListener('click', () => {
+                dialog.close();
+                resolve(null);
+            }, { once: true });
+        });
     }
 
     // add service to model and create widgets
