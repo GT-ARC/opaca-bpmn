@@ -1,73 +1,58 @@
-var use_auth = false; // TODO make it a map and adapt accesses
-var token = null; // TODO same
+var token = {}
 
-// Get 'useAuthCheckbox' element
-//const useAuthBox = document.getElementById('useAuthCheckbox'); // TODO
-//useAuthBox.addEventListener('change', () => {toggleUseAuth()});
+async function getToken(url){
+    const username = document.getElementById(`username-${url}`)?.value || 'admin';
+    const password = document.getElementById(`password-${url}`)?.value|| '12345';
+    const response = await fetch(`${url}/login`, {
+        method: "POST",
+        headers: headers(url),
+        body: JSON.stringify({username: username, password: password})
+    });
+    if (!response.ok) {
+        const body = await response.json();
 
-// Get 'login-label' element
-//const loginLabel = document.getElementById('login-label');
-
-// Switch to use authorization or not (and show/hide user input fields)
-function toggleUseAuth(){ // TODO move
-    use_auth = !use_auth;
-    if(use_auth){
-        document.getElementById('login-header').style.display = 'block';
-    }else{
-        document.getElementById('login-header').style.display = 'none';
+        // In case authentication is falsely enabled OR credentials are unknown
+        if(body.status === 403 && body.error === 'Forbidden'){
+            // Show alert, but don't throw error
+            alert(`Login failed: ${JSON.stringify(body)}. Continuing without login...`);
+            return;
+        }else{
+            // Other errors
+            throw new Error(`Error during login: ${JSON.stringify(body)}`);
+        }
     }
+    token[url] = await response.text();
 }
-// Show/hide user info
-function toggleUserInfo(){ // TODO move
-    const userInfo = document.getElementById('userInfo');
-    const computedStyle = window.getComputedStyle(userInfo);
-    if(computedStyle.display === 'block'){
-        userInfo.style.display = 'none';
-    }else{
-        userInfo.style.display = 'block';
+
+function useAuth(url){
+    const useAuthBox = document.getElementById(`use-auth-${url}`);
+    // Default for loading services (because it has no login field) // TODO create custom dialog?
+    if(!useAuthBox){
+        return url === 'http://10.42.6.107:8000';
     }
+    return useAuthBox.checked;
 }
 
 // OPACA Login
-// Takes username and password from the service view
-// (Only supports 1 runtime platform for now)
-async function login() {
-    if (use_auth && token === null) {
-        //const url = document.getElementById('loginLocation').value + '/login';
-        //const username = document.getElementById('loginUsername').value;
-        //const password = document.getElementById('loginPassword').value;
-        // TODO hardcoded for now
-        const url = 'http://10.42.6.107:8000/login';
-        const username = 'admin';
-        const password = '12345';
-
-        const response = await fetch(url, {
-                    method: "POST",
-                    headers: headers(),
-                    body: JSON.stringify({username: username, password: password})
-        });
-        if (!response.ok) {
-            const body = await response.json();
-
-            // In case authentication is falsely enabled OR credentials are unknown
-            if(body.status === 403 && body.error === 'Forbidden'){
-                // Show alert, but don't throw error
-                alert(`Login failed: ${JSON.stringify(body)}. Continuing without login...`);
-                return;
-            }else{
-                // Other errors
-                throw new Error(`Error during login: ${JSON.stringify(body)}`);
-            }
+async function login(url) {
+    // Replace (remove) path name
+    const loginPath = new URL(url).origin.toString();
+    if (useAuth(loginPath) && !token[loginPath]){
+        try{
+            return await getToken(loginPath);
+        }catch (error){
+            throw error;
         }
-        token = await response.text();
     }
 }
 
-function headers() {
-    if (use_auth && token !== null) {
+function headers(url) {
+    // Replace (remove) path name
+    const loginPath = new URL(url).origin.toString();
+    if (useAuth(loginPath) && token[loginPath]) {
         return {
             "Content-Type": "application/json",
-            "Authorization": "Bearer " + token
+            "Authorization": "Bearer " + token[loginPath]
         }
     } else {
         return {
@@ -85,7 +70,7 @@ export async function call(uri, serviceMethod, params){
 
     // call login and await response
     try{
-        await login();
+        await login(uri);
     }catch (loginError){
         throw loginError;
     }
@@ -96,7 +81,7 @@ export async function call(uri, serviceMethod, params){
             method: serviceMethod,
             // In case of POST/ PUT/ DELETE add body with parameters
             body: serviceMethod !== 'GET' ? JSON.stringify(params) : undefined,
-            headers: headers()
+            headers: headers(uri)
         })
         if (!response.ok) {
             const body = await response.json();
@@ -119,12 +104,12 @@ export async function call(uri, serviceMethod, params){
 // Load all OPACA Actions from Runtime Platform
 export async function fetchOpacaServices(location) {
     try{
-        await login();
+        await login(location);
     }catch (loginError){
         throw loginError;
     }
-    const response = await fetch(location, {
-        headers: headers()
+    const response = await fetch(`${location}/agents`, {
+        headers: headers(location)
     });
     if (!response.ok) {
         const body = await response.json();

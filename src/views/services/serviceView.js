@@ -77,6 +77,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         useAuthBox.type = 'checkbox';
         useAuthBox.className = 'use-auth-checkbox view-button';
         useAuthBox.title = 'Login for authentication?';
+        useAuthBox.id = `use-auth-${uri}`;
 
         useAuthBox.addEventListener('click', () => {
             if(useAuthBox.checked){
@@ -91,13 +92,13 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
         const usernameInput = document.createElement('input');
         usernameInput.type = 'text';
-        usernameInput.id = 'username_' + uri;
+        usernameInput.id = 'username-' + uri;
         usernameInput.className = 'login-input-field';
         usernameInput.placeholder = 'admin';
         usernameInput.value = 'admin';
         const passwordInput = document.createElement('input');
         passwordInput.type = 'password';
-        passwordInput.id = 'password_' + uri;
+        passwordInput.id = 'password-' + uri;
         passwordInput.className = 'login-input-field';
         passwordInput.placeholder = 'password';
 
@@ -132,10 +133,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     // Load all OPACA Actions from Runtime Platform
     async function loadRunningServices() {
         // Ask the user for the location, with a default value of 'http://localhost:8000'
-        const location = prompt('Load services from:', 'http://localhost:8000') + '/agents';
+        const location = prompt('Load services from:', 'http://localhost:8000');
 
         // If the user cancels the prompt, exit the function
-        if (location === null || location === '/agents') {
+        if (location === null) {
             return;
         }
 
