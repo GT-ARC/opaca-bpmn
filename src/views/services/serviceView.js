@@ -14,7 +14,6 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
     toggleViewButton.addEventListener('click', toggleServiceView);
 
     const content = document.getElementById('service-view-groups');
-    const emptyGroup = document.getElementById('empty-services-group');
 
     // Open / Close service view
     function toggleServiceView() {
@@ -44,9 +43,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
     // Create or get group for services with the same URI
     function createServicesGroup(uri){
-        // Return the empty group for new services
-        // TODO maybe rather create it dynamically every time
+        // Return empty group for new services
         if(uri===''){
+            const emptyGroup = document.createElement('div');
+            emptyGroup.id = 'empty-services-group';
             return emptyGroup;
         }
         // Check if the group already exists
@@ -265,11 +265,11 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             entry.remove();
             // If no more entry in group, remove it as well
             // < 3, because it always contains a header and login field
-            if(parentGroup.id !== 'empty-services-group' && parentGroup.childElementCount < 3){
+            if((parentGroup.id === 'empty-services-group' && parentGroup.childElementCount < 1) || parentGroup.childElementCount < 3){
                 parentGroup.remove();
             }
-            // If no groups (other than 'empty-services-group') are left, close service view
-            if(content.childElementCount === 1){
+            // If no groups are left, close service view
+            if(content.childElementCount === 0){
                 toggleServiceView();
             }
         });
@@ -298,7 +298,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             serviceNameSpan.textContent = nameInput.value;
         });
 
-        uriInput.addEventListener('blur', () => {
+        uriInput.addEventListener('blur', handleUriChange);
+        typeInput.addEventListener('change', handleUriChange);
+
+        function handleUriChange(){
             const previousGroup = entry.parentElement;
 
             const changeGroup = createServicesGroup(uriInput.value);
@@ -306,10 +309,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
 
             // If old group is now empty, remove it.
             // < 3, because it always contains a header and login field
-            if(previousGroup.id !== 'empty-services-group' && previousGroup.childElementCount < 3){
+            if((previousGroup.id === 'empty-services-group' && previousGroup.childElementCount < 1) || previousGroup.childElementCount < 3){
                 previousGroup.remove();
             }
-        })
+        }
 
         // Build the input wrapper
         inputWrapper.appendChild(nameInput);
