@@ -301,6 +301,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         typeInput.addEventListener('change', handleUriChange);
 
         function handleUriChange(){
+            // Only update if not empty
+            if(uriInput.value === ''){
+                return;
+            }
             const previousGroup = entry.parentElement;
 
             const changeGroup = createServicesGroup(uriInput.value);
