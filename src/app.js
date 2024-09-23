@@ -71,6 +71,9 @@ async function openDiagram(xml) {
       .removeClass('with-error')
       .addClass('with-diagram');
 
+    // Add OPACA logo
+    addWaterMark();
+
   } catch (err) {
 
     container
@@ -82,6 +85,28 @@ async function openDiagram(xml) {
     // Rethrow error for webSocket
     throw err;
   }
+}
+
+function addWaterMark(){
+  const canvas = bpmnModeler.get('canvas');
+  const svgRoot = canvas.getContainer().querySelector('svg');
+
+  // Calculate Logo position (centered)
+  const svgWidth = svgRoot.clientWidth;
+  const svgHeight = svgRoot.clientHeight;
+  const xPos = (svgWidth/2 - 564/2).toString();
+  const yPos = (svgHeight/2 - 135/2).toString();
+
+  const watermarkImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+  watermarkImage.setAttribute('href', '/resources/opaca-logo.png');
+  watermarkImage.setAttribute('x', xPos);
+  watermarkImage.setAttribute('y', yPos);
+  watermarkImage.setAttribute('opacity', '0.1');
+
+  // Disable pointer events so the watermark doesn't capture mouse actions
+  watermarkImage.setAttribute('style', 'pointer-events: none;');
+
+  svgRoot.appendChild(watermarkImage);
 }
 
 function registerFileDrop(container, callback) {
