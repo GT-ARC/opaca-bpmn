@@ -46,7 +46,7 @@ If you want to connect the interpreter to the OPACA runtime platform, you first 
 Build the Docker image (project root)
 
 ```sh
-docker-compose build server
+docker build -f ./companion-container/Dockerfile -t bpmn-interpreter-vsdt2-server .
 ```
 
 Start the OPACA platform and open the UI following their [Quick Testing Guide](https://gitlab.dai-labor.de/jiacpp/prototype#getting-started-quick-testing-guide).
