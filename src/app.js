@@ -94,13 +94,13 @@ function addWaterMark(){
   // Calculate Logo position (centered)
   const svgWidth = svgRoot.clientWidth;
   const svgHeight = svgRoot.clientHeight;
-  const xPos = (svgWidth/2 - 564/2).toString();
-  const yPos = (svgHeight/2 - 135/2).toString();
+  const xPos = (svgWidth/2 - 376/2).toString();
 
   const watermarkImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
   watermarkImage.setAttribute('href', '/resources/opaca-logo.png');
+  watermarkImage.setAttribute('width', '376');
   watermarkImage.setAttribute('x', xPos);
-  watermarkImage.setAttribute('y', yPos);
+  watermarkImage.setAttribute('y', '0');
   watermarkImage.setAttribute('opacity', '0.1');
 
   // Disable pointer events so the watermark doesn't capture mouse actions
