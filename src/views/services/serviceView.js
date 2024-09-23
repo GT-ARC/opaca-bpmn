@@ -1,6 +1,5 @@
 import {addFactory, removeFactory} from "./Services";
-import {getRootElement, nextId} from "../../provider/util";
-import {getDataTypes} from "../../provider/util";
+import {addDatatype, getRootElement, nextId, getDataTypes} from "../../provider/util";
 import {getRelevantServiceProperty, getServices, } from "./util";
 import {fetchOpacaServices} from "../../opacaUtil";
 
@@ -425,11 +424,17 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
             } else if (dropdown.value === 'custom') {
                 const customValue = prompt('Enter custom value:');
                 if (customValue !== null) {
-                    // Add the custom value as a new option
-                    const customOption = document.createElement('option');
-                    customOption.value = customValue;
-                    customOption.text = customValue;
-                    dropdown.add(customOption);
+                    // Add the custom value as a new option (to existing dropdowns)
+                    const allDropDowns = document.querySelectorAll('select.result-type, select.parameter-type');
+                    allDropDowns.forEach(dd => {
+                        const customOption = document.createElement('option');
+                        customOption.value = customValue;
+                        customOption.text = customValue;
+                        dd.add(customOption);
+                    });
+                    // Also add it for future variables
+                    addDatatype(customValue);
+
                     dropdown.value = customValue;
                 } else {
                     // Reset to the previous value if user cancels
