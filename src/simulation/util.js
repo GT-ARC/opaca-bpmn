@@ -163,7 +163,9 @@ export function createUserTask(element, scope){
         const dialogContent = document.getElementById('dialogContent');
         const dialogMessage = document.getElementById('dialogMessage');
 
-        dialogMessage.innerHTML = restrictedEval(taskMessage, parentScope.id);
+        if(dialogMessage.innerHTML){
+            dialogMessage.innerHTML = restrictedEval(taskMessage, parentScope.id);
+        }
         dialogContent.innerHTML = '';
 
         // Get targets
