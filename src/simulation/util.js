@@ -169,7 +169,7 @@ export function createUserTask(element, scope){
         // Get targets
         const targets = getTargets(bpmnElement);
 
-        // Function to validate (not 100%) the input and display errors using HTML5 validation
+        // Function to validate the input and display errors using HTML5 validation
         function validateInput(target, inputElement) {
             let value = inputElement.value;
 
@@ -177,33 +177,43 @@ export function createUserTask(element, scope){
             inputElement.setCustomValidity('');
 
             if (typeof value === 'string') {
-                // Convert and validate based on target type
+
+                try{
+                    value = restrictedEval(value, parentScope.id);
+                }catch (e) {
+                    inputElement.setCustomValidity('Cannot be evaluated.', e);
+                }
+
+                // Validate based on target type
                 switch (target.type) {
+                    case 'string':
+                        if(typeof value !== 'string'){
+                            inputElement.setCustomValidity(`${target.name} is not a valid string.`);
+                        }
+                        break;
                     case 'integer':
-                        if (isNaN(parseInt(value, 10))) {
-                            inputElement.setCustomValidity(`${target.name} is not a valid number.`);
+                        if (isNaN(value) || !Number.isInteger(value)) {
+                            inputElement.setCustomValidity(`${target.name} is not a valid integer.`);
                         }
                         break;
                     case 'float':
                     case 'number':
-                        if (isNaN(parseFloat(value))) {
+                        if (isNaN(value)) {
                             inputElement.setCustomValidity(`${target.name} is not a valid number.`);
                         }
                         break;
                     case 'boolean':
-                        if (!['true', 'false'].includes(value.toLowerCase())) {
-                            inputElement.setCustomValidity(`${target.name} should be 'true' or 'false'.`);
+                        if (typeof value !== 'boolean') {
+                            inputElement.setCustomValidity(`${target.name} should be a boolean`);
                         }
                         break;
                     case 'array':
-                        if (!value.includes('[') || !value.includes(']') || !value.includes(',') || !value.split(',').every(item => item.trim().length > 0)) {
+                        if (!Array.isArray(value)) {
                             inputElement.setCustomValidity(`${target.name} cannot be parsed into an array.`);
                         }
                         break;
                     case 'object':
-                        try {
-                            JSON.parse(value);
-                        } catch (e) {
+                        if(typeof value !== 'object' || value === null || Array.isArray(value)){
                             inputElement.setCustomValidity(`${target.name} is not a valid JSON object.`);
                         }
                         break;
@@ -335,7 +345,6 @@ function restrictedEval(expression, parentScope){
     const tokens = tokenizeExpression(expression, parentScope);
     const validatedTokens = validateAndReplaceTokens(tokens, parentScope);
     const validatedExpression = validatedTokens.join('');
-    //console.log('Validated: ', validatedExpression);
 
     // Parentheses ensure it is treated as an expression, not a block
     return eval('(' + validatedExpression + ')');

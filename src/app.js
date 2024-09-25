@@ -93,7 +93,6 @@ function addWaterMark(){
 
   // Calculate Logo position (centered)
   const svgWidth = svgRoot.clientWidth;
-  const svgHeight = svgRoot.clientHeight;
   const xPos = (svgWidth/2 - 376/2).toString();
 
   const watermarkImage = document.createElementNS('http://www.w3.org/2000/svg', 'image');
