@@ -142,6 +142,10 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
         try {
             const result = await fetchOpacaServices(location);
             for (const agent of result) {
+                // Don't include own actions
+                if(agent.agentId === 'modeler-agent'){
+                    continue;
+                }
 
                 if (agent.actions && agent.actions.length > 0) {
 
