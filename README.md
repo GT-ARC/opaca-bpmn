@@ -9,10 +9,14 @@ This editor is a node-style web application that builds a user interface around 
 It uses [bpmn-js](https://github.com/bpmn-io/bpmn-js) and [bpmn-js-properties-panel](https://github.com/bpmn-io/bpmn-js-properties-panel). It implements a BPMN 2.0 modeler that allows you to edit execution related properties via a properties panel.
 
 ### Extension of Properties Panel
-Our extension follows the steps of [properties-panel-extension](https://github.com/bpmn-io/bpmn-js-examples/tree/main/properties-panel-extension) and [properties-panel-list-extension](https://github.com/bpmn-io/bpmn-js-examples/tree/main/properties-panel-list-extension) which show how to add custom properties(-lists) to the bpmn editor and the underlying bpmn diagram. With groups and nested groups we created the exact XML structure we wanted.
+Our extension follows the steps of [properties-panel-extension](https://github.com/bpmn-io/bpmn-js-examples/tree/main/properties-panel-extension) and [properties-panel-list-extension](https://github.com/bpmn-io/bpmn-js-examples/tree/main/properties-panel-list-extension) which show how to add custom properties(-lists) to the bpmn editor and the underlying bpmn diagram. With groups and nested groups we created an XML structure fitting our needs.  
+To highlight their importance and make modeling easier, services are added in an extra service-view focused on OPACA services.
 
 ### Model
 More about the bpmn model [here](./docs/model.md).
+
+### Examples
+Some example diagrams can be found in [examples](../bpmn-interpreter-vsdt2/resources/examples) and [bpmn-examples](https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-examples).
 
 ## Simulation
 Also integrated in the editor is the [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-token-simulation/tree/main), which is a great tool for visualization and learning. More about the simulation [here](./docs/simulation.md).
