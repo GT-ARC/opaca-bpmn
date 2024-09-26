@@ -16,7 +16,7 @@ To highlight their importance and make modeling easier, services are added in an
 More about the bpmn model [here](./docs/model.md).
 
 ### Examples
-Some example diagrams can be found in [examples](../bpmn-interpreter-vsdt2/resources/examples) and [bpmn-examples](https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-examples).
+Some example diagrams can be found in [examples](./resources/examples) and [bpmn-examples](https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-examples).
 
 ## Simulation
 Also integrated in the editor is the [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-token-simulation/tree/main), which is a great tool for visualization and learning. More about the simulation [here](./docs/simulation.md).
