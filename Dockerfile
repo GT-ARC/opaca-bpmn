@@ -6,6 +6,8 @@ WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json files
 COPY package*.json ./
+# Copy patches for interpreter-callbacks, so they can be applied in npm install
+COPY patches ./patches
 
 # Install dependencies
 RUN npm install
