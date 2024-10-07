@@ -8,6 +8,8 @@ services:
       - "8080:8080"
     depends_on:
       - opaca-bpmn-modeller-llm-backend
+    environment:
+      LLM_BACKEND: http://10.42.6.107:5000
   
   opaca-bpmn-modeller-llm-backend:
     build: python-powl-server
