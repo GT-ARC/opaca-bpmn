@@ -3,6 +3,6 @@ version: '3'
 services:
 
   opaca-bpmn-modeller:
-    build: .
+    build: opaca-bpmn-editor
     ports:
       - "8080:8080"
