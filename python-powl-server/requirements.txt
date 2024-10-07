@@ -1,0 +1,4 @@
+uvicorn
+fastapi
+pm4py
+requests

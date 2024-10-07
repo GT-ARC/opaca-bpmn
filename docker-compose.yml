@@ -6,3 +6,14 @@ services:
     build: opaca-bpmn-editor
     ports:
       - "8080:8080"
+    depends_on:
+      - opaca-bpmn-modeller-llm-backend
+  
+  opaca-bpmn-modeller-llm-backend:
+    build: python-powl-server
+    ports:
+      - "5000:8000"
+    environment:
+      LLM_NAME: gpt-4o
+      LLM_API_KEY: $OPENAI_API_KEY
+

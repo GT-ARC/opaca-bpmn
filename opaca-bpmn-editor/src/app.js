@@ -146,7 +146,7 @@ async function generateDiagramWithLLM() {
   $('#js-prompt-panel').hide();  
   $('#js-loading-panel').show();
   try {
-    const response = await fetch('http://127.0.0.1:8000/generate_process_model', {
+    const response = await fetch('http://127.0.0.1:5000/generate_process_model', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
