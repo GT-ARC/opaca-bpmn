@@ -17,7 +17,9 @@ import conditionPropsProviderModule from './provider/conditions';
 import userTaskInfoProviderModule from './provider/userTaskInformation';
 // import Views
 import serviceViewModule from './views/services';
-
+// Auto-Layout
+import { layoutProcess } from 'bpmn-auto-layout';
+// Copy-Paste
 import { nativeCopyModule } from './copyPasteModule';
 
 
@@ -56,16 +58,11 @@ const toggleMode = bpmnModeler.get('toggleMode');
 const pauseSimulation = bpmnModeler.get('pauseSimulation');
 
 function createNewDiagram() {
-
-  $('#js-drop-zone').hide();
-  $('#js-selection-panel').show();
-  /*
   try{
     openDiagram(diagramXML);
   }catch (err) {
     console.error(err);
   }
-    */
 }
 
 async function openDiagram(xml) {
@@ -144,6 +141,73 @@ function registerFileDrop(container, callback) {
   container.get(0).addEventListener('drop', handleFileSelect, false);
 }
 
+async function generateDiagramWithLLM() {
+  const description = $('#process-description').val();
+  $('#js-prompt-panel').hide();  
+  $('#js-loading-panel').show();
+  try {
+    const response = await fetch('http://127.0.0.1:8000/generate_process_model', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        process_description: description})
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const bpmnXml = data.bpmn_xml;
+    console.log(bpmnXml);
+
+    if(bpmnXml) {
+      $('#js-loading-panel').hide();
+      $('#js-drop-zone').show();
+      openDiagram(bpmnXml);
+      $('#js-layout-prompt-panel').show();
+    } else {
+      $('#js-loading-panel').hide();
+      $('#response-message').text('Failed to get BPMN diagram.')
+    }
+  } catch (error) {
+    $('#js-loading-panel').hide();
+    $('#response-message').text(`Error: ${error.message}`);
+    console.error(error);
+  }
+}
+
+async function fixLayout() {
+  //Fix the ProMoAI layout using library from bpmn-js
+  try {
+    const { xml: currentXml } = await bpmnModeler.saveXML({ format: true });
+    const layoutedXml = await layoutProcess(currentXml);
+
+    try {
+      await bpmnModeler.importXML(layoutedXml);
+  
+      const canvas = bpmnModeler.get('canvas');
+      canvas.zoom('fit-viewport');
+  
+      container.removeClass('with-error').addClass('with-diagram');
+
+    } catch (err) {
+      container.removeClass('with-diagram').addClass('with-error');
+      container.find('.error pre').text(err.message);
+      console.error('something went wrong: ', err);
+    }
+  } catch (error) {
+    console.error('Error fixing layout: ', error);
+    $('#response-message').text('Error: ${error.message}');
+  } finally {
+    $('#js-loading-panel').hide();
+    $('#js-layout-prompt-panel').hide();
+    $('#js-feedback-panel').show();
+  }
+}
+
 // File drag/drop functionality
 if (!window.FileList || !window.FileReader) {
   window.alert(
@@ -161,140 +225,13 @@ $(function() {
     createNewDiagram();
   });
 
-
-  $('#model-manually').click(function() {
-    $('#js-selection-panel').hide();
-    $('#js-drop-zone').show();
-    openDiagram(diagramXML);
-  });
-
-  $('#model-by-describing').click(function() {
-    $('#js-selection-panel').hide();
-    $('#js-prompt-panel').show();
-  });
-
   //Generate diagram using LLM
   $('#send-description').click(async function() {
-    const description = $('#process-description').val();
-
-    $('#js-prompt-panel').hide();
-    $('#js-loading-panel').show();
-
-    try {
-      const response = await fetch('http://127.0.0.1:8000/generate_process_model', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ 
-          process_description: description})
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const bpmnXml = data.bpmn_xml;
-      console.log(bpmnXml);
-
-      if(bpmnXml) {
-        $('#js-loading-panel').hide();
-        $('#js-drop-zone').show();
-        openDiagram(bpmnXml);
-        $('#js-layout-prompt-panel').show();
-      } else {
-        $('#js-loading-panel').hide();
-        $('#response-message').text('Failed to get BPMN diagram.')
-      }
-    } catch (error) {
-      $('#js-loading-panel').hide();
-      $('#response-message').text(`Error: ${error.message}`);
-      console.error(error);
-    }
+    await generateDiagramWithLLM();
+    await fixLayout();
   });
 
-  //Fix the ProMoAI layout using library from bpmn-js
-  $('#js-fix-layout').click(async function() {
-    $('#js-layout-prompt-panel').hide();
-    $('#js-loading-panel').show();
   
-    try {
-      const { xml: currentXml } = await bpmnJS.saveXML({ format: true });
-      const layoutedXml = await layoutProcess(currentXml);
-  
-      try {
-        await bpmnJS.importXML(layoutedXml);
-    
-        const canvas = bpmnJS.get('canvas');
-        canvas.zoom('fit-viewport');
-    
-        container.removeClass('with-error').addClass('with-diagram');
-
-      } catch (err) {
-        container.removeClass('with-diagram').addClass('with-error');
-        container.find('.error pre').text(err.message);
-        console.error('something went wrong: ', err);
-      }
-    } catch (error) {
-      console.error('Error fixing layout: ', error);
-      $('#response-message').text('Error: ${error.message}');
-    } finally {
-      $('#js-loading-panel').hide();
-      $('#js-layout-prompt-panel').hide();
-      $('#js-feedback-panel').show();
-    }
-  });
-  
-  $('#js-cancel-layout').click(function() {
-    $('#js-layout-prompt-panel').hide();
-    $('#js-feedback-panel').show();
-  });
-
-  //Regenerate diagram based on feedback
-  $('#send-feedback').click(async function() {
-    const feedback = $('#feedback-text').val();
-
-    $('#js-feedback-panel').hide();
-    $('#js-loading-panel').show();
-
-    try {
-      const response = await fetch('http://127.0.0.1:8000/update_process_model', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          feedback_text: feedback
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      const bpmnXml = data.bpmn_xml;
-      console.log(bpmnXml);
-
-      $('#js-loading-panel').hide();
-      if (bpmnXml) {
-        openDiagram(bpmnXml);
-        $('#js-layout-prompt-panel').show();
-      } else {
-        $('#response-message').text('Failed to get BPMN diagram.');
-      }
-    } catch (error) {
-      $('#response-message').text(`Error: ${error.message}`);
-      console.error(error);
-    }
-  });
-
-  $('#no-feedback').click(async function() {
-    $('#js-feedback-panel').hide();
-  });
-
-
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
 
