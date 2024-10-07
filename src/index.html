@@ -13,6 +13,13 @@
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
+
+  <div class="selection-panel" id="js-selection-panel" style="display: none;">
+    <h2>How do you want to model your process?</h2>
+    <button id="model-by-describing">Use process description</button>
+    <button id="model-manually">Model manually</button>
+  </div>
+
   <div class="content with-diagram" id="js-drop-zone">
 
     <div class="message intro">
@@ -90,6 +97,34 @@
     <!-- Properties Panel -->
     <div class="properties-panel-parent" id="js-properties-panel"></div>
   </div>
+
+
+  <div class="prompt-panel" id="js-prompt-panel" style="display: none;">
+    <h2>Describe your process here:</h2>
+    <textarea id="process-description" rows="10" cols="50"></textarea>
+    <button id="send-description">Send process description to LLM</button>
+    <div id="response-message" style="color: red; margin-top:10px;"></div>
+  </div>
+
+  <div class="loading-panel" id="js-loading-panel" style="display: none;">
+    <div class="loader"></div>
+    <p>Model generation in progress...</p>
+  </div>
+
+  <div class="feedback-panel" id="js-feedback-panel" style="display: none;">
+    <h2>Provide Feedback to Update Model:</h2>
+    <textarea id="feedback-text" rows="5" cols="100"></textarea>
+    <button id="send-feedback">Send Feedback</button>
+    <button id="no-feedback">No Feedback</button>
+    <div id="feedback-response-message" style="color: red; margin-top: 10px;"></div>
+  </div>
+
+  <div class="layout-prompt-panel" id="js-layout-prompt-panel" style="display: none;">
+    <p>Fix the layout of the diagram?</p>
+    <button id="js-fix-layout">Yes</button>
+    <button id="js-cancel-layout">No, it looks good</button>
+  </div>
+
   <!-- Download Buttons -->
   <ul class="buttons">
     <li>
