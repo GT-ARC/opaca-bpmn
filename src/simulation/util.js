@@ -280,6 +280,34 @@ export function createUserTask(element, scope){
     });
 }
 
+export function handleStart(element, scope){
+
+    // Handle assignments at Start
+    updateVariables(element, 'START', scope);
+
+    // Common function to handle service calls or user tasks
+    const handleTask = taskHandler => {
+        return taskHandler(element, scope)
+    };
+
+    // Make service call
+    if (is(element, 'bpmn:ServiceTask')) {
+        return handleTask(callService);
+    }
+
+    // Create user task dialog
+    if (is(element, 'bpmn:UserTask')) {
+        return handleTask(createUserTask);
+    }
+
+    return Promise.resolve();
+}
+
+export function handleEnd(element, scope){
+    // Handle assignments at End
+    updateVariables(element, 'END', scope);
+}
+
 
 //// Helpers ////
 
