@@ -143,7 +143,7 @@ function registerFileDrop(container, callback) {
 
 async function generateDiagramWithLLM() {
   const description = $('#process-description').val();
-  $('#js-prompt-panel').hide();  
+  $('#js-prompt-panel').hide();
   $('#js-loading-panel').show();
   try {
     const response = await fetch(process.env.LLM_BACKEND + '/generate_process_model', {
@@ -151,7 +151,7 @@ async function generateDiagramWithLLM() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         process_description: description})
     });
 
@@ -168,11 +168,8 @@ async function generateDiagramWithLLM() {
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);
       $('#js-layout-prompt-panel').show();
-<<<<<<< Updated upstream
-=======
       $('#feedback-button').show();
       return true;
->>>>>>> Stashed changes
     } else {
       $('#js-loading-panel').hide();
       $('#response-message').text('Failed to get BPMN diagram.')
@@ -238,10 +235,10 @@ async function fixLayout() {
 
     try {
       await bpmnModeler.importXML(layoutedXml);
-  
+
       const canvas = bpmnModeler.get('canvas');
       canvas.zoom('fit-viewport');
-  
+
       container.removeClass('with-error').addClass('with-diagram');
 
     } catch (err) {
@@ -281,9 +278,7 @@ $(function() {
     await fixLayout();
   });
 
-<<<<<<< Updated upstream
   
-=======
   //Display feedback prompt
   $('#feedback-button').click(async function(){
     $('#js-feedback-prompt-panel').show();
@@ -303,7 +298,6 @@ $(function() {
   });
 
 
->>>>>>> Stashed changes
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
 
