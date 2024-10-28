@@ -17,7 +17,9 @@ import conditionPropsProviderModule from './provider/conditions';
 import userTaskInfoProviderModule from './provider/userTaskInformation';
 // import Views
 import serviceViewModule from './views/services';
-
+// Auto-Layout
+import { layoutProcess } from 'bpmn-auto-layout';
+// Copy-Paste
 import { nativeCopyModule } from './copyPasteModule';
 
 
@@ -139,6 +141,79 @@ function registerFileDrop(container, callback) {
   container.get(0).addEventListener('drop', handleFileSelect, false);
 }
 
+async function generateDiagramWithLLM() {
+  const description = $('#process-description').val();
+  $('#js-prompt-panel').hide();
+  $('#js-loading-panel').show();
+  try {
+    const response = await fetch(process.env.LLM_BACKEND + '/generate_process_model', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        process_description: description})
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const bpmnXml = data.bpmn_xml;
+    console.log(bpmnXml);
+
+    if(bpmnXml) {
+      $('#js-loading-panel').hide();
+      $('#js-drop-zone').show();
+      openDiagram(bpmnXml);
+      $('#js-layout-prompt-panel').show();
+      return true;
+    } else {
+      $('#js-loading-panel').hide();
+      $('#response-message').text('Failed to get BPMN diagram.')
+      return false;
+    }
+  } catch (error) {
+    if(error.message === 'Failed to fetch'){
+      error.message += ', likely missing an API Key';
+    }
+    $('#js-loading-panel').hide();
+    $('#response-message').text(`Error: ${error.message}`);
+    console.error(error);
+    return false;
+  }
+}
+
+async function fixLayout() {
+  //Fix the ProMoAI layout using library from bpmn-js
+  try {
+    const { xml: currentXml } = await bpmnModeler.saveXML({ format: true });
+    const layoutedXml = await layoutProcess(currentXml);
+
+    try {
+      await bpmnModeler.importXML(layoutedXml);
+
+      const canvas = bpmnModeler.get('canvas');
+      canvas.zoom('fit-viewport');
+
+      container.removeClass('with-error').addClass('with-diagram');
+
+    } catch (err) {
+      container.removeClass('with-diagram').addClass('with-error');
+      container.find('.error pre').text(err.message);
+      console.error('something went wrong: ', err);
+    }
+  } catch (error) {
+    console.error('Error fixing layout: ', error);
+    $('#response-message').text(`Error: ${error.message}`);
+  } finally {
+    $('#js-loading-panel').hide();
+    $('#js-layout-prompt-panel').hide();
+    $('#js-feedback-panel').show();
+  }
+}
+
 // File drag/drop functionality
 if (!window.FileList || !window.FileReader) {
   window.alert(
@@ -155,6 +230,13 @@ $(function() {
     e.preventDefault();
     createNewDiagram();
   });
+
+  //Generate diagram using LLM
+  $('#send-description').click(async function() {
+    const success = await generateDiagramWithLLM();
+    if(success){ await fixLayout(); }
+  });
+
 
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');

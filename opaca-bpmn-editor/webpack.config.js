@@ -36,7 +36,10 @@ module.exports = {
         path.resolve(__dirname, 'resources/datatypes'),
         false,
         /.*\.json$/
-    )
+    ),
+    new webpack.DefinePlugin({
+      'process.env.LLM_BACKEND': JSON.stringify(process.env.LLM_BACKEND)
+    })
   ],
   devtool: 'source-map'
 };
