@@ -13,11 +13,33 @@
   <link rel="stylesheet" href="app.css" />
 </head>
 <body>
+
   <div class="content with-diagram" id="js-drop-zone">
 
     <div class="message intro">
       <div class="note">
-        Drop BPMN diagram from your desktop or <a id="js-create-diagram" href>create a new diagram</a> to get started.
+        <img src="../resources/opaca-logo.png" width="400px">
+        <h2>Welcome to the OPACA BPMN Editor</h2>
+        <p>What do you want to do today?</p>
+        <p>You can drop a BPMN diagram here from your desktop to continue editing.</p>
+        <p>Or you can <a id="js-create-diagram" href>create a new diagram.</a></p>
+        <p>Or describe your process in the text field below and ask an LLM to generate a draft.</p>
+        <div class="prompt-panel" id="js-prompt-panel">
+          <textarea id="process-description" rows="10" cols="50"></textarea>
+          <br>
+          <button id="send-description">Send to LLM</button>
+        </div>      
+        <div class="loading-panel" id="js-loading-panel" style="display: none;">
+          <div class="loader"></div>
+          <p><strong>Model generation in progress... please stand by.</strong></p>
+        </div>
+        <div id="response-message" style="color: red; margin-top:10px;"></div>
+        <div style="font-size: small;">
+          <br><br><br>
+          The BPMN Editor is based on <a href="https://bpmn.io/" target="clear">BPMN.io</a>, adapted and extended by Cedric Braun.
+          <br>
+          The LLM Integration is based on <a href="https://promoai.streamlit.app/" target="clear">ProMoAI</a>, adapted by Anastasiia Zubenko.
+        </div>
       </div>
     </div>
 
@@ -90,6 +112,7 @@
     <!-- Properties Panel -->
     <div class="properties-panel-parent" id="js-properties-panel"></div>
   </div>
+
   <!-- Download Buttons -->
   <ul class="buttons">
     <li>
