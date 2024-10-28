@@ -387,3 +387,21 @@ select {
   margin-top: 5px;
   margin-bottom: 5px;
 }
+
+#feedback-button {
+  display: none;
+  position: fixed;
+  bottom: 60px;
+  left: 20px;
+  cursor: pointer;
+}
+
+#js-feedback-prompt-panel, #js-feedback-loading-panel, #feedback-response-message {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 999;
+  vertical-align: middle;
+}

@@ -15,6 +15,9 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
+# Build including stylings
+RUN npm run build
+
 EXPOSE 8080
 
 # Start the application

@@ -168,6 +168,11 @@ async function generateDiagramWithLLM() {
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);
       $('#js-layout-prompt-panel').show();
+<<<<<<< Updated upstream
+=======
+      $('#feedback-button').show();
+      return true;
+>>>>>>> Stashed changes
     } else {
       $('#js-loading-panel').hide();
       $('#response-message').text('Failed to get BPMN diagram.')
@@ -176,6 +181,52 @@ async function generateDiagramWithLLM() {
     $('#js-loading-panel').hide();
     $('#response-message').text(`Error: ${error.message}`);
     console.error(error);
+  }
+}
+
+async function refineDiagramWithLLM(){
+  const feedbackText = $('#process-feedback-description').val();
+  $('#js-feedback-panel').hide();
+  $('#js-feedback-loading-panel').show();
+
+  try {
+    const response = await fetch(process.env.LLM_BACKEND + '/update_process_model', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        feedback_text: feedbackText
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const bpmnXml = data.bpmn_xml;
+    // console.log(bpmnXml);
+
+    if (bpmnXml) {
+      $('#js-feedback-loading-panel').hide();
+      $('#js-drop-zone').show();
+      openDiagram(bpmnXml);
+      $('#js-layout-prompt-panel').show();
+      return true;
+    } else {
+      $('#js-feedback-loading-panel').hide();
+      $('#feedback-response-message').text('Failed to get updated BPMN diagram.');
+      return false;
+    }
+  } catch (error) {
+    if (error.message === 'Failed to fetch') {
+      error.message += ', likely missing an API Key';
+    }
+    $('#js-feedback-loading-panel').hide();
+    $('#feedback-response-message').text(`Error: ${error.message}`);
+    console.error(error);
+    return false;
   }
 }
 
@@ -204,7 +255,6 @@ async function fixLayout() {
   } finally {
     $('#js-loading-panel').hide();
     $('#js-layout-prompt-panel').hide();
-    $('#js-feedback-panel').show();
   }
 }
 
@@ -231,7 +281,29 @@ $(function() {
     await fixLayout();
   });
 
+<<<<<<< Updated upstream
   
+=======
+  //Display feedback prompt
+  $('#feedback-button').click(async function(){
+    $('#js-feedback-prompt-panel').show();
+  });
+
+  //Refine diagram using LLM
+  $('#send-feedback').click(async function() {
+    $('#js-feedback-prompt-panel').hide();
+    const success = await refineDiagramWithLLM();
+    if(success){ await fixLayout(); }else{
+      $('#feedback-response-message').show();
+      // Hide the message after 3 seconds
+      setTimeout(() => {
+        $('#feedback-response-message').hide();
+      }, 3000);
+    }
+  });
+
+
+>>>>>>> Stashed changes
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
 

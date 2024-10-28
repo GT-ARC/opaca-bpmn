@@ -28,7 +28,7 @@
           <textarea id="process-description" rows="10" cols="50"></textarea>
           <br>
           <button id="send-description">Send to LLM</button>
-        </div>      
+        </div>
         <div class="loading-panel" id="js-loading-panel" style="display: none;">
           <div class="loader"></div>
           <p><strong>Model generation in progress... please stand by.</strong></p>
@@ -58,6 +58,16 @@
       <div class="message error" id="delete-assigned-var">
         <p></p>
       </div>
+      <div class="prompt-panel" id="js-feedback-prompt-panel" style="display: none">
+        <textarea id="process-feedback-description" rows="10" cols="50"></textarea>
+        <br>
+        <button id="send-feedback">Send to LLM</button>
+      </div>
+      <div class="loading-panel" id="js-feedback-loading-panel">
+        <div class="loader"></div>
+        <p><strong>Model generation in progress... please stand by.</strong></p>
+      </div>
+      <div id="feedback-response-message" style="color: red"></div>
       <!-- Dialog for UserTasks -->
         <dialog id="dynamicInputDialog" class="bpmn-popup">
             <span id="userTaskDialogIcon" class="bpmn-icon-user"></span>
@@ -112,6 +122,7 @@
     <!-- Properties Panel -->
     <div class="properties-panel-parent" id="js-properties-panel"></div>
   </div>
+  <button id="feedback-button">Refine diagram</button>
 
   <!-- Download Buttons -->
   <ul class="buttons">
