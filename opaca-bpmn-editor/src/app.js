@@ -143,7 +143,7 @@ function registerFileDrop(container, callback) {
 
 async function generateDiagramWithLLM() {
   const description = $('#process-description').val();
-  $('#js-prompt-panel').hide();  
+  $('#js-prompt-panel').hide();
   $('#js-loading-panel').show();
   try {
     const response = await fetch(process.env.LLM_BACKEND + '/generate_process_model', {
@@ -151,7 +151,7 @@ async function generateDiagramWithLLM() {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
+      body: JSON.stringify({
         process_description: description})
     });
 
@@ -168,14 +168,20 @@ async function generateDiagramWithLLM() {
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);
       $('#js-layout-prompt-panel').show();
+      return true;
     } else {
       $('#js-loading-panel').hide();
       $('#response-message').text('Failed to get BPMN diagram.')
+      return false;
     }
   } catch (error) {
+    if(error.message === 'Failed to fetch'){
+      error.message += ', likely missing an API Key';
+    }
     $('#js-loading-panel').hide();
     $('#response-message').text(`Error: ${error.message}`);
     console.error(error);
+    return false;
   }
 }
 
@@ -187,10 +193,10 @@ async function fixLayout() {
 
     try {
       await bpmnModeler.importXML(layoutedXml);
-  
+
       const canvas = bpmnModeler.get('canvas');
       canvas.zoom('fit-viewport');
-  
+
       container.removeClass('with-error').addClass('with-diagram');
 
     } catch (err) {
@@ -200,7 +206,7 @@ async function fixLayout() {
     }
   } catch (error) {
     console.error('Error fixing layout: ', error);
-    $('#response-message').text('Error: ${error.message}');
+    $('#response-message').text(`Error: ${error.message}`);
   } finally {
     $('#js-loading-panel').hide();
     $('#js-layout-prompt-panel').hide();
@@ -227,11 +233,11 @@ $(function() {
 
   //Generate diagram using LLM
   $('#send-description').click(async function() {
-    await generateDiagramWithLLM();
-    await fixLayout();
+    const success = await generateDiagramWithLLM();
+    if(success){ await fixLayout(); }
   });
 
-  
+
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
 
