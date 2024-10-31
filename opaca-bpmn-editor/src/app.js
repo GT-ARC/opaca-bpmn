@@ -179,11 +179,16 @@ async function generateDiagramWithLLM() {
     } else {
       $('#js-loading-panel').hide();
       $('#response-message').text('Failed to get BPMN diagram.')
+      return false;
     }
   } catch (error) {
+    if(error.message === 'Failed to fetch'){
+      error.message += ', likely missing an API Key';
+    }
     $('#js-loading-panel').hide();
     $('#response-message').text(`Error: ${error.message}`);
     console.error(error);
+    return false;
   }
 }
 
@@ -255,7 +260,7 @@ async function fixLayout() {
     }
   } catch (error) {
     console.error('Error fixing layout: ', error);
-    $('#response-message').text('Error: ${error.message}');
+    $('#response-message').text(`Error: ${error.message}`);
   } finally {
     $('#js-loading-panel').hide();
     $('#js-layout-prompt-panel').hide();
@@ -281,8 +286,8 @@ $(function() {
 
   //Generate diagram using LLM
   $('#send-description').click(async function() {
-    await generateDiagramWithLLM();
-    await fixLayout();
+    const success = await generateDiagramWithLLM();
+    if(success){ await fixLayout(); }
   });
 
 
