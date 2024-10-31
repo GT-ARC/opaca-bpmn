@@ -9,7 +9,7 @@ services:
     depends_on:
       - opaca-bpmn-modeller-llm-backend
     environment:
-      LLM_BACKEND: http://10.42.6.107:5000
+      LLM_BACKEND: http://192.168.2.133:5000
   
   opaca-bpmn-modeller-llm-backend:
     build: python-powl-server
@@ -18,4 +18,3 @@ services:
     environment:
       LLM_NAME: gpt-4o
       LLM_API_KEY: $OPENAI_API_KEY
-

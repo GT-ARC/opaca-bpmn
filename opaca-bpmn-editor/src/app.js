@@ -141,6 +141,8 @@ function registerFileDrop(container, callback) {
   container.get(0).addEventListener('drop', handleFileSelect, false);
 }
 
+var sessionId = '';
+
 async function generateDiagramWithLLM() {
   const description = $('#process-description').val();
   $('#js-prompt-panel').hide();
@@ -160,6 +162,10 @@ async function generateDiagramWithLLM() {
     }
 
     const data = await response.json();
+
+    sessionId = data.session_id;
+    console.log(data.session_id);
+
     const bpmnXml = data.bpmn_xml;
     console.log(bpmnXml);
 
@@ -193,7 +199,8 @@ async function refineDiagramWithLLM(){
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        feedback_text: feedbackText
+        feedback_text: feedbackText,
+        session_id: sessionId
       })
     });
 
@@ -278,7 +285,7 @@ $(function() {
     await fixLayout();
   });
 
-  
+
   //Display feedback prompt
   $('#feedback-button').click(async function(){
     $('#js-feedback-prompt-panel').show();

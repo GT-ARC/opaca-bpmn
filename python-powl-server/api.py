@@ -23,8 +23,7 @@ app.add_middleware(
     allow_headers=["*"]
 )
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("uvicorn")
 
 class Session(BaseModel):
     process_description: str
@@ -73,7 +72,7 @@ def generate_model(data: Session):
         logger.error("Error generating BPMN model: %s", str(e))
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @app.post("/update_process_model")
 def update_model(data: Feedback):
     logger.debug("Received data for generating model: %s", data)
@@ -84,7 +83,7 @@ def update_model(data: Feedback):
 
         if not model_gen:
             raise HTTPException(status_code=404, detail="Session ID not found or expired.")
-        
+
         model_gen.update(data.feedback_text)
 
         powl = model_gen.get_powl()
@@ -93,7 +92,7 @@ def update_model(data: Feedback):
         bpmn = layouter(bpmn)
 
         bpmn_data = get_xml_string(bpmn, parameters={"encoding": constants.DEFAULT_ENCODING})
-        
+
         bpmn_str = bpmn_data.decode('utf-8')
         logger.debug("The BPMN model after decoding: %s", bpmn_str)
         return JSONResponse(content={"bpmn_xml": bpmn_str}, media_type="application/json")
@@ -101,7 +100,7 @@ def update_model(data: Feedback):
         logger.error("Error processing feedback: %s", str(e))
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
-    
+
 @app.get("/")
 def main():
     return {"message": "Hello, this is an API for ProMoAI"}
