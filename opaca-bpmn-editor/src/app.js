@@ -310,19 +310,32 @@ $(function() {
     createNewDiagram();
   });
 
-  //Generate diagram using LLM
+  // Generate diagram using LLM
   $('#send-description').click(async function() {
     const success = await generateDiagramWithLLM();
     if(success){ await fixLayout(); }
   });
 
-
-  //Display feedback prompt
+  // Display feedback prompt
   $('#feedback-button').click(async function(){
     $('#js-feedback-prompt-panel').show();
   });
 
-  //Refine diagram using LLM
+  // Use enter to trigger buttons
+  $('#process-feedback-description').on('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      $('#send-feedback').click();
+    }
+  });
+  $('#process-description').on('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      $('#send-description').click();
+    }
+  });
+
+  // Refine diagram using LLM
   $('#send-feedback').click(async function() {
     $('#js-feedback-prompt-panel').hide();
     const success = await refineDiagramWithLLM();
@@ -333,6 +346,14 @@ $(function() {
         $('#feedback-response-message').hide();
       }, 3000);
     }
+    // Reset text
+    $('#process-feedback-description').val('');
+  });
+
+  // Cancel feedback
+  $('#cancel-feedback').click(async function() {
+    $('#js-feedback-prompt-panel').hide();
+    $('#process-feedback-description').val('');
   });
 
 
