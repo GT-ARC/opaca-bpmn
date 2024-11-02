@@ -192,12 +192,35 @@ async function generateDiagramWithLLM() {
   }
 }
 
+// Helper function to retrieve XML as a Promise
+function getDiagramXML() {
+  return new Promise((resolve, reject) => {
+    bpmnModeler.saveXML({ format: true }, (err, xml) => {
+      if (err) {
+        console.error('Error in saveXML:', err);  // Log to verify if there's an error
+        reject(err);
+      } else {
+        console.log('XML generated successfully');  // Log to confirm success
+        resolve(xml);
+      }
+    });
+  });
+}
+
 async function refineDiagramWithLLM(){
   const feedbackText = $('#process-feedback-description').val();
   $('#js-feedback-panel').hide();
   $('#js-feedback-loading-panel').show();
 
   try {
+    // Send xml, if new session
+    var xml = null;
+    if(sessionId===''){
+      xml = await bpmnModeler.saveXML({ format: true });
+      xml = xml.xml;
+    }
+    console.log('ready for call');
+
     const response = await fetch(process.env.LLM_BACKEND + '/update_process_model', {
       method: 'POST',
       headers: {
@@ -205,7 +228,8 @@ async function refineDiagramWithLLM(){
       },
       body: JSON.stringify({
         feedback_text: feedbackText,
-        session_id: sessionId
+        session_id: sessionId,
+        ...(xml && {process_xml: xml})
       })
     });
 
@@ -215,6 +239,8 @@ async function refineDiagramWithLLM(){
 
     const data = await response.json();
     const bpmnXml = data.bpmn_xml;
+    // Save session id
+    sessionId = data.session_id;
     // console.log(bpmnXml);
 
     if (bpmnXml) {

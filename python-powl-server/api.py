@@ -27,14 +27,15 @@ logger = logging.getLogger("uvicorn")
 
 class Session(BaseModel):
     process_description: str
-    llm: str = os.getenv("LLM_NAME");
-    api_key: str = os.getenv("LLM_API_KEY");
+    llm: str = os.getenv("LLM_NAME")
+    api_key: str = os.getenv("LLM_API_KEY")
 
 class Feedback(BaseModel):
+    process_xml: str = None
     feedback_text: str
     session_id: str
-    llm: str = os.getenv("LLM_NAME");
-    api_key: str = os.getenv("LLM_API_KEY");
+    llm: str = os.getenv("LLM_NAME")
+    api_key: str = os.getenv("LLM_API_KEY")
 
 session_store = {}
 
@@ -75,11 +76,18 @@ def generate_model(data: Session):
 
 @app.post("/update_process_model")
 def update_model(data: Feedback):
-    logger.debug("Received data for generating model: %s", data)
+    #logger.info('UPDATE MODEL, data: ', data)
     try:
         session_id = data.session_id
 
         model_gen = get_model_gen_from_cache(session_id)
+
+        # When there is no model_gen yet, create a new one using process xml
+        if not session_id and data.process_xml:
+            model_gen = LLMProcessModelGenerator(data.process_xml, data.api_key, data.llm)
+
+            session_id = store_model_gen_in_cache(model_gen)
+
 
         if not model_gen:
             raise HTTPException(status_code=404, detail="Session ID not found or expired.")
@@ -95,7 +103,7 @@ def update_model(data: Feedback):
 
         bpmn_str = bpmn_data.decode('utf-8')
         logger.debug("The BPMN model after decoding: %s", bpmn_str)
-        return JSONResponse(content={"bpmn_xml": bpmn_str}, media_type="application/json")
+        return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
     except Exception as e:
         logger.error("Error processing feedback: %s", str(e))
         logger.error(traceback.format_exc())
