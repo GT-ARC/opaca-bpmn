@@ -14,4 +14,4 @@ COPY . .
 
 EXPOSE 8000
 
-ENTRYPOINT [ "python3", "-m", "uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000" ]
+ENTRYPOINT ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "debug"]

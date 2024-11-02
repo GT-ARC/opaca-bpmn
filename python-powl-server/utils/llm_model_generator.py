@@ -5,7 +5,7 @@ from pm4py.util import constants
 
 class LLMProcessModelGenerator(object):
     def __init__(self, process_description: str, api_key: str,
-                 openai_model: str = "gpt-3.5-turbo-0125"):  # gpt-4-0125-preview gpt-3.5-turbo-0125
+                 openai_model: str = "gpt-4o"): 
         self.__api_key = api_key
         self.__openai_model = openai_model
         init_conversation = create_conversation(process_description)

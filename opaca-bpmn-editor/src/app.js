@@ -141,6 +141,8 @@ function registerFileDrop(container, callback) {
   container.get(0).addEventListener('drop', handleFileSelect, false);
 }
 
+var sessionId = '';
+
 async function generateDiagramWithLLM() {
   const description = $('#process-description').val();
   $('#js-prompt-panel').hide();
@@ -160,6 +162,10 @@ async function generateDiagramWithLLM() {
     }
 
     const data = await response.json();
+
+    sessionId = data.session_id;
+    console.log(data.session_id);
+
     const bpmnXml = data.bpmn_xml;
     console.log(bpmnXml);
 
@@ -168,6 +174,7 @@ async function generateDiagramWithLLM() {
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);
       $('#js-layout-prompt-panel').show();
+      $('#feedback-button').show();
       return true;
     } else {
       $('#js-loading-panel').hide();
@@ -180,6 +187,79 @@ async function generateDiagramWithLLM() {
     }
     $('#js-loading-panel').hide();
     $('#response-message').text(`Error: ${error.message}`);
+    console.error(error);
+    return false;
+  }
+}
+
+// Helper function to retrieve XML as a Promise
+function getDiagramXML() {
+  return new Promise((resolve, reject) => {
+    bpmnModeler.saveXML({ format: true }, (err, xml) => {
+      if (err) {
+        console.error('Error in saveXML:', err);  // Log to verify if there's an error
+        reject(err);
+      } else {
+        console.log('XML generated successfully');  // Log to confirm success
+        resolve(xml);
+      }
+    });
+  });
+}
+
+async function refineDiagramWithLLM(){
+  const feedbackText = $('#process-feedback-description').val();
+  $('#js-feedback-panel').hide();
+  $('#js-feedback-loading-panel').show();
+
+  try {
+    // Send xml, if new session
+    var xml = null;
+    if(sessionId===''){
+      xml = await bpmnModeler.saveXML({ format: true });
+      xml = xml.xml;
+    }
+    console.log('ready for call');
+
+    const response = await fetch(process.env.LLM_BACKEND + '/update_process_model', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        feedback_text: feedbackText,
+        session_id: sessionId,
+        ...(xml && {process_xml: xml})
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const bpmnXml = data.bpmn_xml;
+    // Save session id
+    sessionId = data.session_id;
+    // console.log(bpmnXml);
+
+    if (bpmnXml) {
+      $('#js-feedback-loading-panel').hide();
+      $('#js-drop-zone').show();
+      openDiagram(bpmnXml);
+      $('#js-layout-prompt-panel').show();
+      return true;
+    } else {
+      $('#js-feedback-loading-panel').hide();
+      $('#feedback-response-message').text('Failed to get updated BPMN diagram.');
+      return false;
+    }
+  } catch (error) {
+    if (error.message === 'Failed to fetch') {
+      error.message += ', likely missing an API Key';
+    }
+    $('#js-feedback-loading-panel').hide();
+    $('#feedback-response-message').text(`Error: ${error.message}`);
     console.error(error);
     return false;
   }
@@ -210,7 +290,6 @@ async function fixLayout() {
   } finally {
     $('#js-loading-panel').hide();
     $('#js-layout-prompt-panel').hide();
-    $('#js-feedback-panel').show();
   }
 }
 
@@ -231,10 +310,50 @@ $(function() {
     createNewDiagram();
   });
 
-  //Generate diagram using LLM
+  // Generate diagram using LLM
   $('#send-description').click(async function() {
     const success = await generateDiagramWithLLM();
     if(success){ await fixLayout(); }
+  });
+
+  // Display feedback prompt
+  $('#feedback-button').click(async function(){
+    $('#js-feedback-prompt-panel').show();
+  });
+
+  // Use enter to trigger buttons
+  $('#process-feedback-description').on('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      $('#send-feedback').click();
+    }
+  });
+  $('#process-description').on('keydown', function(event) {
+    if (event.key === 'Enter' && !event.shiftKey && !event.ctrlKey) {
+      event.preventDefault();
+      $('#send-description').click();
+    }
+  });
+
+  // Refine diagram using LLM
+  $('#send-feedback').click(async function() {
+    $('#js-feedback-prompt-panel').hide();
+    const success = await refineDiagramWithLLM();
+    if(success){ await fixLayout(); }else{
+      $('#feedback-response-message').show();
+      // Hide the message after 3 seconds
+      setTimeout(() => {
+        $('#feedback-response-message').hide();
+      }, 3000);
+    }
+    // Reset text
+    $('#process-feedback-description').val('');
+  });
+
+  // Cancel feedback
+  $('#cancel-feedback').click(async function() {
+    $('#js-feedback-prompt-panel').hide();
+    $('#process-feedback-description').val('');
   });
 
 
