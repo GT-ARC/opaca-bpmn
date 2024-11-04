@@ -24,7 +24,17 @@
         <p>You can drop a BPMN diagram here from your desktop to continue editing.</p>
         <p>Or you can <a id="js-create-diagram" href>create a new diagram.</a></p>
         <p>Or describe your process in the text field below and ask an LLM to generate a draft.</p>
-        <p>For Example:<br><i>Please create a simple process for applying for vacation days.</i></p>
+        <p>Select an example:</p>
+        <!-- Dropdown for selecting example processes -->
+        <select id="example-prompt-dropdown" style="width: 250px">
+          <option value="">-- Select a Process Example --</option>
+          <option value="onboarding">Employee Onboarding Process</option>
+          <option value="orderFulfillment">Order Fulfillment Workflow</option>
+          <option value="invoiceApproval">Invoice Approval Process</option>
+          <option value="customerSupport">Customer Support Workflow</option>
+          <option value="productDevelopment">Product Development Process</option>
+          <option value="expenseReimbursement">Expense Reimbursement Workflow</option>
+        </select>
         <div class="prompt-panel" id="js-prompt-panel">
           <textarea id="process-description" rows="10" cols="50"></textarea>
           <br>

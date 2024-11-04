@@ -316,6 +316,20 @@ $(function() {
     if(success){ await fixLayout(); }
   });
 
+  // Set example prompts
+  const exampleDescriptions = {
+    onboarding: "Create a BPMN diagram showing an employee onboarding process. Start with 'Candidate Hired' and include 'Document Collection,' 'Account Setup,' 'Orientation Meeting,' and 'Team Introduction.' End with 'Onboarding Complete.' Include decision points for document completion and account setup approval.",
+    orderFulfillment: "Generate a BPMN process for order fulfillment. Begin with 'Order Received' and include 'Inventory Check,' 'Order Packing,' 'Shipping Arrangement,' and 'Order Shipped.' Add a conditional branch for 'Inventory Unavailable' with a sub-process for 'Reorder Stock.' End with 'Order Delivered' confirmation.",
+    invoiceApproval: "Create a BPMN diagram for invoice approval. Start with 'Invoice Received,' then include 'Preliminary Check,' 'Approval Request,' and 'Approval by Manager.' Add a decision point for 'Manager Approved?' If yes, proceed to 'Invoice Paid.' If no, loop back to 'Revision Required.'",
+    customerSupport: "Illustrate a customer support process in BPMN format. Start with 'Ticket Created,' followed by 'Ticket Categorization,' 'Assign to Agent,' and 'Resolve Issue.' Include decision points for 'Escalation Needed?' leading to 'Escalate to Supervisor' if required. End with 'Ticket Closed.'",
+    productDevelopment: "Build a BPMN diagram for a product development process. Start with 'Concept Approval,' then include stages for 'Design,' 'Prototype Development,' 'Testing,' and 'Final Approval.' Add a loop back from 'Testing' to 'Prototype Development' if test results are unsatisfactory. End with 'Product Launch.'",
+    expenseReimbursement: "Generate a BPMN diagram for expense reimbursement. Start with 'Expense Submission' and add tasks for 'Expense Review,' 'Manager Approval,' and 'Finance Processing.' Include a conditional branch for 'Receipt Missing?' leading back to 'Request Receipt from Employee.' End with 'Reimbursement Issued.'"
+  };
+
+  $('#example-prompt-dropdown').on('change', function() {
+    $('#process-description').val(exampleDescriptions[$(this).val()] || '');
+  });
+
   // Display feedback prompt
   $('#feedback-button').click(async function(){
     $('#js-feedback-prompt-panel').show();
