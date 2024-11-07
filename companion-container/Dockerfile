@@ -5,7 +5,7 @@ FROM node:20
 WORKDIR /usr/src/app
 
 # Copy package.json and package-lock.json files
-COPY package*.json ./
+COPY ../opaca-bpmn-editor/package*.json ./
 
 # Install dependencies
 RUN npm install

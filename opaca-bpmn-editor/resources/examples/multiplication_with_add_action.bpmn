@@ -3,9 +3,9 @@
   <bpmn2:extensionElements>
     <vsdt2:services>
       <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="Add" id="service_1sv6ivk">
-        <vsdt2:parameter name="x" type="int" />
-        <vsdt2:parameter name="y" type="int" />
-        <vsdt2:result name="result" type="int" />
+        <vsdt2:parameter name="x" type="integer" />
+        <vsdt2:parameter name="y" type="integer" />
+        <vsdt2:result name="result" type="integer" />
       </vsdt2:service>
     </vsdt2:services>
   </bpmn2:extensionElements>
@@ -13,10 +13,10 @@
     <bpmn2:documentation>Multiply a and b with help of Add action</bpmn2:documentation>
     <bpmn2:extensionElements>
       <vsdt2:variables>
-        <vsdt2:variable name="a" type="int" />
-        <vsdt2:variable name="b" type="int" />
-        <vsdt2:variable name="product" type="int" />
-        <vsdt2:variable name="sign_product" type="int" />
+        <vsdt2:variable name="a" type="integer" />
+        <vsdt2:variable name="b" type="integer" />
+        <vsdt2:variable name="product" type="integer" />
+        <vsdt2:variable name="sign_product" type="integer" />
       </vsdt2:variables>
     </bpmn2:extensionElements>
     <bpmn2:startEvent id="StartEvent_1">
@@ -28,7 +28,7 @@
           <vsdt2:assignment variable="a" expression="4" assignTime="START" />
           <vsdt2:assignment variable="b" expression="3" assignTime="START" />
           <vsdt2:assignment variable="product" expression="a" assignTime="END" />
-          <vsdt2:assignment variable="sign_product" expression="Math.sign(b)" assignTime="START" />
+          <vsdt2:assignment variable="sign_product" expression="math_sign(b)" assignTime="START" />
         </vsdt2:assignments>
       </bpmn2:extensionElements>
       <bpmn2:incoming>Flow_0ig0ab4</bpmn2:incoming>

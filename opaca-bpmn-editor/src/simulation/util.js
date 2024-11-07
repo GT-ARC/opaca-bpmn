@@ -324,7 +324,8 @@ function makeAssignment(assignment, parentScopeId) {
 const context = {
     log: (msg) => console.log(msg),
     alert: (msg) => alert(msg),
-    sum: (a, b) => a+b
+    sum: (a, b) => a+b,
+    math_sign: (num) => Math.sign(num)
 }
 
 // List of allowed operators
