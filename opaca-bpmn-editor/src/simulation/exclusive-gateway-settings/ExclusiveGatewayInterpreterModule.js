@@ -7,12 +7,25 @@ import {
 } from 'bpmn-js-token-simulation/lib/util/EventHelper';
 
 import {evaluateCondition} from "../util";
+import {getRootElement} from "../../provider/util";
 
 
 const SELECTED_COLOR = '--token-simulation-grey-darken-30';
 const NOT_SELECTED_COLOR = '--token-simulation-grey-lighten-56';
 
-function getNext(gateway, scope) {
+function getNext(gateway, sequenceFlow) {
+    var outgoing = gateway.outgoing.filter(isSequenceFlow);
+
+    var index = outgoing.indexOf(sequenceFlow || gateway.sequenceFlow);
+
+    if (outgoing[index + 1]) {
+        return outgoing[index + 1];
+    } else {
+        return outgoing[0];
+    }
+}
+
+function getLive(gateway, scope) {
     var outgoing = gateway.outgoing.filter(isSequenceFlow);
 
     var next = null;
@@ -61,18 +74,34 @@ export default function ExclusiveGatewaySettings(
     this._simulationStyles = simulationStyles;
 
     eventBus.on(TOGGLE_MODE_EVENT, event => {
-        if(!event.active){
+        if (event.active) {
+            this.setSequenceFlowsDefault();
+        } else {
             this.resetSequenceFlows();
         }
     });
     // While exiting a gateway the next sequence flow gets set
     eventBus.on('tokenSimulation.exitExclusiveGateway', event => {
-        const { scope } = event;
-        this.setSequenceFlowsDefault(scope);
+
+        const root = getRootElement(this._elementRegistry.getAll()[0]);
+        if(root.isExecutable){
+            const { scope } = event;
+            this.setSequenceFlowsLive(scope);
+        }
     });
 }
 
-ExclusiveGatewaySettings.prototype.setSequenceFlowsDefault = function(scope) {
+ExclusiveGatewaySettings.prototype.setSequenceFlowsDefault = function() {
+    const exclusiveGateways = this._elementRegistry.filter(element => {
+        return is(element, 'bpmn:ExclusiveGateway');
+    });
+
+    for (const gateway of exclusiveGateways) {
+        this.setSequenceFlow(gateway, null);
+    }
+};
+
+ExclusiveGatewaySettings.prototype.setSequenceFlowsLive = function(scope) {
     const exclusiveGateways = this._elementRegistry.filter(element => {
         return is(element, 'bpmn:ExclusiveGateway');
     });
@@ -109,7 +138,22 @@ ExclusiveGatewaySettings.prototype.setSequenceFlow = function(gateway, scope) {
     }
 
     let newActiveOutgoing;
-    newActiveOutgoing = getNext(gateway, scope);
+
+    if(scope===null){
+        const {
+            activeOutgoing
+        } = this._simulator.getConfig(gateway);
+
+        if (activeOutgoing) {
+            // set next sequence flow
+            newActiveOutgoing = getNext(gateway, activeOutgoing);
+        } else {
+            // set first sequence flow
+            newActiveOutgoing = outgoing[ 0 ];
+        }
+    }else{
+        newActiveOutgoing = getLive(gateway, scope);
+    }
 
     this._simulator.setConfig(gateway, { activeOutgoing: newActiveOutgoing });
 

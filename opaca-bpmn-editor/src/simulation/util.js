@@ -19,6 +19,13 @@ export function initializeVariables(startEventContext){
         variableMapping[parentScopeId] = {};
     }
     const root = getRootElement(startEventContext.element.di.bpmnElement);
+
+    // Skip when not meant for interpretation
+    if(!root.isExecutable){
+        alert('Process not marked as executable. Using standard Token Simulation.');
+        return;
+    }
+
     const parent = getParentElement(startEventContext.element.di.bpmnElement);
 
     // if parent is not root, we entered a sub-process
@@ -282,6 +289,13 @@ export function createUserTask(element, scope){
 
 export function handleStart(element, scope){
 
+    const root = getRootElement(element);
+    // Skip when not meant for interpretation
+    if(!root.isExecutable){
+        console.log("skipped handleStart");
+        return Promise.resolve();
+    }
+
     // Handle assignments at Start
     updateVariables(element, 'START', scope);
 
@@ -304,6 +318,14 @@ export function handleStart(element, scope){
 }
 
 export function handleEnd(element, scope){
+
+    const root = getRootElement(element);
+    // Skip when not meant for interpretation
+    if(!root.isExecutable){
+        console.log("skipped handleEnd");
+        return;
+    }
+
     // Handle assignments at End
     updateVariables(element, 'END', scope);
 }

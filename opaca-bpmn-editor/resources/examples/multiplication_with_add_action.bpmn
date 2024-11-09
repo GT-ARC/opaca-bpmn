@@ -9,7 +9,7 @@
       </vsdt2:service>
     </vsdt2:services>
   </bpmn2:extensionElements>
-  <bpmn2:process id="Process_1" name="Multiplication" isExecutable="false">
+  <bpmn2:process id="Process_1" name="Multiplication" isExecutable="true">
     <bpmn2:documentation>Multiply a and b with help of Add action</bpmn2:documentation>
     <bpmn2:extensionElements>
       <vsdt2:variables>
