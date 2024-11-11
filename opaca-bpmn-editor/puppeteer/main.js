@@ -3,9 +3,9 @@ const fs = require('fs');
 const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors')
+const puppeteer = require('puppeteer');
 
 const app = express();
-var webSocketClient = null;
 
 dotenv.config();
 
@@ -113,57 +113,82 @@ async function invokeAgentAction(action, agentId, parameters) {
         var request = {};
 
         if (action === 'LoadDiagram') {
-            request = {
-                type: 'loadDiagram',
-                parameters
-            }
+            window.loadDiagram(parameters.diagram);
 
         } else if (action === 'StartSimulation') {
-            request = {
-                type: 'startSimulation'
-            }
+            window.startSimulation();
 
-        } else if (action === 'PauseSimulation'){
-            request = {
-                type: 'pauseSimulation'
-            }
+        } else /*if (action === 'PauseSimulation'){
 
         } else if (action === 'ResumeSimulation'){
-            request = {
-                type: 'resumeSimulation'
-            }
 
         } else if (action === 'ResetSimulation'){
-            request = {
-                type: 'resetSimulation'
-            }
 
         } else if (action === 'SendMessage'){
-            request = {
-                type: 'sendMessage',
-                parameters
-            }
 
-        } else {
+        } else */
+        {
             return reject(new Error('Action not found.'));
         }
-
-        // Create a request id and save request
-        request.id = `${action}-${Date.now()}`;
-        pendingActions.set(request.id, {resolve, reject})
-
-        // Forward action to editor
-        webSocketClient.send(JSON.stringify(request), (err) => {
-            if (err) {
-                pendingActions.delete(request.id);
-                return reject(err);
-            }
-        });
     });
 }
 
+//// Open editor in headless browser ////
+
+(async () => {
+    // Launch Puppeteer in headless mode
+    const browser = await puppeteer.launch({headless: false}); // TODO headfull for testing
+
+    // Use default blank page
+    const pages = await browser.pages();
+    const page = pages[0] || await browser.newPage();
+
+    //TODO would be nice to have this scale to device fully
+    await page.setViewport({
+        width: 1400,
+        height: 875,
+        deviceScaleFactor: 2,
+    });
+
+
+    // Redirect console messages from the page to the Node.js console
+    page.on('console', (msg) => {
+        for (let i = 0; i < msg.args().length; ++i) {
+            console.log(`PAGE LOG: ${msg.args()[i]}`);
+        }
+    });
+
+    // Load the HTML file into Puppeteer
+    //TODO make work for multiple instances
+
+    await page.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
+
+    //await page.waitForFunction(() => typeof window.loadDiagram() === 'function', { timeout: 5000 });
+
+    // Load a BPMN diagram from file (adjust file path as needed)
+    const bpmnFilePath = path.resolve(__dirname, '../resources/examples/exclusive_gateway_test.bpmn');
+    const bpmnXml = fs.readFileSync(bpmnFilePath, 'utf-8');
+    // TODO remove test diagram, set up actual endpoints
+
+    // Pass BPMN XML
+    const loadResult = await page.evaluate(async (bpmnXml) => {
+        return await window.loadDiagram(bpmnXml);
+    }, bpmnXml);
+
+    console.log("Load Result:", loadResult);
+
+    const simulation = await page.evaluate(async () => {
+        return await window.startSimulation();
+    })
+    console.log(simulation);
+
+    // Close the browser
+    //await browser.close();
+})();
+
 //// WebSocket to connect to modeler ////
 
+/*
 const http = require('http');
 const WebSocket = require('ws');
 
@@ -224,3 +249,5 @@ server.on('error', (error) => {
 server.listen(PORT, () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
+
+ */
