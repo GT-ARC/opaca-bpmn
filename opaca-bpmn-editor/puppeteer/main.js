@@ -4,6 +4,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors')
 const puppeteer = require('puppeteer');
+const http = require('http');
 
 const app = express();
 
@@ -32,6 +33,8 @@ function getContainer() {
         runningSince: now
     };
 }
+
+//// OPACA Routes ////
 
 app.get('/info', (req, res) => {
     res.json(getContainer());
@@ -104,46 +107,24 @@ app.post('/broadcast/:channel', (req, res) => {
     res.sendStatus(200);
 });
 
-// Unresolved promises
-const pendingActions = new Map();
-
-// Forward action requests to the modeler
-async function invokeAgentAction(action, agentId, parameters) {
-    return new Promise((resolve, reject) => {
-        var request = {};
-
-        if (action === 'LoadDiagram') {
-            window.loadDiagram(parameters.diagram);
-
-        } else if (action === 'StartSimulation') {
-            window.startSimulation();
-
-        } else /*if (action === 'PauseSimulation'){
-
-        } else if (action === 'ResumeSimulation'){
-
-        } else if (action === 'ResetSimulation'){
-
-        } else if (action === 'SendMessage'){
-
-        } else */
-        {
-            return reject(new Error('Action not found.'));
-        }
-    });
-}
+// Only 1 instance for now TODO
+var page;
+var browser;
 
 //// Open editor in headless browser ////
 
 (async () => {
     // Launch Puppeteer in headless mode
-    const browser = await puppeteer.launch({headless: false}); // TODO headfull for testing
-
+    browser = await puppeteer.launch({
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Required for running as root in Docker
+    })
     // Use default blank page
     const pages = await browser.pages();
-    const page = pages[0] || await browser.newPage();
+    page = pages[0] || await browser.newPage();
 
     //TODO would be nice to have this scale to device fully
+    // Not needed here, but at inspection
     await page.setViewport({
         width: 1400,
         height: 875,
@@ -158,12 +139,8 @@ async function invokeAgentAction(action, agentId, parameters) {
         }
     });
 
-    // Load the HTML file into Puppeteer
-    //TODO make work for multiple instances
-
+    // Open modeler
     await page.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
-
-    //await page.waitForFunction(() => typeof window.loadDiagram() === 'function', { timeout: 5000 });
 
     // Load a BPMN diagram from file (adjust file path as needed)
     const bpmnFilePath = path.resolve(__dirname, '../resources/examples/exclusive_gateway_test.bpmn');
@@ -177,77 +154,102 @@ async function invokeAgentAction(action, agentId, parameters) {
 
     console.log("Load Result:", loadResult);
 
+    /*
     const simulation = await page.evaluate(async () => {
         return await window.startSimulation();
     })
     console.log(simulation);
 
+     */
+
     // Close the browser
     //await browser.close();
 })();
 
-//// WebSocket to connect to modeler ////
-
-/*
-const http = require('http');
-const WebSocket = require('ws');
-
 // Create an HTTP server
 const server = http.createServer(app);
-
-// Create a WebSocket server
-const wss = new WebSocket.Server({ server });
-
-// WebSocket server event handlers
-wss.on('connection', (ws) => {
-    console.log('Client connected to WebSocket server');
-    webSocketClient = ws;
-
-    ws.on('message', (msg) => {
-        console.log('Received message from client:', msg.toString());
-
-        const message = JSON.parse(msg);
-
-        if(message.type === 'response'){
-            const {resolve, reject} = pendingActions.get(message.requestId);
-            console.log("RESOLVING REQUEST");
-            resolve(message.message);
-            pendingActions.delete(message.requestId);
-        }
-        if(message.type === 'error'){
-            const {resolve, reject} = pendingActions.get(message.requestId);
-            console.log("REJECTING REQUEST");
-            reject(new Error(message.message));
-            pendingActions.delete(message.requestId);
-        }
-    });
-
-    ws.on('close', () => {
-        console.log('Client disconnected from WebSocket server');
-    });
-
-    ws.on('error', (error) => {
-        console.error('WebSocket error:', error);
-    });
-
-    // Ensure the message is sent only when the connection is open
-    if (ws.readyState === WebSocket.OPEN) {
-        ws.send(JSON.stringify({type: 'info', message: 'Hello from server'}));
-    } else {
-        ws.on('open', () => {
-            ws.send('Message from server');
-        });
-    }
-});
 
 // Handle server errors
 server.on('error', (error) => {
     console.error('HTTP Server error:', error);
 });
-
 // Handle server listening event
 server.listen(PORT, () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
 
- */
+//// Modeler Actions ////
+// TODO later pass ids to get the right modeler instance
+
+async function invokeAgentAction(action, agentId, parameters) {
+    return new Promise(async(resolve, reject) => {
+
+        if (action === 'LoadDiagram') {
+            const loadResult = await page.evaluate(async (bpmnXml) => {
+                return await window.loadDiagram(bpmnXml);
+            }, JSON.parse(parameters).diagram);
+            console.log("Load Result:", loadResult);
+            // TODO
+
+        } else if (action === 'StartSimulation') {
+            const simulation = await page.evaluate(async () => {
+                await window.startSimulation();
+            })
+            console.log(simulation);
+            return resolve("Started Simulation");
+
+        } else if (action === 'InspectModeler') {
+            // Launch Puppeteer in headful mode
+            puppeteer.launch({
+                headless: false,
+                args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            })
+                .then(async (browser) => {
+                    const page = await browser.newPage();
+                    // Navigate to the modeler
+                    await page.goto('http://localhost:8080');
+                    // TODO
+
+                    return resolve('Headful browser launched for inspection.');
+                })
+                .catch((error) => {
+                    reject(new Error(`Failed to launch headful browser: ${error.message}`));
+                });
+
+        } else if (action === 'PauseSimulation'){
+            const pauseResult = await page.evaluate(async () => {
+                await window.pauseSimulation();
+            })
+            console.log(pauseResult);
+            return resolve("Paused Simulation");
+
+        } else if (action === 'ResumeSimulation'){
+            const resumeResult = await page.evaluate(async () => {
+                await window.resumeSimulation();
+                return resolve("Resumed Simulation");
+            })
+            console.log(resumeResult);
+
+        } else if (action === 'ResetSimulation'){
+            const resetResult = await page.evaluate(async () => {
+                await window.resetSimulation();
+                return resolve("Reset Simulation");
+            })
+            console.log(resetResult);
+
+        } else if (action === 'SendMessage'){
+            const messageResult = await page.evaluate(async () => {
+                await window.sendMessage(parameters);
+                return resolve("Send Message");
+            })
+            console.log(messageResult);
+
+        } else if (action === 'CloseModeler') {
+            await browser.close();
+            // TODO later also remove ref to page
+            return resolve('Closed this tab.');
+        } else {
+            return reject(new Error('Action not found.'));
+        }
+    });
+}

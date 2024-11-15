@@ -315,6 +315,7 @@ export function handleEnd(element, scope){
 function makeAssignment(assignment, parentScopeId) {
     try {
         variableMapping[parentScopeId][assignment.variable] = restrictedEval(assignment.expression, parentScopeId);
+        console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
     }catch (err){
         alert(`Assignment failed: ${err}`);
     }
