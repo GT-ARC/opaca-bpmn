@@ -423,6 +423,15 @@ $(function() {
     }
   });
 
+  // When starting non-executable process
+  eventBus.on('tokenSimulation.toggleMode', function() {
+    const root = elementRegistry.getAll().filter(el => is(el, 'bpmn:Process'))[0];
+
+    // Skip when not meant for interpretation
+    if(root && !root.businessObject.isExecutable && !toggleMode._active){
+      alert('Process not marked as executable. Using standard Token Simulation.');
+    }
+  });
 
   //// WebSocket to control simulation on request ////
   let ws = '';

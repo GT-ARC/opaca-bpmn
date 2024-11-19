@@ -22,7 +22,6 @@ export function initializeVariables(startEventContext){
 
     // Skip when not meant for interpretation
     if(!root.isExecutable){
-        alert('Process not marked as executable. Using standard Token Simulation.');
         return;
     }
 
