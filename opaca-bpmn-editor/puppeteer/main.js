@@ -4,25 +4,23 @@ const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors')
 const puppeteer = require('puppeteer');
-const http = require('http');
 
 const app = express();
 
 dotenv.config();
 
-const EXAMPLE = 'modeler'
 const PORT = 8082;
 
 app.use(express.json());
 app.use(cors({origin: 'http://localhost:8080'}));
 
 function getImage() {
-    const filePath = path.join(__dirname, `${EXAMPLE}-image.json`);
+    const filePath = path.join(__dirname, 'modeler-image.json');
     return JSON.parse(fs.readFileSync(filePath, 'utf8'));
 }
 
 function getContainer() {
-    const filePath = path.join(__dirname, `${EXAMPLE}-container.json`);
+    const filePath = path.join(__dirname, 'modeler-container.json');
     const container = JSON.parse(fs.readFileSync(filePath, 'utf8'));
     const now = new Date().toISOString().replace(/\d+$/, '000Z');
     return {
@@ -66,7 +64,6 @@ app.post('/invoke/:action', async (req, res) => {
 
     try {
         const result = await invokeAgentAction(action, null, parameters);
-        console.log("SENDING STATUS");
         res.status(200).json(result);
     } catch (error) {
         var code = 500;
@@ -117,14 +114,25 @@ var browser;
     // Launch Puppeteer in headless mode
     browser = await puppeteer.launch({
         headless: true,
-        args: ['--no-sandbox', '--disable-setuid-sandbox'], // Required for running as root in Docker
+        devtools: true,
+        executablePath: '/usr/bin/chromium',
+        // Required for running as root in Docker
+        args: ['--no-sandbox', //'--disable-setuid-sandbox',
+            '--remote-debugging-address=0.0.0.0',
+            '--remote-debugging-port=9222',
+            '--remote-allow-origins=*'
+            //'--user-data-dir=/tmp/chrome'
+        ],
     })
+
+    //const browserWSEndpoint = browser.wsEndpoint();
+    //console.log(`DevTools WebSocket URL: ${browserWSEndpoint}`);
+
     // Use default blank page
     const pages = await browser.pages();
     page = pages[0] || await browser.newPage();
 
-    //TODO would be nice to have this scale to device fully
-    // Not needed here, but at inspection
+    // For debugging (headful)
     await page.setViewport({
         width: 1400,
         height: 875,
@@ -142,39 +150,11 @@ var browser;
     // Open modeler
     await page.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
 
-    // Load a BPMN diagram from file (adjust file path as needed)
-    const bpmnFilePath = path.resolve(__dirname, '../resources/examples/exclusive_gateway_test.bpmn');
-    const bpmnXml = fs.readFileSync(bpmnFilePath, 'utf-8');
-    // TODO remove test diagram, set up actual endpoints
-
-    // Pass BPMN XML
-    const loadResult = await page.evaluate(async (bpmnXml) => {
-        return await window.loadDiagram(bpmnXml);
-    }, bpmnXml);
-
-    console.log("Load Result:", loadResult);
-
-    /*
-    const simulation = await page.evaluate(async () => {
-        return await window.startSimulation();
-    })
-    console.log(simulation);
-
-     */
-
-    // Close the browser
-    //await browser.close();
+    console.log('Modeler running.');
 })();
 
-// Create an HTTP server
-const server = http.createServer(app);
-
-// Handle server errors
-server.on('error', (error) => {
-    console.error('HTTP Server error:', error);
-});
 // Handle server listening event
-server.listen(PORT, () => {
+app.listen(PORT, () => {
     console.log(`Server is running on http://0.0.0.0:${PORT}`);
 });
 
@@ -186,20 +166,23 @@ async function invokeAgentAction(action, agentId, parameters) {
 
         if (action === 'LoadDiagram') {
             const loadResult = await page.evaluate(async (bpmnXml) => {
+                // Return from browser context to node (loadResult)
                 return await window.loadDiagram(bpmnXml);
-            }, JSON.parse(parameters).diagram);
-            console.log("Load Result:", loadResult);
-            // TODO
+            }, parameters.diagram)
+            console.log(`LoadDiagram Result: ${loadResult}`);
+            return resolve("Diagram loaded.");
 
         } else if (action === 'StartSimulation') {
-            const simulation = await page.evaluate(async () => {
-                await window.startSimulation();
+            const startResult = await page.evaluate(async () => {
+                // Return from browser context to node (simulation)
+                return await window.startSimulation();
             })
-            console.log(simulation);
+            console.log(`StartSimulation Result: ${startResult}`);
             return resolve("Started Simulation");
 
         } else if (action === 'InspectModeler') {
-            // Launch Puppeteer in headful mode
+            // Launch Puppeteer in headful mode TODO
+            /*
             puppeteer.launch({
                 headless: false,
                 args: ['--no-sandbox', '--disable-setuid-sandbox'],
@@ -208,7 +191,6 @@ async function invokeAgentAction(action, agentId, parameters) {
                     const page = await browser.newPage();
                     // Navigate to the modeler
                     await page.goto('http://localhost:8080');
-                    // TODO
 
                     return resolve('Headful browser launched for inspection.');
                 })
@@ -216,33 +198,36 @@ async function invokeAgentAction(action, agentId, parameters) {
                     reject(new Error(`Failed to launch headful browser: ${error.message}`));
                 });
 
+             */
+            return reject("Inspection not implemented yet.");
+
         } else if (action === 'PauseSimulation'){
             const pauseResult = await page.evaluate(async () => {
-                await window.pauseSimulation();
+                return await window.pauseSimulation();
             })
-            console.log(pauseResult);
+            console.log(`PauseSimulation Result: ${pauseResult}`);
             return resolve("Paused Simulation");
 
         } else if (action === 'ResumeSimulation'){
             const resumeResult = await page.evaluate(async () => {
-                await window.resumeSimulation();
-                return resolve("Resumed Simulation");
+                return await window.resumeSimulation();
             })
-            console.log(resumeResult);
+            console.log(`ResumeSimulation Result: ${resumeResult}`);
+            return resolve("Resumed Simulation");
 
         } else if (action === 'ResetSimulation'){
             const resetResult = await page.evaluate(async () => {
-                await window.resetSimulation();
-                return resolve("Reset Simulation");
+                return await window.resetSimulation();
             })
-            console.log(resetResult);
+            console.log(`ResetSimulation Result: ${resetResult}`);
+            return resolve("Reset Simulation");
 
         } else if (action === 'SendMessage'){
             const messageResult = await page.evaluate(async () => {
-                await window.sendMessage(parameters);
-                return resolve("Send Message");
+                return await window.sendMessage(parameters);
             })
-            console.log(messageResult);
+            console.log(`SendMessage Result: ${messageResult}`);
+            return resolve("Send Message");
 
         } else if (action === 'CloseModeler') {
             await browser.close();

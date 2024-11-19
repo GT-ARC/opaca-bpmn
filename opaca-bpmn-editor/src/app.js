@@ -315,7 +315,7 @@ $(function() {
     $('#process-description').val(exampleDescriptions[$(this).val()] || '');
   });
 
-    // Display feedback prompt
+  // Display feedback prompt
   $('#feedback-button').click(async function(){
     $('#js-feedback-prompt-panel').show();
   });

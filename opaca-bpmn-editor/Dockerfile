@@ -17,6 +17,8 @@ COPY . .
 
 # Install necessary libraries for Puppeteer to run
 RUN apt-get update && apt-get install -y \
+    chromium \
+    socat \
     libnss3 \
     libxss1 \
     libasound2 \
@@ -36,15 +38,18 @@ RUN apt-get update && apt-get install -y \
     libxshmfence1 \
     && rm -rf /var/lib/apt/lists/*
 
+RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
+    && mkdir -p /usr/src/app/public \
+    && chown -R pptruser:pptruser /usr/src/app
+
+USER pptruser
+
 # Build including stylings
 RUN npm run build
 
 EXPOSE 8080
 
-# Start the application
-#CMD ["npm", "start"]
+EXPOSE 9222
 
-#RUN npm start
-#CMD ["node", "puppeteer/main.js"]
-
+# Start modeler and puppeteer sequentially
 CMD ["./start.sh"]
