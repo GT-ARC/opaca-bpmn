@@ -12,6 +12,7 @@ import {
     isSequenceFlow
 } from 'bpmn-js-token-simulation/lib/simulator/util/ModelUtil';
 import {evaluateCondition} from "../util";
+import {getRootElement} from "../../provider/util";
 
 const COLOR_ID = 'inclusive-gateway-settings';
 
@@ -26,25 +27,45 @@ export default function InclusiveGatewaySettings(
     this._simulationStyles = simulationStyles;
 
     eventBus.on(TOGGLE_MODE_EVENT, event => {
-        if(!event.active){
-            this.reset;
+        if (event.active) {
+            this.setDefaults();
+        } else {
+            this.reset();
         }
     });
+
     // While exiting a gateway the next sequence flow(s) gets set
     eventBus.on('tokenSimulation.exitInclusiveGateway', event => {
-        const { scope } = event;
-        this.setDefaults(scope);
+
+        const root = getRootElement(this._elementRegistry.getAll()[0]);
+
+        if(root.isExecutable){
+            const { scope } = event;
+            this.setLive(scope);
+        }
     });
 }
 
-InclusiveGatewaySettings.prototype.setDefaults = function(scope) {
+InclusiveGatewaySettings.prototype.setDefaults = function() {
     const inclusiveGateways = this._elementRegistry.filter(element => {
         return is(element, 'bpmn:InclusiveGateway');
     });
 
     inclusiveGateways.forEach(inclusiveGateway => {
         if (inclusiveGateway.outgoing.filter(isSequenceFlow).length > 1) {
-            this._setGatewayDefaults(inclusiveGateway, scope);
+            this._setGatewayDefaults(inclusiveGateway);
+        }
+    });
+};
+
+InclusiveGatewaySettings.prototype.setLive = function(scope) {
+    const inclusiveGateways = this._elementRegistry.filter(element => {
+        return is(element, 'bpmn:InclusiveGateway');
+    });
+
+    inclusiveGateways.forEach(inclusiveGateway => {
+        if (inclusiveGateway.outgoing.filter(isSequenceFlow).length > 1) {
+            this._setGatewayLive(inclusiveGateway, scope);
         }
     });
 };
@@ -59,6 +80,34 @@ InclusiveGatewaySettings.prototype.reset = function() {
             this._resetGateway(inclusiveGateway);
         }
     });
+};
+
+InclusiveGatewaySettings.prototype.toggleSequenceFlow = function(gateway, sequenceFlow) {
+    const activeOutgoing = this._getActiveOutgoing(gateway),
+        defaultFlow = getDefaultFlow(gateway),
+        nonDefaultFlows = getNonDefaultFlows(gateway);
+
+    let newActiveOutgoing;
+    if (activeOutgoing.includes(sequenceFlow)) {
+        newActiveOutgoing = without(activeOutgoing, sequenceFlow);
+    } else {
+        newActiveOutgoing = without(activeOutgoing, defaultFlow).concat(sequenceFlow);
+    }
+
+    // make sure at least one flow is active
+    if (!newActiveOutgoing.length) {
+
+        // default flow if available
+        if (defaultFlow) {
+            newActiveOutgoing = [ defaultFlow ];
+        } else {
+
+            // or another flow which is not the one toggled
+            newActiveOutgoing = [ nonDefaultFlows.find(flow => flow !== sequenceFlow) ];
+        }
+    }
+
+    this._setActiveOutgoing(gateway, newActiveOutgoing);
 };
 
 InclusiveGatewaySettings.prototype._getActiveOutgoing = function(gateway) {
@@ -87,7 +136,7 @@ InclusiveGatewaySettings.prototype._setActiveOutgoing = function(gateway, active
     });
 };
 
-InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway, scope) {
+InclusiveGatewaySettings.prototype._setGatewayLive = function(gateway, scope) {
     const sequenceFlows = gateway.outgoing.filter(isSequenceFlow);
 
     const validFlows = [];
@@ -118,6 +167,15 @@ InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway, scope
     }
 };
 
+InclusiveGatewaySettings.prototype._setGatewayDefaults = function(gateway) {
+    const sequenceFlows = gateway.outgoing.filter(isSequenceFlow);
+
+    const defaultFlow = getDefaultFlow(gateway);
+    const nonDefaultFlows = without(sequenceFlows, defaultFlow);
+
+    this._setActiveOutgoing(gateway, nonDefaultFlows);
+};
+
 InclusiveGatewaySettings.prototype._resetGateway = function(gateway) {
     this._setActiveOutgoing(gateway, undefined);
 };
@@ -129,3 +187,31 @@ InclusiveGatewaySettings.$inject = [
     'simulator',
     'simulationStyles'
 ];
+
+function getDefaultFlow(gateway) {
+    const defaultFlow = getBusinessObject(gateway).default;
+
+    if (!defaultFlow) {
+        return;
+    }
+
+    return gateway.outgoing.find(flow => {
+        const flowBo = getBusinessObject(flow);
+
+        return flowBo === defaultFlow;
+    });
+}
+
+function getNonDefaultFlows(gateway) {
+    const defaultFlow = getDefaultFlow(gateway);
+
+    return gateway.outgoing.filter(flow => {
+        const flowBo = getBusinessObject(flow);
+
+        return flowBo !== defaultFlow;
+    });
+}
+
+function without(array, element) {
+    return array.filter(arrayElement => arrayElement !== element);
+}
