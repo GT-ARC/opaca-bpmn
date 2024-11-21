@@ -44,20 +44,20 @@ Serve the application via
 npm start
 ```
 
-## Building (editor and Interpreter agent)
-If you want to connect the interpreter to the OPACA runtime platform, you first need to create the server container acting as a mediator.
+## Building (editor and interpreter agent)
+If you want to connect the interpreter to the OPACA runtime platform, you first need to create the interpreter server container.
 
 Build the Docker image (project root)
 
 ```sh
-docker build -f ./companion-container/Dockerfile -t bpmn-interpreter-vsdt2-server .
+docker build -f ./opaca-bpmn-editor/Dockerfile -t bpmn-interpreter-vsdt2-server .
 ```
 
 Start the OPACA platform and open the UI following their [Quick Testing Guide](https://gitlab.dai-labor.de/jiacpp/prototype#getting-started-quick-testing-guide).
 
 Go to `POST containers` and create the agent container by setting the `imageName` to `"bpmn-interpreter-vsdt2-server"`. Other fields can be removed.
 
-Start the editor the same way you would with the integrated interpretation.
+We use Puppeteer to create a headless browser running in the container. The editor will be started and a first instance opened in that browser sequentially.
 
 Go to `GET containers` or `GET agents` to see the server container and its actions.
 

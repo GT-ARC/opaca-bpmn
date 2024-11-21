@@ -192,21 +192,6 @@ async function generateDiagramWithLLM() {
   }
 }
 
-// Helper function to retrieve XML as a Promise
-function getDiagramXML() {
-  return new Promise((resolve, reject) => {
-    bpmnModeler.saveXML({ format: true }, (err, xml) => {
-      if (err) {
-        console.error('Error in saveXML:', err);  // Log to verify if there's an error
-        reject(err);
-      } else {
-        console.log('XML generated successfully');  // Log to confirm success
-        resolve(xml);
-      }
-    });
-  });
-}
-
 async function refineDiagramWithLLM(){
   const feedbackText = $('#process-feedback-description').val();
   $('#js-feedback-panel').hide();
@@ -370,7 +355,6 @@ $(function() {
     $('#process-feedback-description').val('');
   });
 
-
   var downloadLink = $('#js-download-diagram');
   var downloadSvgLink = $('#js-download-svg');
 
@@ -423,6 +407,7 @@ $(function() {
     }
   });
 
+
   // When starting non-executable process
   eventBus.on('tokenSimulation.toggleMode', function() {
     const root = elementRegistry.getAll().filter(el => is(el, 'bpmn:Process'))[0];
@@ -433,147 +418,99 @@ $(function() {
     }
   });
 
-  //// WebSocket to control simulation on request ////
-  let ws = '';
+  //// functions to load diagram and control simulation ////
 
-  // Event handlers for WebSocket client
-  function wsOpen() {
-    console.log('Connected to WebSocket server');
-
-    // Send a message to the server
-    ws.send(JSON.stringify({type: 'info', message: 'Message from client'}));
-  }
-
-  function wsMessage(event) {
-    console.log('Received message from server:', event.data);
-
-    var request;
+  // LOAD DIAGRAM
+  window.loadDiagram = async (bpmnXml) => {
     try {
-      request = JSON.parse(event.data);
+      console.log(bpmnXml);
+      await openDiagram(bpmnXml);
+      return 'BPMN diagram loaded successfully';
     } catch (error) {
-      console.error('Error parsing message from server:', error);
-      return;
+      console.error('Error loading BPMN diagram:', error.message);
+      return error.message;
     }
-    if(request.type==='info'){
-      return;
-    }
+  };
 
-    // Make sure simulation mode is active before invoking actions depending on that
-    if(!toggleMode._active){
-      toggleMode.toggleMode(true);
-    }
-
-    /// Different actions
-    if(request.type==='loadDiagram'){// LOAD DIAGRAM
-      // Open the passed diagram
-      openDiagram(request.parameters.diagram).then(() => {
-        // After a new diagram is opened we need to deactivate simulation mode once
-        toggleMode.toggleMode(false);
+  // START SIMULATION
+  window.startSimulation = async () => {
+    try{
+      if(!toggleMode._active){
         toggleMode.toggleMode(true);
-        // Send info
-        ws.send(JSON.stringify({ type: 'response', requestId: request.id, message: 'load ok.'}));
-      }).catch(error => {
-        console.error('Error in openDiagram:', error);
-        // Send info
-        ws.send(JSON.stringify({ type: 'error', requestId: request.id, message: 'load failed. ' + error.message}));
-      });
-    }else if(request.type==='startSimulation'){// START SIMULATION
-      try {
-        // Find (the first) start event
-        const elements = elementRegistry.getAll();
-        const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
-
-        // Trigger start event
-        simulationSupport.triggerElement(startEvent.id);
-        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation started at ' + startEvent.id}));
-      }catch (error){
-        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'start failed. ' + error.message}));
       }
-    }else if(request.type==='pauseSimulation') {// PAUSE SIMULATION
-      try {
-        // If not paused, pause simulation
-        if(!pauseSimulation.isPaused){
-          pauseSimulation.pause();
-        }else{
-          throw new Error('Simulation is already paused.');
-        }
+      // Find (the first) start event
+      const elements = elementRegistry.getAll();
+      const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
 
-        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation paused.'}));
-      } catch (error) {
-        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'pause failed. ' + error.message}));
-      }
-    }else if(request.type==='resumeSimulation') {// RESUME SIMULATION
-      try {
-        // If paused, unpause simulation
-        if(pauseSimulation.isPaused){
-          pauseSimulation.unpause();
-        }else{
-          throw new Error('Simulation is not paused.');
-        }
+      // Trigger start event
+      simulationSupport.triggerElement(startEvent.id);
 
-        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation resumed.'}));
-      } catch (error) {
-        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'resume failed. ' + error.message}));
-      }
-    }else if(request.type==='resetSimulation'){// RESET SIMULATION
-      try { // try-catch not needed here, but maybe later
-        // Trigger reset
-        eventBus.fire('tokenSimulation.resetSimulation');
-
-        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'simulation reset.'}));
-      }catch (error){
-        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'reset failed. ' + error.message}));
-      }
-    }else if(request.type==='sendMessage'){// SEND MESSAGE
-      try{
-        // Get all elements
-        const elements = elementRegistry.getAll();
-        // Filter for events
-        const events = elements.filter(el => is(el, 'bpmn:Event'));
-        // Filter for events that have the messageReference of our message
-        const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === request.parameters.messageType));
-
-        // TODO: make sure when triggering one element fails, others are still executed
-        messageEvents.forEach(msgEvent => simulationSupport.triggerElement(msgEvent.id));
-        // trigger boundary events with message reference, only when attached to a running action
-        ws.send(JSON.stringify({type: 'response', requestId: request.id, message: 'got request.'}));
-      }catch (error){
-        ws.send(JSON.stringify({type: 'error', requestId: request.id, message: 'message could not be processed. ' + error.message}));
-      }
+      return `Started Simulation at ${startEvent.id}`;
+    }catch(error){
+      return error.message;
     }
   }
 
-  function wsClose() {
-    console.log('Disconnected from WebSocket server');
-  }
-
-  function wsError(error) {
-    console.error('WebSocket error:', error);
-  }
-
-  // Check if the companion server has been started
-  function checkServerAvailability(){
-    return fetch('http://localhost:8082/info')
-        .then(response => {
-          return response.ok;
-        })
-        .catch(() => {
-          return false;
-        });
-  }
-
-  function connectWebSocket() {
-    checkServerAvailability().then(isAvailable => {
-      if(isAvailable){
-        ws = new WebSocket('ws://localhost:8082');
-        ws.onopen = wsOpen;
-        ws.onmessage = wsMessage;
-        ws.onerror = wsError;
-        ws.onclose = wsClose;
+  // PAUSE SIMULATION
+  window.pauseSimulation = async () => {
+    try {
+      // If not paused, pause simulation
+      if(!pauseSimulation.isPaused){
+        pauseSimulation.pause();
+      }else{
+        throw new Error('Simulation is already paused.');
       }
-    });
+
+      return 'Simulation paused.';
+    } catch (error) {
+      return 'Pause failed. ' + error.message;
+    }
   }
 
-  // Try to establish the connection
-  connectWebSocket();
+  // RESUME SIMULATION
+  window.resumeSimulation = async () => {
+    try {
+      // If paused, unpause simulation
+      if(pauseSimulation.isPaused){
+        pauseSimulation.unpause();
+      }else{
+        throw new Error('Simulation is not paused.');
+      }
+
+      return 'Simulation resumed.';
+    } catch (error) {
+      return 'Resume failed. ' + error.message;
+    }
+  }
+
+  // RESET SIMULATION
+  window.resetSimulation = async () => {
+    try { // try-catch not needed here, but maybe later
+      // Trigger reset
+      eventBus.fire('tokenSimulation.resetSimulation');
+
+      return 'Simulation reset.';
+    }catch (error){
+      return 'Reset failed. ' + error.message;
+    }
+  }
+
+  // SEND MESSAGE
+  window.sendMessage = async () => {
+    try{
+      // Get all elements
+      const elements = elementRegistry.getAll();
+      // Filter for events
+      const events = elements.filter(el => is(el, 'bpmn:Event'));
+      // Filter for events that have the messageReference of our message
+      const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === request.parameters.messageType));
+
+      // TODO: make sure when triggering one element fails, others are still executed
+      messageEvents.forEach(msgEvent => simulationSupport.triggerElement(msgEvent.id));
+      // trigger boundary events with message reference, only when attached to a running action
+      return 'Message received.';
+    }catch (error){
+      return 'Message could not be processed. ' + error.message;
+    }
+  }
 });

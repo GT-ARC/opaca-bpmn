@@ -7,6 +7,16 @@
       "agentType": "ModelerAgent",
       "actions": [
         {
+          "name": "InspectModeler",
+          "parameters": {},
+          "result": "void"
+        },
+        {
+          "name": "CloseModeler",
+          "parameters": {},
+          "result": "void"
+        },
+        {
           "name": "LoadDiagram",
           "parameters": {
             "diagram": {"type" : "string"}
