@@ -72,57 +72,44 @@ very rough description of inner workings, creating (basic) model, then translati
 again stress that its completely optional
 
 
+## Environment Variables
+
+* **BPMN Modeller**
+  * `LLM_BACKEND`: Where to find the server for LLM-based process generation (optional)
+* **Process Generation Server**
+  * `LLM_NAME`: GPT model to use, e.g. `gpt-4o-mini`
+  * `LLM_API_KEY`: OpenAI API Key
+
+
 ## Getting Started
 
+### Using Docker Compose
 
-### Building (editor and integrated interpretation)
-You need a [Node.js](http://nodejs.org) development stack with [npm](https://npmjs.org) installed to build the project.
+The easiest way to build and start the BPMN Editor and Interpreter along with the optional Process Generation Server is using Docker Compose, using the provided [`docker-compose.yml`](docker-compose.yml). Make sure to set the environment variables accordingly (see above), then run `docker compose up --build` to build and start the services.
 
-To install all project dependencies execute (in /opaca-bpmn-editor)
+### Development and testing (editor and interpreter)
 
-```sh
-npm install
-```
+For starting only the BPMN editor, and especially for development and testing, you can also build and run the editor locally using the [Node.js](http://nodejs.org) development stack with [npm](https://npmjs.org).
 
-Build the example using [webpack](https://webpack.js.org/) via
+1. Go to the `opaca-bpmn-editor` directory
+2. Run `npm install` to install all project dependencies
+3. Run `npm run build` to build the application using [webpack](https://webpack.js.org/), generating the distribution-ready client-side modeler in the `public` folder.
+4. Finally, run `npm start` to serve the application.
 
-```sh
-npm run build
-```
+### Building the OPACA Interpreter Agent
 
-That generates the distribution ready client-side modeler application into the `public` folder.
+The BPMN Interpreter (and Editor) can also be integrated into an OPACA Agent Container, allowing multiple BPMN diagrams to be deployed via OPACA actions, with the interpreter running in "headless" mode via [puppeteer](https://github.com/puppeteer/puppeteer), but also allowing the user to inspect the running processes using a read-only view on the editor.
 
-Serve the application via
+1. Go to the `opaca-bpmn-editor` directory
+2. Build the Docker image:
+    ```sh
+    docker build -f ./puppeteer/Dockerfile -t opaca-bpmn-interpreter-agent .
+    ```
+3. Start an [OPACA Platform](https://github.com/GT-ARC/opaca-core)
+4. In the Swagger UI, call `POST containers`, replacing the `image` attribute with the content of [`modeler-image.json`](opaca-bpmn-editor/puppeteer/modeler-image.json)
+5. Use the container's actions to interact with the interpreter (see [the respective documentation](docs/opaca-agent.md) for details).
 
-```sh
-npm start
-```
-
-### Building (as interpreter agent)
-If you want to connect the interpreter to the OPACA runtime platform, you first need to create the interpreter server container.
-
-Build the Docker image (in /opaca-bpmn-editor) via
-
-```sh
-docker build -f ./opaca-bpmn-editor/Dockerfile -t bpmn-interpreter-vsdt2-server .
-```
-
-Start the OPACA platform and open the UI following their [Quick Testing Guide](https://github.com/gt-arc/opaca-core/?tab=readme-ov-file#getting-started--quick-testing-guide).
-
-Go to `POST containers` and create the agent container by setting the `imageName` to `"bpmn-interpreter-vsdt2-server"`. Other fields can be removed.
-
-We use Puppeteer to create a headless browser running in the container. The editor will be started and a first instance opened in that browser sequentially.
-
-Go to `GET containers` or `GET agents` to see the server container and its actions.
-
-Now you can invoke these actions in the `POST invoke` routes.
-
-### Building (as a whole)
-To build the project as a whole run the docker-compose (in the project root)
-```sh
-docker compose up --build
-```
-Note that you will first need an API key for the LLM (we use OPENAI). You can set your key as `OPENAI_API_KEY` in your environment variables.
+**Note:** The OPACA Interpreter Agent is still work in progress and details may change.
 
 
 ## License
