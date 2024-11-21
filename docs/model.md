@@ -13,7 +13,7 @@ In the bpmn2.0 standard an element can be extended with the `<bpmn2:extensionsEl
 </bpmn2:task>
 ```
 ## VSDT2
-The additional attributes we need for interpretation are defined in the [vsdt2.json](../src/descriptors/vsdt2.json). This makes sure that when a diagram is loaded in the editor, the underlying model recognizes these contained attributes and we can work with them. They are saved in the `vsdt2` namespace.
+The additional attributes we need for interpretation are defined in the [vsdt2.json](../opaca-bpmn-editor/src/descriptors/vsdt2.json). This makes sure that when a diagram is loaded in the editor, the underlying model recognizes these contained attributes and we can work with them. They are saved in the `vsdt2` namespace.
 
-To actually be able to add these to the model in the editor, the needed input fields are provided to the bpmn-js-properties-panel in [src/provider](../src/provider). The properties panel should always represent the current model and changes are propagated immediately.  
-Our model extension is then passed to the modeler in the [app.js](../src/app.js).
+To actually be able to add these to the model in the editor, the needed input fields are provided to the bpmn-js-properties-panel in [src/provider](../opaca-bpmn-editor/src/provider). The properties panel should always represent the current model and changes are propagated immediately.  
+Our model extension is then passed to the modeler in the [app.js](../opaca-bpmn-editor/src/app.js).
