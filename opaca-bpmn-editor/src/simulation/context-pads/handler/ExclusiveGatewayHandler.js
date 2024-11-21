@@ -2,6 +2,11 @@ import {
     is
 } from 'bpmn-js-token-simulation/lib/util/ElementHelper';
 
+import {
+    ForkIcon
+} from 'bpmn-js-token-simulation/lib/icons';
+import {getRootElement} from "../../../provider/util";
+
 export default function ExclusiveGatewayHandler(exclusiveGatewaySettings) {
     this._exclusiveGatewaySettings = exclusiveGatewaySettings;
 }
@@ -12,16 +17,20 @@ ExclusiveGatewayHandler.prototype.createContextPads = function(element) {
         return is(outgoing, 'bpmn:SequenceFlow');
     });
 
-    if (outgoingFlows.length < 2) {
+    const root = getRootElement(element);
+
+    if (outgoingFlows.length < 2 || root.isExecutable) {
         return;
     }
 
-    // Removed original bts-context-pad element
-    // as we do not want to set sequence flows manually
-    const html = ``;
+    const html = `
+    <div class="bts-context-pad" title="Set Sequence Flow">
+      ${ForkIcon()}
+    </div>
+  `;
 
     const action = () => {
-        this._exclusiveGatewaySettings.setSequenceFlow(element);
+        this._exclusiveGatewaySettings.setSequenceFlow(element, null);
     };
 
     return [

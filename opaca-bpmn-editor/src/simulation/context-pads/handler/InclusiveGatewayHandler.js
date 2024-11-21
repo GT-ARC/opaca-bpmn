@@ -1,6 +1,9 @@
 import { getBusinessObject } from 'bpmn-js-token-simulation/lib/util/ElementHelper';
 import { isSequenceFlow } from 'bpmn-js-token-simulation/lib/simulator/util/ModelUtil';
 
+import { ForkIcon } from 'bpmn-js-token-simulation/lib/icons';
+import {getRootElement} from "../../../provider/util";
+
 export default function InclusiveGatewayHandler(inclusiveGatewaySettings) {
     this._inclusiveGatewaySettings = inclusiveGatewaySettings;
 }
@@ -8,7 +11,9 @@ export default function InclusiveGatewayHandler(inclusiveGatewaySettings) {
 InclusiveGatewayHandler.prototype.createContextPads = function(element) {
     const outgoingFlows = element.outgoing.filter(isSequenceFlow);
 
-    if (outgoingFlows.length < 2) {
+    const root = getRootElement(element);
+
+    if (outgoingFlows.length < 2 || root.isExecutable) {
         return;
     }
 
@@ -19,9 +24,11 @@ InclusiveGatewayHandler.prototype.createContextPads = function(element) {
         return gatewayBo.default !== flowBo;
     });
 
-    // Removed original bts-context-pad element
-    // as we do not want to set sequence flows manually
-    const html = ``;
+    const html = `
+    <div class="bts-context-pad" title="Set Sequence Flow">
+      ${ForkIcon()}
+    </div>
+    `;
 
     return nonDefaultFlows.map(sequenceFlow => {
         const action = () => {
