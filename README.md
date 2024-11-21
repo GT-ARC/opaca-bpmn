@@ -1,5 +1,5 @@
 # BPMN INTERPRETER (VSDT2)
-This is a tool for the OPACA Framework, meant for editing and interpreting business processes following the BPMN 2.0 standard.   
+This is a tool meant for editing and interpreting business processes following the BPMN 2.0 standard. It was mainly developed for [OPACA](https://github.com/gt-arc/opaca-core/), an Agent Framework, which empowers users to combine multi-agent systems with microservices and container-technologies.    
 
 ## Modeler
 The editor is a node-style web application that builds a user interface around the [bpmn-js](https://github.com/bpmn-io/bpmn-js) BPMN 2.0 modeler.
@@ -53,7 +53,7 @@ Build the Docker image (in /opaca-bpmn-editor) via
 docker build -f ./opaca-bpmn-editor/Dockerfile -t bpmn-interpreter-vsdt2-server .
 ```
 
-Start the OPACA platform and open the UI following their [Quick Testing Guide](https://gitlab.dai-labor.de/jiacpp/prototype#getting-started-quick-testing-guide).
+Start the OPACA platform and open the UI following their [Quick Testing Guide](https://github.com/gt-arc/opaca-core/?tab=readme-ov-file#getting-started--quick-testing-guide).
 
 Go to `POST containers` and create the agent container by setting the `imageName` to `"bpmn-interpreter-vsdt2-server"`. Other fields can be removed.
 
@@ -64,7 +64,9 @@ Go to `GET containers` or `GET agents` to see the server container and its actio
 Now you can invoke these actions in the `POST invoke` routes.
 
 # BPMN Model Generation
-Also integrated into the editor is a Model Generator based on ProMoAI. When starting the editor, this tool enables you to define a business process in a prompt and let an LLM create the diagram for you. Additionally, you can also ask for changes or refinement at a later point.
+Also integrated into the editor is a Model Generator based on ProMoAI. When starting the editor, this tool enables you to define a business process in a prompt and let an LLM create the diagram for you. Additionally, you can ask for changes or refinement at a later point.
+
+At this point the model generation does not support `extensionElements`, so our custom properties have to be defined by hand. 
 
 ## Building (as a whole)
 To build the project as a whole run the docker-compose (in the project root)

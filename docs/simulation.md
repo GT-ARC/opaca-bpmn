@@ -4,7 +4,7 @@ This editor uses [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-t
 
 When a loaded diagram is not marked as executable (under process -> general) this will be the default behavior.
 ## Interpretation
-While most of it is original, we applied a [patch](../opaca-bpmn-editor/patches) to bpmn-js-token-simulation to use some custom behaviors and settings, like gateway-settings. You can find them in [simulation](../opaca-bpmn-editor/src/simulation). The result is a simulator that automates some of the events and sets sequence flows based on conditions in real time. Evaluating assignments, keeping track of variable values, making service calls and creating input dialogs for user tasks, happens in [simulation/util.js](../opaca-bpmn-editor/src/simulation/util.js). Triggering of timer events is handled in [app.js](../opaca-bpmn-editor/src/app.js).
+While most of it is original, we applied a [patch](../opaca-bpmn-editor/patches) to bpmn-js-token-simulation to use some custom behaviors and settings, like gateway-settings. You can find them in [simulation](../opaca-bpmn-editor/src/simulation). The result is a simulator that automates some of the events and sets sequence flows based on conditions in real time. Evaluating assignments, keeping track of variable values, making service calls and creating input dialogs for user tasks, happens in [simulation/util.js](../opaca-bpmn-editor/src/simulation/util.js). Triggering of timer events is handled in [simulation/timer-event-support](../opaca-bpmn-editor/src/simulation/timer-event-support).
 ## Interpreter Agent
 When you start the project in a Docker Container and connect to the OPACA RP, this "interpreter-agent" provides following actions: 
 - **LoadDiagram**
