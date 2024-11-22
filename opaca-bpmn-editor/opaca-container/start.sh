@@ -14,4 +14,4 @@ done
 echo "Application started. Launching Puppeteer script."
 
 # Run Puppeteer script
-node puppeteer/main.js
+node opaca-container/main.js

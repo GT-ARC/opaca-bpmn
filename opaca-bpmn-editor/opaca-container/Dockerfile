@@ -54,4 +54,4 @@ EXPOSE 8080
 EXPOSE 9222
 
 # Start modeler and puppeteer sequentially
-CMD ["./puppeteer/start.sh"]
+CMD ["./opaca-container/start.sh"]
