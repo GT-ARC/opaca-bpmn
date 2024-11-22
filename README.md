@@ -57,11 +57,9 @@ A custom landing page allows to create a new BPMN diagram, load an existing one 
 
 ## Integration into an OPACA Agent Container
 
-TODO
-primary use of editor as web application
-integration of interpreter into opaca agent using puppeteer, details see separate config file
-editor can be used as read-only view of current interpretation process
-still WIP
+While the primary intention is for the BPMN Editor and Interpreter to be used interactively in a web browser, another goal was to directly integrate the Interpreter into an OPACA Agent, similar to how it was in the old 'VSDT' BPMN Editor and JIAC-based Interpreter Agent (cf. [Process-oriented modelling, creation, and interpretation of multi-agent systems. Küster et al., 2016](http://dx.doi.org/10.1504/IJAOSE.2016.080892)). For this, the actual BPMN Editor and integrated interpreter are wrapped inside an OPACA Agent, allowing multiple BPMN diagrams to be deployed via OPACA actions, with the interpreter running in "headless" mode via [Puppeteer](https://github.com/puppeteer/puppeteer), but also allowing the user to inspect the running processes using a read-only view on the editor.
+
+For more details, please refer to the [dedicated documentation](docs/opaca-agent.md). Note, however, that at the moment this is still work-in-progress.
 
 
 ## Process Generation based on ProMoAI
@@ -98,6 +96,8 @@ For starting only the BPMN editor, and especially for development and testing, y
 ### Building the OPACA Interpreter Agent
 
 The BPMN Interpreter (and Editor) can also be integrated into an OPACA Agent Container, allowing multiple BPMN diagrams to be deployed via OPACA actions, with the interpreter running in "headless" mode via [puppeteer](https://github.com/puppeteer/puppeteer), but also allowing the user to inspect the running processes using a read-only view on the editor.
+
+To run the OPACA Agent Container integrating the BPMN editor and interpreter, you first have to build the Docker image and then deploy it via an OPACA Runtime Platform.
 
 1. Go to the `opaca-bpmn-editor` directory
 2. Build the Docker image:
