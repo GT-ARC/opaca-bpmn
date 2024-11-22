@@ -49,7 +49,7 @@ def get_model_gen_from_cache(session_id):
 
 @app.post("/generate_process_model")
 def generate_model(data: Session):
-    logger.debug("Received data for generating model: %s", data)
+    logger.info("Generating model for: %s", data.process_description)
     try:
         model_gen = LLMProcessModelGenerator(data.process_description, data.api_key, data.llm)
 
@@ -76,7 +76,7 @@ def generate_model(data: Session):
 
 @app.post("/update_process_model")
 def update_model(data: Feedback):
-    #logger.info('UPDATE MODEL, data: ', data)
+    logger.info('Updating model with query: %s', data.feedback_text)
     try:
         session_id = data.session_id
 

@@ -9,7 +9,7 @@ services:
     depends_on:
       - opaca-bpmn-modeller-llm-backend
     environment:
-      LLM_BACKEND: http://192.168.2.133:5000
+      LLM_BACKEND: http://localhost:5000
   
   opaca-bpmn-modeller-llm-backend:
     build: python-powl-server
