@@ -1,7 +1,5 @@
 #!/bin/bash
 
-cd ..
-
 # Start the application in the background
 npm start &
 

@@ -6,17 +6,6 @@ WORKDIR /usr/src/app
 
 # NOTE: call docker build from parent directory!
 
-# Copy package.json and package-lock.json files
-COPY package*.json ./
-# Copy patches for interpreter-callbacks, so they can be applied in npm install
-COPY patches ./patches
-
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application code
-COPY . .
-
 # Install necessary libraries for Puppeteer to run
 RUN apt-get update && apt-get install -y \
     chromium \
@@ -40,18 +29,31 @@ RUN apt-get update && apt-get install -y \
     libxshmfence1 \
     && rm -rf /var/lib/apt/lists/*
 
-RUN groupadd -r pptruser && useradd -r -g pptruser -G audio,video pptruser \
-    && mkdir -p /usr/src/app/public \
-    && chown -R pptruser:pptruser /usr/src/app
 
-USER pptruser
+# Copy package.json and package-lock.json files
+COPY package*.json ./
+# Copy patches for interpreter-callbacks, so they can be applied in npm install
+COPY patches ./patches
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code
+COPY . .
 
 # Build including stylings
 RUN npm run build
+
+#RUN groupadd -r pptruser \
+#    && useradd -r -g pptruser -G audio,video pptruser \
+#    && mkdir -p /usr/src/app/public \
+#    && chown -R pptruser:pptruser /usr/src/app
+
+#USER pptruser
 
 EXPOSE 8080
 
 EXPOSE 9222
 
 # Start modeler and puppeteer sequentially
-CMD ["./opaca-container/start.sh"]
+CMD ["opaca-container/start.sh"]
