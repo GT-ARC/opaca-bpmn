@@ -50,7 +50,7 @@ Also integrated in the editor is the [bpmn-js-token-simulation](https://github.c
 
 ### LLM Integration
 
-A custom landing page allows to create a new BPMN diagram, load an existing one by drag-and-drop, or draft a new BPMN diagram using an LLM prompt. The latter call the `python-powl-server` which is based on ProMoAI (see below for details). The diagrams can then be further extended in the regular BPMN editor. Similarly, a button at the bottom of the editor also allows the refinement of existing BPMN diagrams.
+A custom landing page allows to create a new BPMN diagram, load an existing one by drag-and-drop, or draft a new BPMN diagram using an LLM prompt. The latter calls the `promoai-api-server` which is based on ProMoAI (see below for details). The diagrams can then be further extended in the regular BPMN editor. Similarly, a button at the bottom of the editor also allows the refinement of existing BPMN diagrams.
 
 **Note:** Due to inner workings of ProMoAI, the LLM can currently only generate very basic processes, and does not "know" about the OPACA-specific extensions.
 
@@ -66,10 +66,9 @@ still WIP
 
 ## Process Generation based on ProMoAI
 
-TODO
-based on ProMoAI, based on BA by Anastasiia
-very rough description of inner workings, creating (basic) model, then translating that to BPMN --> limited expressiveness
-again stress that its completely optional
+The `promoai-api-server` is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/). It is entirely optional, but can be used to create BPMN diagrams based on a textual description, as an alternative to starting with a new or existing BPMN diagram. The logic has been taken mostly from ProMoAI, replacing the Streamlit App with a FastAPI server to be used by the BPMN editor frontend.
+
+It uses the OpenAI API to generate the BPMN process. But while GPT can generate BPMN XML, the result is often incorrect. Thus, the approach in ProMoAI is to generate Python code, that then generates a POWL model, which is then translated to actual valid BPMN 2.0 XML. For more details please refer to [ProMoAI: Process Modeling with Generative AI (Kourani et al., 2024)](https://www.ijcai.org/proceedings/2024/1014). The downside of this approach is that while the resulting processes are usually "on point" on correct, the intermediate model limits the expressiveness to just a subset of what's possible with BPMN, and in particular none of the extension elements of the OPACA BPMN editor.
 
 
 ## Environment Variables
@@ -116,4 +115,4 @@ The BPMN Interpreter (and Editor) can also be integrated into an OPACA Agent Con
 
 The [opaca-bpmn-editor](./opaca-bpmn-editor) is based on [bpmn-js](https://github.com/bpmn-io/bpmn-js) and the [bpmn-js Token Simulation](https://github.com/bpmn-io/bpmn-js-token-simulation), licensed under the Camunda- and MIT License, respectively. The extensions for the OPACA framework are licensed under the [OPACA License](LICENSE.txt).
 
-The [python-powl-server](./python-powl-server) is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/), licensed under GPL3, and is therefore also licensed under GPL3. This is an optional component, not needed for the editor and interpreter to work, and only linked with it via network (HTTP/REST).
+The [promoai-api-server](./promoai-api-server) is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/), licensed under GPL3, and is therefore also licensed under GPL3. This is an optional component, not needed for the editor and interpreter to work, and only linked with it via network (HTTP/REST).
