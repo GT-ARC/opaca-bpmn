@@ -12,6 +12,6 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-EXPOSE 8000
+EXPOSE 5000
 
-ENTRYPOINT ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "debug"]
+ENTRYPOINT ["uvicorn", "api:app", "--host", "0.0.0.0", "--port", "5000", "--log-level", "debug"]

@@ -37,6 +37,7 @@ class Feedback(BaseModel):
     llm: str = os.getenv("LLM_NAME")
     api_key: str = os.getenv("LLM_API_KEY")
 
+
 session_store = {}
 
 def store_model_gen_in_cache(model_gen):
@@ -46,6 +47,7 @@ def store_model_gen_in_cache(model_gen):
 
 def get_model_gen_from_cache(session_id):
     return session_store.get(session_id, None)
+
 
 @app.post("/generate_process_model")
 def generate_model(data: Session):
@@ -73,6 +75,7 @@ def generate_model(data: Session):
         logger.error("Error generating BPMN model: %s", str(e))
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @app.post("/update_process_model")
 def update_model(data: Feedback):
@@ -108,7 +111,3 @@ def update_model(data: Feedback):
         logger.error("Error processing feedback: %s", str(e))
         logger.error(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
-
-@app.get("/")
-def main():
-    return {"message": "Hello, this is an API for ProMoAI"}

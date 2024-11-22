@@ -2,19 +2,21 @@ version: '3'
 
 services:
 
-  opaca-bpmn-modeller:
+  opaca-bpmn-editor:
     build: opaca-bpmn-editor
+    image: opaca-bpmn-editor
     ports:
       - "8080:8080"
     depends_on:
-      - opaca-bpmn-modeller-llm-backend
+      - promoai-api-server
     environment:
       LLM_BACKEND: http://localhost:5000
   
-  opaca-bpmn-modeller-llm-backend:
-    build: python-powl-server
+  promoai-api-server:
+    build: promoai-api-server
+    image: promoai-api-server
     ports:
-      - "5000:8000"
+      - "5000:5000"
     environment:
       LLM_NAME: gpt-4o
       LLM_API_KEY: $OPENAI_API_KEY
