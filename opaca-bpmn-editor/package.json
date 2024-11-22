@@ -39,7 +39,7 @@
       "url": "https://github.com/bpmn-io"
     }
   ],
-  "license": "MIT",
+  "license": "OPACA",
   "dependencies": {
     "@bpmn-io/extract-process-variables": "^0.8.0",
     "@bpmn-io/properties-panel": "^3.4.0",
