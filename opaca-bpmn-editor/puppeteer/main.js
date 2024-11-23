@@ -4,6 +4,7 @@ const path = require('path');
 const dotenv = require('dotenv');
 const cors = require('cors')
 const puppeteer = require('puppeteer');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
@@ -104,8 +105,7 @@ app.post('/broadcast/:channel', (req, res) => {
     res.sendStatus(200);
 });
 
-// Only 1 instance for now TODO
-var page;
+const instances = new Map();
 var browser;
 
 //// Open editor in headless browser ////
@@ -113,9 +113,9 @@ var browser;
 (async () => {
     // Launch Puppeteer in headless mode
     browser = await puppeteer.launch({
-        headless: true,
+        headless: false,
         devtools: true,
-        executablePath: '/usr/bin/chromium',
+        //executablePath: '/usr/bin/chromium',
         // Required for running as root in Docker
         args: ['--no-sandbox', //'--disable-setuid-sandbox',
             '--remote-debugging-address=0.0.0.0',
@@ -129,6 +129,7 @@ var browser;
     //console.log(`DevTools WebSocket URL: ${browserWSEndpoint}`);
 
     // Use default blank page
+    /*
     const pages = await browser.pages();
     page = pages[0] || await browser.newPage();
 
@@ -150,7 +151,9 @@ var browser;
     // Open modeler
     await page.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
 
-    console.log('Modeler running.');
+     */
+
+    console.log('Opened browser.');
 })();
 
 // Handle server listening event
@@ -164,7 +167,32 @@ app.listen(PORT, () => {
 async function invokeAgentAction(action, agentId, parameters) {
     return new Promise(async(resolve, reject) => {
 
-        if (action === 'LoadDiagram') {
+        if (action === 'CreateInstance') {
+            const pages = await browser.pages();
+            // Use default blank page for first instance
+            const newPage = (instances.size === 0 && pages[0]) ? pages[0] : await browser.newPage();
+            // Open modeler on page
+            await newPage.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
+
+            // Redirect console messages from the page to the Node.js console
+            newPage.on('console', (msg) => {
+                for (let i = 0; i < msg.args().length; ++i) {
+                    console.log(`PAGE LOG: ${msg.args()[i]}`);
+                }
+            });
+
+            // Store page in map
+            const id = uuidv4();
+            instances.set(id, newPage);
+
+            return resolve(`Opened a modeler instance. ID: ${id}`);
+
+        } else if (action === 'GetInstances') {
+            const ids = instances.keys()
+            return resolve(`Running instances: ${ids}`);
+
+        } else if (action === 'LoadDiagram') {
+            const page = instances.get(parameters.id);
             const loadResult = await page.evaluate(async (bpmnXml) => {
                 // Return from browser context to node (loadResult)
                 return await window.loadDiagram(bpmnXml);
@@ -173,6 +201,7 @@ async function invokeAgentAction(action, agentId, parameters) {
             return resolve("Diagram loaded.");
 
         } else if (action === 'StartSimulation') {
+            const page = instances.get(parameters.id);
             const startResult = await page.evaluate(async () => {
                 // Return from browser context to node (simulation)
                 return await window.startSimulation();
@@ -202,6 +231,7 @@ async function invokeAgentAction(action, agentId, parameters) {
             return reject("Inspection not implemented yet.");
 
         } else if (action === 'PauseSimulation'){
+            const page = instances.get(parameters.id);
             const pauseResult = await page.evaluate(async () => {
                 return await window.pauseSimulation();
             })
@@ -209,6 +239,7 @@ async function invokeAgentAction(action, agentId, parameters) {
             return resolve("Paused Simulation");
 
         } else if (action === 'ResumeSimulation'){
+            const page = instances.get(parameters.id);
             const resumeResult = await page.evaluate(async () => {
                 return await window.resumeSimulation();
             })
@@ -216,6 +247,7 @@ async function invokeAgentAction(action, agentId, parameters) {
             return resolve("Resumed Simulation");
 
         } else if (action === 'ResetSimulation'){
+            const page = instances.get(parameters.id);
             const resetResult = await page.evaluate(async () => {
                 return await window.resetSimulation();
             })
@@ -223,16 +255,21 @@ async function invokeAgentAction(action, agentId, parameters) {
             return resolve("Reset Simulation");
 
         } else if (action === 'SendMessage'){
+            const page = instances.get(parameters.id);
             const messageResult = await page.evaluate(async () => {
                 return await window.sendMessage(parameters);
-            })
+            }, parameters.messageType, parameters.messageContent)
+
             console.log(`SendMessage Result: ${messageResult}`);
             return resolve("Send Message");
 
-        } else if (action === 'CloseModeler') {
-            await browser.close();
-            // TODO later also remove ref to page
+        } else if (action === 'CloseInstance') {
+            const page = instances.get(parameters.id);
+            await page.close();
+            instances.delete(parameters.id);
+
             return resolve('Closed this tab.');
+
         } else {
             return reject(new Error('Action not found.'));
         }
