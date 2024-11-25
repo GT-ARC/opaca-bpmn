@@ -11,7 +11,7 @@ var browser;
     browser = await puppeteer.launch({
         headless: false,
         devtools: true,
-        //executablePath: '/usr/bin/chromium',
+        executablePath: '/usr/bin/chromium',
         // Required for running as root in Docker
         args: ['--no-sandbox', //'--disable-setuid-sandbox',
             '--remote-debugging-address=0.0.0.0',
@@ -49,8 +49,9 @@ async function invokeAgentAction(action, agentId, parameters) {
             return resolve(`Opened a modeler instance. ID: ${id}`);
 
         } else if (action === 'GetInstances') {
-            const ids = instances.keys()
-            return resolve(`Running instances: ${ids}`);
+            const ids = Array.from(instances.keys());
+            return resolve(`Running instances: ${ids.join(', ')}`);
+            // TODO Maybe add some info about the simulation state?
 
         } else if (action === 'LoadDiagram') {
             const page = instances.get(parameters.id);
@@ -126,6 +127,14 @@ async function invokeAgentAction(action, agentId, parameters) {
 
         } else if (action === 'CloseInstance') {
             const page = instances.get(parameters.id);
+
+            // Check if this is the last instance being closed
+            if (instances.size === 1) {
+                // Open a blank page to keep the browser alive
+                const blankPage = await browser.newPage();
+                await blankPage.goto('about:blank');
+            }
+
             await page.close();
             instances.delete(parameters.id);
 

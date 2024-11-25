@@ -7,45 +7,76 @@
       "agentType": "ModelerAgent",
       "actions": [
         {
-          "name": "InspectModeler",
+          "name": "CreateInstance",
           "parameters": {},
+          "result": {
+            "name": "processID",
+            "type": "string"
+          }
+        },
+        {
+          "name": "GetInstances",
+          "parameters": {},
+          "result": {
+            "name": "processIDs",
+            "type": "string"
+          }
+        },
+        {
+          "name": "InspectModeler",
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
-          "name": "CloseModeler",
-          "parameters": {},
+          "name": "CloseInstance",
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "LoadDiagram",
           "parameters": {
+            "id": {"type" : "string"},
             "diagram": {"type" : "string"}
           },
           "result": "void"
         },
         {
           "name": "StartSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"},
+            "waitToFinish": {"type": "boolean"}
+          },
           "result": "void"
         },
         {
           "name": "PauseSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "ResumeSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "ResetSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "SendMessage",
           "parameters": {
+            "id": {"type" : "string"},
             "messageType": {"type": "string"},
             "messageContent": {"type": "string"}
           },
