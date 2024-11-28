@@ -7,7 +7,6 @@ const { invokeAgentAction } = require('./puppeteer');
 
 
 app.use(express.json());
-app.use(cors({origin: 'http://localhost:8080'}));
 
 function getImage() {
     const filePath = path.join(__dirname, 'modeler-image.json');

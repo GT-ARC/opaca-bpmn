@@ -9,25 +9,12 @@
         {
           "name": "CreateInstance",
           "parameters": {},
-          "result": {
-            "name": "processID",
-            "type": "string"
-          }
+          "result": "string"
         },
         {
           "name": "GetInstances",
           "parameters": {},
-          "result": {
-            "name": "processIDs",
-            "type": "string"
-          }
-        },
-        {
-          "name": "InspectModeler",
-          "parameters": {
-            "id": {"type" : "string"}
-          },
-          "result": "void"
+          "result": "array"
         },
         {
           "name": "CloseInstance",
@@ -51,6 +38,14 @@
             "waitToFinish": {"type": "boolean"}
           },
           "result": "void"
+        },
+        {
+          "name": "CreateLoadStart",
+          "parameters": {
+            "id": {"type" : "string"},
+            "diagram": {"type" : "string"}
+          },
+          "result": "string"
         },
         {
           "name": "PauseSimulation",

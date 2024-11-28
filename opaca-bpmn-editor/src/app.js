@@ -414,7 +414,8 @@ $(function() {
 
     // Skip when not meant for interpretation
     if(root && !root.businessObject.isExecutable && !toggleMode._active){
-      alert('Process not marked as executable. Using standard Token Simulation.');
+      console.error('Process not marked as executable. Using standard Token Simulation.');
+      // TODO handle differently?
     }
   });
 
@@ -425,7 +426,10 @@ $(function() {
     try {
       console.log(bpmnXml);
       await openDiagram(bpmnXml);
-      return 'BPMN diagram loaded successfully';
+      // Prepare for timer/message start events
+      toggleMode.toggleMode(true);
+
+      return 'ok';
     } catch (error) {
       console.error('Error loading BPMN diagram:', error.message);
       return error.message;
@@ -445,7 +449,8 @@ $(function() {
       // Trigger start event
       simulationSupport.triggerElement(startEvent.id);
 
-      return `Started Simulation at ${startEvent.id}`;
+      console.log(`Started Simulation at ${startEvent.id}`);
+      return 'ok';
     }catch(error){
       return error.message;
     }
