@@ -42,8 +42,8 @@
         {
           "name": "CreateLoadStart",
           "parameters": {
-            "id": {"type" : "string"},
-            "diagram": {"type" : "string"}
+            "diagram": {"type" : "string"},
+            "waitToFinish": {"type": "boolean"}
           },
           "result": "string"
         },

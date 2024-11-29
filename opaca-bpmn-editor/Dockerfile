@@ -26,4 +26,4 @@ RUN npm run build
 EXPOSE 8080 9222
 
 # Start the application
-CMD ["./start.sh"]
+ENTRYPOINT [ "sh", "start.sh"]

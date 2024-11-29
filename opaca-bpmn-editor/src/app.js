@@ -412,10 +412,9 @@ $(function() {
   eventBus.on('tokenSimulation.toggleMode', function() {
     const root = elementRegistry.getAll().filter(el => is(el, 'bpmn:Process'))[0];
 
-    // Skip when not meant for interpretation
+    // Info
     if(root && !root.businessObject.isExecutable && !toggleMode._active){
-      console.error('Process not marked as executable. Using standard Token Simulation.');
-      // TODO handle differently?
+      console.warn('Process not marked as executable. Using standard Token Simulation.');
     }
   });
 
@@ -437,7 +436,7 @@ $(function() {
   };
 
   // START SIMULATION
-  window.startSimulation = async () => {
+  window.startSimulation = async (waitToFinish) => {
     try{
       if(!toggleMode._active){
         toggleMode.toggleMode(true);
@@ -450,6 +449,26 @@ $(function() {
       simulationSupport.triggerElement(startEvent.id);
 
       console.log(`Started Simulation at ${startEvent.id}`);
+
+      if (waitToFinish) {
+        // Set up listener to detect when the token exits an EndEvent
+        let endEventReached = false;
+        return new Promise((resolve, reject) => {
+
+          eventBus.on('trace.elementExit', (event) => {
+            const element = event.element;
+
+            // Check if the exited element is an EndEvent
+            if (is(element, 'bpmn:EndEvent') && !endEventReached) {
+              endEventReached = true;
+              console.log(`Simulation completed at EndEvent: ${element.id}`);
+
+              resolve('ok');
+            }
+          });
+        });
+      }
+
       return 'ok';
     }catch(error){
       return error.message;
@@ -466,7 +485,8 @@ $(function() {
         throw new Error('Simulation is already paused.');
       }
 
-      return 'Simulation paused.';
+      console.log('Paused Simulation.');
+      return 'ok';
     } catch (error) {
       return 'Pause failed. ' + error.message;
     }
@@ -482,7 +502,8 @@ $(function() {
         throw new Error('Simulation is not paused.');
       }
 
-      return 'Simulation resumed.';
+      console.log('Resumed Simulation.');
+      return 'ok';
     } catch (error) {
       return 'Resume failed. ' + error.message;
     }
@@ -490,30 +511,34 @@ $(function() {
 
   // RESET SIMULATION
   window.resetSimulation = async () => {
-    try { // try-catch not needed here, but maybe later
+    try {
       // Trigger reset
       eventBus.fire('tokenSimulation.resetSimulation');
 
-      return 'Simulation reset.';
+      console.log('Reset Simulation.');
+      return 'ok';
     }catch (error){
       return 'Reset failed. ' + error.message;
     }
   }
 
   // SEND MESSAGE
-  window.sendMessage = async () => {
+  window.sendMessage = async (messageType, messageContent) => {
     try{
       // Get all elements
       const elements = elementRegistry.getAll();
       // Filter for events
       const events = elements.filter(el => is(el, 'bpmn:Event'));
       // Filter for events that have the messageReference of our message
-      const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === request.parameters.messageType));
+      const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === messageType));
 
       // TODO: make sure when triggering one element fails, others are still executed
       messageEvents.forEach(msgEvent => simulationSupport.triggerElement(msgEvent.id));
-      // trigger boundary events with message reference, only when attached to a running action
-      return 'Message received.';
+      // trigger boundary events with message reference, only when attached to a running action (TODO)
+
+      const eventIds = messageEvents.map(msgEvent => msgEvent.id);
+      console.log(`Message sent. Relevant events: ${eventIds.join(', ')}`);
+      return 'ok';
     }catch (error){
       return 'Message could not be processed. ' + error.message;
     }

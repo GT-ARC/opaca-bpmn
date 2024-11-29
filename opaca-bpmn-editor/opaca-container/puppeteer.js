@@ -14,6 +14,7 @@ var browser;
             '--remote-debugging-address=0.0.0.0',
             '--remote-debugging-port=9222',
             '--remote-allow-origins=*',
+            '--window-size=1920,1080'
         ],
     })
 
@@ -27,7 +28,6 @@ async function invokeAgentAction(action, agentId, parameters) {
         if(parameters.id && !instances.get(parameters.id)){
             return reject(new Error(`There is no process with id ${parameters.id}.`));
         }
-        // TODO more error handling
 
         if (action === 'CreateInstance') {
             // Create a new instance
@@ -59,12 +59,12 @@ async function invokeAgentAction(action, agentId, parameters) {
             }
             return reject(new Error(loadResult));
 
-        } else if (action === 'StartSimulation') { // TODO wait-to-finish?
+        } else if (action === 'StartSimulation') {
             const page = instances.get(parameters.id);
-            const startResult = await page.evaluate(async () => {
+            const startResult = await page.evaluate(async (waitToFinish) => {
                 // Return from browser context to node (simulation)
-                return await window.startSimulation();
-            })
+                return await window.startSimulation(waitToFinish);
+            }, parameters.waitToFinish)
 
             if(startResult==='ok'){
                 return resolve();
@@ -84,16 +84,15 @@ async function invokeAgentAction(action, agentId, parameters) {
             const loadResult = await newPage.evaluate(async (bpmnXml) => {
                 return await window.loadDiagram(bpmnXml);
             }, parameters.diagram);
-            console.log(`LoadDiagram Result: ${loadResult}`);
 
             if(loadResult!=='ok'){
                 return reject(new Error(`Error loading diagram: ${loadResult}`));
             }
 
             // Start the simulation
-            const startResult = await newPage.evaluate(async () => {
-                return await window.startSimulation();
-            });
+            const startResult = await newPage.evaluate(async (waitToFinish) => {
+                return await window.startSimulation(waitToFinish);
+            }, parameters.waitToFinish);
 
             if(startResult!=='ok'){
                 return reject(new Error(`Error starting simulation: ${startResult}`));
@@ -106,33 +105,44 @@ async function invokeAgentAction(action, agentId, parameters) {
             const pauseResult = await page.evaluate(async () => {
                 return await window.pauseSimulation();
             })
-            console.log(`PauseSimulation Result: ${pauseResult}`);
-            return resolve();
+
+            if(pauseResult==='ok'){
+                return resolve();
+            }
+            return reject(new Error(pauseResult));
 
         } else if (action === 'ResumeSimulation'){
             const page = instances.get(parameters.id);
             const resumeResult = await page.evaluate(async () => {
                 return await window.resumeSimulation();
             })
-            console.log(`ResumeSimulation Result: ${resumeResult}`);
-            return resolve();
+
+            if(resumeResult==='ok'){
+                return resolve();
+            }
+            return reject(new Error(resumeResult));
 
         } else if (action === 'ResetSimulation'){
             const page = instances.get(parameters.id);
             const resetResult = await page.evaluate(async () => {
                 return await window.resetSimulation();
             })
-            console.log(`ResetSimulation Result: ${resetResult}`);
-            return resolve();
+
+            if(resetResult==='ok'){
+                return resolve();
+            }
+            return reject(new Error(resetResult));
 
         } else if (action === 'SendMessage'){
             const page = instances.get(parameters.id);
-            const messageResult = await page.evaluate(async () => {
-                return await window.sendMessage(parameters);
+            const messageResult = await page.evaluate(async (messageType, messageContent) => {
+                return await window.sendMessage(messageType, messageContent);
             }, parameters.messageType, parameters.messageContent)
 
-            console.log(`SendMessage Result: ${messageResult}`);
-            return resolve();
+            if(messageResult==='ok'){
+                return resolve();
+            }
+            return reject(new Error(messageResult));
 
         } else if (action === 'CloseInstance') {
             const page = instances.get(parameters.id);
@@ -161,6 +171,8 @@ async function openModelerInstance(){
     const pages = await browser.pages();
     // Use the existing blank page if no instances exist, otherwise create a new page
     const newPage = (instances.size === 0 && pages[0]) ? pages[0] : await browser.newPage();
+
+    await newPage.setViewport({ width: 1920, height: 1080 });
 
     // Navigate to the modeler
     await newPage.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
