@@ -1,13 +1,20 @@
-# Use an official Node.js runtime as a parent image
-FROM node:20
+# Use the official Puppeteer image as the base
+FROM ghcr.io/puppeteer/puppeteer:latest
 
-# Set the working directory in the container
+# Set the working directory
 WORKDIR /usr/src/app
 
-# Copy package.json and package-lock.json files
+# Copy application files
 COPY package*.json ./
-# Copy patches for interpreter-callbacks, so they can be applied in npm install
 COPY patches ./patches
+COPY . .
+
+# Ensure non-root user has ownership
+USER root
+RUN chown -R pptruser:pptruser /usr/src/app
+
+# Switch to non-root user
+USER pptruser
 
 # Install dependencies
 RUN npm install
@@ -15,10 +22,11 @@ RUN npm install
 # Copy the rest of the application code
 COPY . .
 
-# Build including stylings
+# Build the application
 RUN npm run build
 
-EXPOSE 8080
+# Expose required ports
+EXPOSE 8080 9222
 
 # Start the application
-CMD ["npm", "start"]
+ENTRYPOINT [ "sh", "start.sh"]
