@@ -10,7 +10,17 @@
   "provider": "DAI-Lab",
 
   "apiPort": 8082,
-  "extraPorts": {},
+  "extraPorts": {
+    "8080": {
+      "protocol": "TCP",
+      "description": "BPMN Editor"
+    },
+    "9222": {
+      "protocol": "TCP",
+      "description": "For Inspect Function"
+    }
+
+  },
   "definitions": {},
   "definitionsByUrl": {},
   "parameters": []

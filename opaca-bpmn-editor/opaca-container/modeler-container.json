@@ -7,45 +7,71 @@
       "agentType": "ModelerAgent",
       "actions": [
         {
-          "name": "InspectModeler",
+          "name": "CreateInstance",
           "parameters": {},
-          "result": "void"
+          "result": "string"
         },
         {
-          "name": "CloseModeler",
+          "name": "GetInstances",
           "parameters": {},
+          "result": "array"
+        },
+        {
+          "name": "CloseInstance",
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "LoadDiagram",
           "parameters": {
+            "id": {"type" : "string"},
             "diagram": {"type" : "string"}
           },
           "result": "void"
         },
         {
           "name": "StartSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"},
+            "waitToFinish": {"type": "boolean"}
+          },
           "result": "void"
         },
         {
+          "name": "CreateLoadStart",
+          "parameters": {
+            "diagram": {"type" : "string"},
+            "waitToFinish": {"type": "boolean"}
+          },
+          "result": "string"
+        },
+        {
           "name": "PauseSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "ResumeSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "ResetSimulation",
-          "parameters": {},
+          "parameters": {
+            "id": {"type" : "string"}
+          },
           "result": "void"
         },
         {
           "name": "SendMessage",
           "parameters": {
+            "id": {"type" : "string"},
             "messageType": {"type": "string"},
             "messageContent": {"type": "string"}
           },
