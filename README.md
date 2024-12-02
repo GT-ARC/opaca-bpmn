@@ -5,7 +5,7 @@ Copyright 2023-2024 GT-ARC & DAI-Labor, TU Berlin
 * Main Contributors: Cedric Braun
 * Further contributions by: Anastasiia Zubenko, Tobias Küster
 
-The BPMN-Editor and Interpreter are based on [bpmn-js](https://github.com/bpmn-io/bpmn-js) and the [bpmn-js Token Simulation](https://github.com/bpmn-io/bpmn-js-token-simulation). The LLM-based process generation is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/).
+The BPMN-Editor and Interpreter are based on [bpmn-js](https://github.com/bpmn-io/bpmn-js) and the [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-token-simulation). The LLM-based process generation is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/).
 
 This (https://github.com/gt-arc/opaca-bpmn/) is the public repository of the OPACA BPMN Editor and Interpreter project. Feel free to create issues if you have any suggestions, or improve things yourself with a fork and pull request. The main development work still happens in the internal/private repository at https://gitlab.dai-labor.de, including most (internal) tickets, development branches, merge requests, build pipelines, etc.
 
@@ -17,7 +17,7 @@ This repository includes software developed in the course of the project "Offene
 This is a tool for editing and interpreting business processes following the BPMN 2.0 standard. It was mainly developed for [OPACA](https://github.com/gt-arc/opaca-core/), an Agent Framework, which empowers users to combine multi-agent systems with microservices and container-technologies. The tool consists of several components that are explained further in the following:
 
 * a BPMN editor, based on the [bpmn-js](https://github.com/bpmn-io/bpmn-js), with extensions for referring to OPACA actions
-* a BPMN interpreter, based on the [bpmn-js Token Simulation](https://github.com/bpmn-io/bpmn-js-token-simulation), with extensions for calling OPACA actions
+* a BPMN interpreter, based on the [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-token-simulation), with extensions for calling OPACA actions
 * an optional backend service for generating basic BPMN diagrams using an LLM, based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/)
 * an integration of the BPMN editor and interpreter into an OPACA Agent Container (WIP)
 
@@ -42,7 +42,7 @@ Following the steps of [properties-panel-extension](https://github.com/bpmn-io/b
 
 ### Importing OPACA Actions as Services
 
-In addition to the extended properties panel, the OPACA BPMN Editor also includes a special view (see screenshot) for connecting to an OPACA Runtime Platform and importing the different agents' actions as Services into the BPMN diagram, to use used as implementations for Service Tasks.
+In addition to the extended properties panel, the OPACA BPMN Editor also includes a special view (see screenshot) for connecting to an OPACA Runtime Platform and importing the different agents' actions as Services into the BPMN diagram, to be used as implementations for Service Tasks.
 
 ### Integrated BPMN Interpreter
 
@@ -50,7 +50,7 @@ Also integrated in the editor is the [bpmn-js-token-simulation](https://github.c
 
 ### LLM Integration
 
-A custom landing page allows to create a new BPMN diagram, load an existing one by drag-and-drop, or draft a new BPMN diagram using an LLM prompt. The latter calls the `promoai-api-server` which is based on ProMoAI (see below for details). The diagrams can then be further extended in the regular BPMN editor. Similarly, a button at the bottom of the editor also allows the refinement of existing BPMN diagrams through the LLM.
+A custom landing page allows to create a new BPMN diagram, load an existing one by drag-and-drop, or draft a new BPMN diagram using an LLM prompt. The latter calls the `promoai-api-server` which is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/) (see below for details). The diagrams can then be further extended in the regular BPMN editor. Similarly, a button at the bottom of the editor also allows the refinement of existing BPMN diagrams through the LLM.
 
 **Note:** Due to inner workings of ProMoAI, the LLM can currently only generate very basic processes, and does not "know" about the OPACA-specific extensions.
 
@@ -64,7 +64,7 @@ For more details, please refer to the [dedicated documentation](docs/opaca-agent
 
 ## Process Generation based on ProMoAI
 
-The `promoai-api-server` is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/). It is entirely optional, but can be used to create BPMN diagrams based on a textual description, as an alternative to starting with a new or existing BPMN diagram. The logic has been taken mostly from ProMoAI, replacing the Streamlit App with a FastAPI server to be used by the BPMN editor frontend.
+The [`promoai-api-server`](../bpmn-interpreter-vsdt2/promoai-api-server) is entirely optional, but can be used to create BPMN diagrams based on a textual description, as an alternative to starting with a new or existing BPMN diagram. The logic has been taken mostly from ProMoAI, replacing the Streamlit App with a FastAPI server to be used by the BPMN editor frontend.
 
 It uses the OpenAI API to generate the BPMN process. But while GPT can generate BPMN XML, the result is often incorrect. Thus, the approach in ProMoAI is to generate Python code, that then generates a POWL model, which is then translated to actual valid BPMN 2.0 XML. For more details please refer to [ProMoAI: Process Modeling with Generative AI (Kourani et al., 2024)](https://www.ijcai.org/proceedings/2024/1014). The downside of this approach is that while the resulting processes are usually "on point" and syntactically correct, the intermediate model limits the expressiveness to just a subset of what's possible with BPMN, and in particular none of the extension elements of the OPACA BPMN editor.
 
@@ -111,6 +111,6 @@ To run the OPACA Agent Container integrating the BPMN editor and interpreter, yo
 
 ## License
 
-The [opaca-bpmn-editor](./opaca-bpmn-editor) is based on [bpmn-js](https://github.com/bpmn-io/bpmn-js) and the [bpmn-js Token Simulation](https://github.com/bpmn-io/bpmn-js-token-simulation), licensed under the Camunda- and MIT License, respectively. The extensions for the OPACA framework are licensed under the [OPACA License](LICENSE.txt).
+The `opaca-bpmn-editor`is based on [bpmn-js](https://github.com/bpmn-io/bpmn-js) and the [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-token-simulation), licensed under the Camunda- and MIT License, respectively. The extensions for the OPACA framework are licensed under the [OPACA License](LICENSE.txt).
 
-The [promoai-api-server](./promoai-api-server) is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/), licensed under GPL3, and is therefore also licensed under GPL3. This is an optional component, not needed for the editor and interpreter to work, and only linked with it via network (HTTP/REST).
+The `promoai-api-server` is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/), licensed under GPL3, and is therefore also licensed under GPL3. This is an optional component, not needed for the editor and interpreter to work, and only linked with it via network (HTTP/REST).

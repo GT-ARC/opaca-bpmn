@@ -18,7 +18,7 @@ In the BPMN 2.0 standard an element can be extended with the `<bpmn2:extensionsE
 
 ## Model Extensions
 
-The additional attributes we need for interpretation are defined in the [vsdt2.json](../opaca-bpmn-editor/src/descriptors/vsdt2.json). This makes sure that when a diagram is loaded in the editor, the underlying model recognizes these contained attributes and we can work with them. They are saved in the `vsdt2` namespace. ('VSDT' is the name of an earlier, Eclipse based BPMN editor developed by DAI-Labor, see <https://www.jiac.de/development-tools/jiac-toolipse/> for details.)
+The additional attributes we need for interpretation are defined in the [`vsdt2.json`](../opaca-bpmn-editor/src/descriptors/vsdt2.json). This makes sure that when a diagram is loaded in the editor, the underlying model recognizes these contained attributes and we can work with them. They are saved in the `vsdt2` namespace. ('VSDT' is the name of an earlier, Eclipse based BPMN editor developed by DAI-Labor, see <https://www.jiac.de/development-tools/jiac-toolipse/> for details.)
 
 The principal new model elements are:
 
@@ -26,4 +26,4 @@ The principal new model elements are:
 * Services Tasks' Implementations, to be called by the interpreter, referring to OPACA actions
 * Information to be provided or asked for in User Tasks
 
-To actually be able to add these to the model in the editor, the needed input fields are provided to the bpmn-js-properties-panel in [src/provider](../opaca-bpmn-editor/src/provider). The properties panel should always represent the current model and changes are propagated immediately.  Our model extension is then passed to the modeler in the [app.js](../opaca-bpmn-editor/src/app.js).
+To actually be able to add these to the model in the editor, the needed input fields are provided to the bpmn-js-properties-panel in [`src/provider`](../opaca-bpmn-editor/src/provider). The properties panel should always represent the current model and changes are propagated immediately.  Our model extension is then passed to the modeler in the [`app.js`](../opaca-bpmn-editor/src/app.js).
