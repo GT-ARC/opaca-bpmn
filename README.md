@@ -64,7 +64,7 @@ For more details, please refer to the [dedicated documentation](docs/opaca-agent
 
 ## Process Generation based on ProMoAI
 
-The [`promoai-api-server`](../bpmn-interpreter-vsdt2/promoai-api-server) is entirely optional, but can be used to create BPMN diagrams based on a textual description, as an alternative to starting with a new or existing BPMN diagram. The logic has been taken mostly from ProMoAI, replacing the Streamlit App with a FastAPI server to be used by the BPMN editor frontend.
+The `promoai-api-server` is entirely optional, but can be used to create BPMN diagrams based on a textual description, as an alternative to starting with a new or existing BPMN diagram. The logic has been taken mostly from ProMoAI, replacing the Streamlit App with a FastAPI server to be used by the BPMN editor frontend.
 
 It uses the OpenAI API to generate the BPMN process. But while GPT can generate BPMN XML, the result is often incorrect. Thus, the approach in ProMoAI is to generate Python code, that then generates a POWL model, which is then translated to actual valid BPMN 2.0 XML. For more details please refer to [ProMoAI: Process Modeling with Generative AI (Kourani et al., 2024)](https://www.ijcai.org/proceedings/2024/1014). The downside of this approach is that while the resulting processes are usually "on point" and syntactically correct, the intermediate model limits the expressiveness to just a subset of what's possible with BPMN, and in particular none of the extension elements of the OPACA BPMN editor.
 
