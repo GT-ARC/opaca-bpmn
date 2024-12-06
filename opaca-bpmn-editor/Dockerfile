@@ -1,5 +1,5 @@
-# Use the official Puppeteer image as the base
-FROM ghcr.io/puppeteer/puppeteer:latest
+# Use official Node runtime as the base
+FROM node:20
 
 # Set the working directory
 WORKDIR /usr/src/app
@@ -9,21 +9,14 @@ COPY package*.json ./
 COPY patches ./patches
 COPY . .
 
-# Ensure non-root user has ownership
-USER root
-RUN chown -R pptruser:pptruser /usr/src/app
-
-# Switch to non-root user
-USER pptruser
-
 # Install dependencies
 RUN npm install
 
 # Build the application
 RUN npm run build
 
-# Expose required ports
-EXPOSE 8080 9222
+# Expose required port
+EXPOSE 8080
 
 # Start the application
-ENTRYPOINT [ "sh", "start.sh"]
+CMD ["npm", "start"]
