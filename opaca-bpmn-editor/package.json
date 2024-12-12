@@ -1,6 +1,6 @@
 {
-  "name": "bpmn-interpreter-vsdt2",
-  "version": "0.0.0",
+  "name": "opaca-bpmn-editor",
+  "version": "0.1.0",
   "description": "A bpmn-js modeler with properties panel and token-simulator and some extensions for interpretation",
   "main": "app/index.js",
   "scripts": {
@@ -16,7 +16,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-interpreter-vsdt2",
+    "url": "https://github.com/GT-ARC/opaca-bpmn",
     "directory": ""
   },
   "keywords": [
