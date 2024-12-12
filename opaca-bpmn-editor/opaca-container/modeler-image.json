@@ -1,5 +1,5 @@
 {
-  "imageName": "modeler-services-image",
+  "imageName": "opaca-bpmn-interpreter-agent",
 
   "requires": [],
   "provides": [],
@@ -19,7 +19,6 @@
       "protocol": "TCP",
       "description": "For Inspect Function"
     }
-
   },
   "definitions": {},
   "definitionsByUrl": {},
