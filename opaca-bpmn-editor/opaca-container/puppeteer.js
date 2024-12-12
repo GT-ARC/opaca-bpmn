@@ -30,8 +30,11 @@ async function invokeAgentAction(action, agentId, parameters) {
         }
 
         if (action === 'CreateInstance') {
+            const width = parameters.width || 1920;
+            const height = parameters.hwight || 1080;
+
             // Create a new instance
-            const newPage = await openModelerInstance();
+            const newPage = await openModelerInstance(width, height);
 
             // Store page in map
             const id = newPage.target()._targetId;
@@ -166,16 +169,20 @@ async function invokeAgentAction(action, agentId, parameters) {
 }
 
 // Helper
-async function openModelerInstance(){
+async function openModelerInstance(portWidth, portHeight){
 
     const pages = await browser.pages();
     // Use the existing blank page if no instances exist, otherwise create a new page
     const newPage = (instances.size === 0 && pages[0]) ? pages[0] : await browser.newPage();
 
-    await newPage.setViewport({ width: 1920, height: 1080 });
+    await newPage.setViewport({ width: portWidth, height: portHeight });
 
     // Navigate to the modeler
     await newPage.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
+
+    // Emulate focus to allow all pages to be inspected
+    const session = await newPage.createCDPSession();
+    await session.send(`Emulation.setFocusEmulationEnabled`, { enabled: true });
 
     // Redirect console messages from the page to the Node.js console
     newPage.on('console', (msg) => {

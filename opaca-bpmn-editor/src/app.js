@@ -141,6 +141,29 @@ function registerFileDrop(container, callback) {
   container.get(0).addEventListener('drop', handleFileSelect, false);
 }
 
+// Hide llm prompt elements, if llm or api key not present
+async function fetchConfig() {
+  try {
+    console.log('Fetching config');
+    const response = await fetch(process.env.LLM_BACKEND + '/config');
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const appConfig = await response.json();
+
+    if(!appConfig.llm_api_key_present){
+      throw new Error('No api key present.');
+    }
+
+    // Show optional elements
+    $('.llm-backend-present').show();
+    $('.llm-backend-not-present').hide();
+  } catch (error) {
+    console.log(error.message);
+  }
+}
+
 var sessionId = '';
 
 async function generateDiagramWithLLM() {
@@ -289,6 +312,9 @@ if (!window.FileList || !window.FileReader) {
 
 // Bootstrap diagram functions
 $(function() {
+  // Check if llm backend and api key present
+  fetchConfig();
+
   $('#js-create-diagram').click(function(e) {
     e.stopPropagation();
     e.preventDefault();

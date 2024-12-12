@@ -49,6 +49,21 @@ def get_model_gen_from_cache(session_id):
     return session_store.get(session_id, None)
 
 
+@app.get("/config")
+def get_config():
+    try:
+        config = {
+            "llm_name": os.getenv("LLM_NAME", ""),
+            "llm_api_key_present": bool(os.getenv("LLM_API_KEY"))  # To not expose the actual key
+        }
+
+        return JSONResponse(content=config, media_type="application/json")
+    except Exception as e:
+        logger.error("Error retrieving configuration: %s", str(e))
+        logger.error(traceback.format_exc())
+        raise HTTPException(status_code=500, detail="Could not retrieve configuration.")
+
+
 @app.post("/generate_process_model")
 def generate_model(data: Session):
     logger.info("Generating model for: %s", data.process_description)

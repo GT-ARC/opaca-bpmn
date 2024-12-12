@@ -23,10 +23,11 @@
         <p>What do you want to do today?</p>
         <p>You can drop a BPMN diagram here from your desktop to continue editing.</p>
         <p>Or you can <a id="js-create-diagram" href>create a new diagram.</a></p>
-        <p>Or describe your process in the text field below and ask an LLM to generate a draft.</p>
-        <p>Select an example:</p>
+        <p class="llm-backend-not-present">Or you can describe your process and let an LLM generate a draft, after you started our LLM-backend and set an API-key.</p>
+        <p class="llm-backend-present">Or describe your process in the text field below and ask an LLM to generate a draft.</p>
+        <p class="llm-backend-present">Select an example:</p>
         <!-- Dropdown for selecting example processes -->
-        <select id="example-prompt-dropdown" style="width: 250px">
+        <select id="example-prompt-dropdown" class="llm-backend-present" style="width: 250px">
           <option value="">-- Select a Process Example --</option>
           <option value="onboarding">Employee Onboarding Process</option>
           <option value="orderFulfillment">Order Fulfillment Workflow</option>
@@ -35,7 +36,7 @@
           <option value="productDevelopment">Product Development Process</option>
           <option value="expenseReimbursement">Expense Reimbursement Workflow</option>
         </select>
-        <div class="prompt-panel" id="js-prompt-panel">
+        <div class="prompt-panel llm-backend-present" id="js-prompt-panel">
           <textarea id="process-description" rows="10" cols="50"></textarea>
           <br>
           <button id="send-description">Send to LLM</button>

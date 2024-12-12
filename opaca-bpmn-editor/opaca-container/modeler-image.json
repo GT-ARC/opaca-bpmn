@@ -17,7 +17,7 @@
     },
     "9222": {
       "protocol": "TCP",
-      "description": "For Inspect Function"
+      "description": "For Inspect Function. Inspect under `http://localhost:9222/devtools/inspector.html?ws=localhost:9222/devtools/page/<id>`"
     }
   },
   "definitions": {},

@@ -11,7 +11,7 @@ services:
       - promoai-api-server
     environment:
       LLM_BACKEND: http://localhost:5000
-  
+
   promoai-api-server:
     build: promoai-api-server
     image: promoai-api-server

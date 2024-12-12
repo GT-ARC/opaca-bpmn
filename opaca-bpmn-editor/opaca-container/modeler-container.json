@@ -8,7 +8,10 @@
       "actions": [
         {
           "name": "CreateInstance",
-          "parameters": {},
+          "parameters": {
+            "width": {"type": "integer"},
+            "height": {"type": "integer"}
+          },
           "result": "string"
         },
         {
@@ -19,22 +22,22 @@
         {
           "name": "CloseInstance",
           "parameters": {
-            "id": {"type" : "string"}
+            "id": {"type": "string"}
           },
           "result": "void"
         },
         {
           "name": "LoadDiagram",
           "parameters": {
-            "id": {"type" : "string"},
-            "diagram": {"type" : "string"}
+            "id": {"type": "string"},
+            "diagram": {"type": "string"}
           },
           "result": "void"
         },
         {
           "name": "StartSimulation",
           "parameters": {
-            "id": {"type" : "string"},
+            "id": {"type": "string"},
             "waitToFinish": {"type": "boolean"}
           },
           "result": "void"
@@ -42,7 +45,7 @@
         {
           "name": "CreateLoadStart",
           "parameters": {
-            "diagram": {"type" : "string"},
+            "diagram": {"type": "string"},
             "waitToFinish": {"type": "boolean"}
           },
           "result": "string"
@@ -50,28 +53,28 @@
         {
           "name": "PauseSimulation",
           "parameters": {
-            "id": {"type" : "string"}
+            "id": {"type": "string"}
           },
           "result": "void"
         },
         {
           "name": "ResumeSimulation",
           "parameters": {
-            "id": {"type" : "string"}
+            "id": {"type": "string"}
           },
           "result": "void"
         },
         {
           "name": "ResetSimulation",
           "parameters": {
-            "id": {"type" : "string"}
+            "id": {"type": "string"}
           },
           "result": "void"
         },
         {
           "name": "SendMessage",
           "parameters": {
-            "id": {"type" : "string"},
+            "id": {"type": "string"},
             "messageType": {"type": "string"},
             "messageContent": {"type": "string"}
           },
