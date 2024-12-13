@@ -180,10 +180,6 @@ async function openModelerInstance(portWidth, portHeight){
     // Navigate to the modeler
     await newPage.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
 
-    // Emulate focus to allow all pages to be inspected
-    const session = await newPage.createCDPSession();
-    await session.send(`Emulation.setFocusEmulationEnabled`, { enabled: true });
-
     // Redirect console messages from the page to the Node.js console
     newPage.on('console', (msg) => {
         for (let i = 0; i < msg.args().length; ++i) {
