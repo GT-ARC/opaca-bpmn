@@ -7,7 +7,7 @@ import logging, traceback
 import os, uuid
 
 from utils import LLMProcessModelGenerator
-from utils.petrinet.to_petri_net import apply as powl_to_pn
+from pm4py.objects.conversion.powl.variants.to_petri_net import apply as powl_to_pn
 from pm4py.objects.conversion.wf_net.variants.to_bpmn import apply as pn_to_bpmn
 from utils.bpmn.graphviz import layouter
 from pm4py.util import constants
