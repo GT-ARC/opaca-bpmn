@@ -7,10 +7,11 @@ WORKDIR /usr/src/app
 # Copy application files
 COPY package*.json ./
 COPY patches ./patches
-COPY . .
 
 # Install dependencies
 RUN npm install
+
+COPY . .
 
 # Build the application
 RUN npm run build

@@ -7,7 +7,6 @@ WORKDIR /usr/src/app
 # Copy application files
 COPY ../package*.json ./
 COPY ../patches ./patches
-COPY . .
 
 # Ensure non-root user has ownership
 USER root
@@ -19,6 +18,14 @@ USER pptruser
 # Install dependencies
 RUN npm install
 
+COPY . .
+
+# Ensure writable permissions for public and other required directories
+USER root
+RUN mkdir -p /usr/src/app/public && \
+    chown -R pptruser:pptruser /usr/src/app
+
+USER pptruser
 # Build the application
 RUN npm run build
 
