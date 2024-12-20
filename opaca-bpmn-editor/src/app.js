@@ -558,12 +558,23 @@ $(function() {
       // Filter for events that have the messageReference of our message
       const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === messageType));
 
-      // TODO: make sure when triggering one element fails, others are still executed
-      messageEvents.forEach(msgEvent => simulationSupport.triggerElement(msgEvent.id));
-      // trigger boundary events with message reference, only when attached to a running action (TODO)
+      const failedElements = [];
+      const successfulElements = [];
 
-      const eventIds = messageEvents.map(msgEvent => msgEvent.id);
-      console.log(`Message sent. Relevant events: ${eventIds.join(', ')}`);
+      messageEvents.forEach(msgEvent => {
+        try {
+          simulationSupport.triggerElement(msgEvent.id);
+          successfulElements.push(msgEvent.id);
+        } catch (error) {
+          failedElements.push(msgEvent.id);
+        }
+      });
+
+      console.log(`Message sent. Triggered events: ${successfulElements.join(', ')}`);
+      if (failedElements.length > 0) {
+        console.warn(`Failed to trigger elements: ${failedElements.join(', ')}
+        \nThis could be expected behavior for some boundary events.`);
+      }
       return 'ok';
     }catch (error){
       return 'Message could not be processed. ' + error.message;
