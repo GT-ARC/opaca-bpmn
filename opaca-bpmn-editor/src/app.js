@@ -144,7 +144,7 @@ function registerFileDrop(container, callback) {
 // Hide llm prompt elements, if llm or api key not present
 async function fetchConfig() {
   try {
-    console.log('Fetching config');
+    console.log('Fetching LLM Backend config...');
     const response = await fetch(process.env.LLM_BACKEND + '/config');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
@@ -159,8 +159,10 @@ async function fetchConfig() {
     // Show optional elements
     $('.llm-backend-present').show();
     $('.llm-backend-not-present').hide();
+
+    console.log('LLM Backend ready.');
   } catch (error) {
-    console.log(error.message);
+    console.log('LLM Backend not found.');
   }
 }
 

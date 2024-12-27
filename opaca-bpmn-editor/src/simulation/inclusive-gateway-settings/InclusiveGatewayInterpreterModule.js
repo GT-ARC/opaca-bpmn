@@ -162,7 +162,7 @@ InclusiveGatewaySettings.prototype._setGatewayLive = function(gateway, scope) {
         this._setActiveOutgoing(gateway, defaultFlows);
     }else{
         // If none, first sequenceFlow
-        alert('No condition evaluates to true - Check defined condition expressions!');
+        console.error('No condition evaluates to true - Check defined condition expressions!');
         this._setActiveOutgoing(sequenceFlows[0]);
     }
 };

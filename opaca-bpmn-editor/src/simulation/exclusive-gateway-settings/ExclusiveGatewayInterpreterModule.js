@@ -51,7 +51,7 @@ function getLive(gateway, scope) {
         return next;
     }
 
-    alert('No condition evaluates to true - Check defined condition expressions!');
+    console.error('No condition evaluates to true - Check defined condition expressions!');
     return outgoing[0];
 }
 

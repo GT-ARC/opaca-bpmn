@@ -141,7 +141,6 @@ export function callService(element, scope) {
                 resolve(); // Resolve the promise after assigning the result
             })
             .catch((error) => {
-                //alert(error);
                 console.log('got this error', error);
                 reject(error); // Reject the promise if there's an error
             });
@@ -291,7 +290,6 @@ export function handleStart(element, scope){
     const root = getRootElement(element);
     // Skip when not meant for interpretation
     if(!root.isExecutable){
-        console.log("skipped handleStart");
         return Promise.resolve();
     }
 
@@ -321,7 +319,6 @@ export function handleEnd(element, scope){
     const root = getRootElement(element);
     // Skip when not meant for interpretation
     if(!root.isExecutable){
-        console.log("skipped handleEnd");
         return;
     }
 
@@ -338,7 +335,7 @@ function makeAssignment(assignment, parentScopeId) {
         variableMapping[parentScopeId][assignment.variable] = restrictedEval(assignment.expression, parentScopeId);
         console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
     }catch (err){
-        alert(`Assignment failed: ${err}`);
+        console.error(`Assignment failed: ${err}`);
     }
 }
 
