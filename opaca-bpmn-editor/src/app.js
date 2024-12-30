@@ -199,7 +199,6 @@ async function generateDiagramWithLLM() {
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);
       $('#js-layout-prompt-panel').show();
-      $('#feedback-button').show();
       return true;
     } else {
       $('#js-loading-panel').hide();
@@ -436,11 +435,19 @@ $(function() {
   });
 
 
-  // When starting non-executable process
+  // When starting simulation
   eventBus.on('tokenSimulation.toggleMode', function() {
+    // Move buttons behind logs
+    if(!toggleMode._active){
+      // Also makes them non-clickable during simulation
+      $('.buttons').css('z-index', '-1');
+    }else{
+      $('.buttons').css('z-index', '');
+    }
+
     const root = elementRegistry.getAll().filter(el => is(el, 'bpmn:Process'))[0];
 
-    // Info
+    // Info for non-executable process
     if(root && !root.businessObject.isExecutable && !toggleMode._active){
       console.warn('Process not marked as executable. Using standard Token Simulation.');
     }

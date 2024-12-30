@@ -19,7 +19,7 @@ export default function TimerEventSupport(
         }
         // Get all elements
         const elements = elementRegistry.getAll();
-        console.log(elements);
+
         // Filter for start events
         const startEvents = elements.filter(el => is(el, 'bpmn:StartEvent'));
 
