@@ -19,6 +19,7 @@ export default function TimerEventSupport(
         }
         // Get all elements
         const elements = elementRegistry.getAll();
+        console.log(elements);
         // Filter for start events
         const startEvents = elements.filter(el => is(el, 'bpmn:StartEvent'));
 
@@ -27,7 +28,7 @@ export default function TimerEventSupport(
 
         // Call triggerTimer for each timer event with its eventDefinition
         Promise.all(timerStartEvents.map(event => this.triggerTimerEvent(event.id, event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition')))))
-            .catch((error) => alert(error));
+            .catch((error) => console.error(error));
     });
 
     this.paused = false;
@@ -48,15 +49,37 @@ export default function TimerEventSupport(
             this.paused = false;
         }
     });
-    
+
     eventBus.on('trace.elementEnter', (event) => {
         const element = event.element;
+
+        // Intermediate Catch Events
         if(is(element, 'bpmn:IntermediateCatchEvent')){
             const timerDefinition = element.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));
             if(timerDefinition){
-                console.log('found timer definition', timerDefinition);
-                this.triggerTimerEvent(element.id, timerDefinition);
+                if(timerDefinition.timeCycle){
+                    console.warn('Found timeCycle for IntermediateCatchEvent. Note: Event will only be triggered once!');
+                }
+
+                this.triggerTimerEvent(element.id, timerDefinition)
+                    .catch(err => console.error(err));
             }
+        }
+        // Boundary Events
+        if(element.attachers){
+            element.attachers.forEach(attacher => {
+                if(is(attacher, 'bpmn:BoundaryEvent')){
+                    const timerDefinition = attacher.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));
+                    if(timerDefinition){
+                        if(attacher.businessObject.cancelActivity && timerDefinition.timeCycle){
+                            console.warn('Found timeCycle for interrupting BoundaryEvent. Note: Event will only be triggered once!');
+                        }
+
+                        this.triggerTimerEvent(attacher.id, timerDefinition)
+                            .catch(err => console.error(err));
+                    }
+                }
+            });
         }
     });
 }
