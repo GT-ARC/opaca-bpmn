@@ -19,7 +19,7 @@ This is a tool for editing and interpreting business processes following the BPM
 * a BPMN editor, based on the [bpmn-js](https://github.com/bpmn-io/bpmn-js), with extensions for referring to OPACA actions
 * a BPMN interpreter, based on the [bpmn-js-token-simulation](https://github.com/bpmn-io/bpmn-js-token-simulation), with extensions for calling OPACA actions
 * an optional backend service for generating basic BPMN diagrams using an LLM, based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/)
-* an integration of the BPMN editor and interpreter into an OPACA Agent Container (WIP)
+* an integration of the BPMN editor and interpreter into an OPACA Agent Container
 
 ![demo application screenshot](./docs/screenshot.png "Screenshot of the modeler + properties panel example")
 
