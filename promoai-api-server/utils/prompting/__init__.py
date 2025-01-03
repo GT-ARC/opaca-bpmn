@@ -1,1 +1,2 @@
 from utils.prompting.prompt_engineering import create_conversation, update_conversation
+from utils.prompting.prompt_eng_extensions import create_extension_conversation, update_extension_conversation

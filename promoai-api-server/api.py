@@ -81,6 +81,9 @@ def generate_model(data: Session):
             bpmn_str = bpmn_data.decode('utf-8') #here we convert bytes to a string
             logger.debug("The BPMN model after decoding: %s", bpmn_str)
 
+            # Second step: add custom attributes
+            
+
             session_id = store_model_gen_in_cache(model_gen)
 
             return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")

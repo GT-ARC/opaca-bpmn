@@ -34,7 +34,7 @@ def add_knowledge():
 
 def add_least_to_most():
     return "Provide the Python code that " \
-           "recursively generate a POWL model. Save the final model is the" \
+           "recursively generate a POWL model. Save the final model in the" \
            " variable 'final_model'. Do not try to execute the code, just return it. Assume the class ModelGenerator" \
            " is properly implemented and can be imported using the import statement:" \
            f" {import_statement}. ModelGenerator provides the functions" \
