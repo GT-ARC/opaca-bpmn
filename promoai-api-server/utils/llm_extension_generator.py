@@ -1,17 +1,17 @@
-from utils.prompting import create_conversation, update_conversation
-from utils.model_generation.model_generation import generate_model
+from utils.prompting import create_extension_conversation, update_extension_conversation
+from utils.extension_generation.extension_generation import generate_extension
 from pm4py.util import constants
 
 
 class LLMExtensionGenerator(object):
-    def __init__(self, base_bpmn: str, custom_attributes: dict, api_key: str,
+    def __init__(self, base_bpmn: str, attributes_description: str, api_key: str,
                  openai_model: str = "gpt-4o", api_url: str = "https://api.openai.com/v1"):
         """
         Initializes the extension generator.
 
         Args:
             base_bpmn (str): The base BPMN XML as a string.
-            custom_attributes (dict): Attributes to include in <extensionElements>.
+            attributes_description (str): Attributes to include in <extensionElements>.
             api_key (str): API key for the LLM service.
             openai_model (str): The LLM model to use (default: gpt-4o).
             api_url (str): The API URL for the LLM service (default: OpenAI).
@@ -20,11 +20,11 @@ class LLMExtensionGenerator(object):
         self.__api_key = api_key
         self.__openai_model = openai_model
         self.__base_bpmn = base_bpmn
-        self.__custom_attributes = custom_attributes
+        self.__attributes_description = attributes_description
 
         # Create a conversation context for the LLM
-        init_conversation = self.__create_extension_prompt()
-        self.__enhanced_bpmn, self.__conversation = generate_model(init_conversation,
+        init_conversation = create_extension_conversation(base_bpmn, attributes_description)
+        self.__enhanced_bpmn, self.__conversation = generate_extension(init_conversation,
                                                                    api_key=self.__api_key,
                                                                    openai_model=self.__openai_model,
                                                                    api_url=self.__api_url)
@@ -38,7 +38,7 @@ class LLMExtensionGenerator(object):
         """
         return f"""
         Enhance the following BPMN model by adding <extensionElements> with these attributes:
-        {self.__custom_attributes}
+        {self.__attributes_description}
 
         Input BPMN XML:
         {self.__base_bpmn}
@@ -62,8 +62,8 @@ class LLMExtensionGenerator(object):
         Args:
             feedback (str): User feedback on the generated BPMN.
         """
-        self.__conversation = update_conversation(self.__conversation, feedback)
-        self.__enhanced_bpmn, self.__conversation = generate_model(conversation=self.__conversation,
+        self.__conversation = update_extension_conversation(self.__conversation, feedback)
+        self.__enhanced_bpmn, self.__conversation = generate_extension(conversation=self.__conversation,
                                                                    api_key=self.__api_key,
                                                                    openai_model=self.__openai_model,
                                                                    api_url=self.__api_url)

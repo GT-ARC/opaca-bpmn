@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 import logging, traceback
 import os, uuid
 
-from utils import LLMProcessModelGenerator
+from utils import LLMProcessModelGenerator, LLMExtensionGenerator
 from pm4py.objects.conversion.powl.variants.to_petri_net import apply as powl_to_pn
 from pm4py.objects.conversion.wf_net.variants.to_bpmn import apply as pn_to_bpmn
 from utils.bpmn.graphviz import layouter
@@ -34,6 +34,7 @@ class Feedback(BaseModel):
     process_xml: str = None
     feedback_text: str
     session_id: str
+    extension_session_id: str
     llm: str = os.getenv("LLM_NAME")
     api_key: str = os.getenv("LLM_API_KEY")
 
@@ -81,11 +82,16 @@ def generate_model(data: Session):
             bpmn_str = bpmn_data.decode('utf-8') #here we convert bytes to a string
             logger.debug("The BPMN model after decoding: %s", bpmn_str)
 
-            # Second step: add custom attributes
-            
+            # Second step: add custom attributes TODO maybe use seperate description
+            extension_gen = LLMExtensionGenerator(bpmn_str, data.process_description, data.api_key, data.llm)
+
+            logger.info('ExtensionGenerator', extension_gen)
+            bpmn_with_extensions = extension_gen.get_enhanced_bpmn()
+
+            logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
 
             session_id = store_model_gen_in_cache(model_gen)
-
+            # TODO also store and return extension session
             return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
         else:
             raise ValueError("Generated BPMN diagram is None or invalid.")
