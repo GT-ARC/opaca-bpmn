@@ -209,7 +209,6 @@ def add_extension_knowledge():
         "Use the following knowledge about BPMN extensions:\n"
         "- BPMN models can include custom attributes and extension elements to capture domain-specific information.\n"
         "- Extension elements can be added to tasks, events, gateways, and other BPMN elements.\n"
-        "- Ensure that custom attributes are appropriately namespaced to avoid conflicts with standard BPMN attributes.\n"
         "- Use our python functions to manipulate the model.\n"
         "- Use these custom attributes: " + vsdt2 + "\n"
     )
@@ -222,11 +221,39 @@ def add_generator_impl():
         " variable 'final_model'. Do not try to execute the code, just return it. Assume the class ExtensionGenerator" 
         " is properly implemented and can be imported using the import statement:" 
         f" {import_statement}\n"
+        "You can assume that our custom namespace is handled by the ExtensionGenerator. Specify names without prefixes."
         "ExtensionGenerator implements following functions:\n"
         " - '__init__(self, base_xml)'\n"
-        " - 'add_attribute(self, element_id, namespace, attribute_name, attributes)'\n"
-        " - 'remove_attribute(self, element_id, namespace, attribute_name)'\n"
+        " - 'add_vsdt_attribute(self, element_id: str, attribute_name: str, attributes: dict or list)'\n"
+        " - 'remove_vsdt_attribute(self, element_id: str, attribute_name: str)'\n"
+        " - 'add_standard_attribute(self, element_id: str, attribute_name: str, attribute_value: str, attribute_type: str)'"
         " - 'to_string(self)'\n\n"
+    )
+
+example_str = """
+extension_generator = ExtensionGenerator(xml)
+element_id1 = 'Process_1'
+variable = {'name': 'var1', 'type': 'integer'}
+extension_generator.add_vsdt_attribute(element_id1, 'variables', variable)
+element_id2 = 'StartEvent_1'
+assignment = {'variable': 'var1', 'expression': 'var1 + 1', 'assignTime': 'END'}
+extension_generator.add_vsdt_attribute(element_id1, 'assignments', assignment)
+element_id3 = 'SequenceFlow_1'
+expression = 'var1 > 5'
+extension_generator.add_standard_attribute(element_id3, 'conditionExpression', expression, 'bpmn:tFormalExpression')
+element_id4 = 'SequenceFlow_2'
+expression2 = 'var1 <= 5'
+extension_generator.add_standard_attribute(element_id4, 'conditionExpression', expression2, 'bpmn:tFormalExpression')
+"""
+
+def add_examples():
+    return (
+        "Here is an example on how to add attributes: " + example_str +
+        "\nCommon mistakes for this example would be:"
+        "- not defining the variable which is referenced in the assignment"
+        "- misspelling the attribute name (e.g. they should always be lowercase, without prefix)"
+        "- setting an invalid assignTime ('START' or 'END')"
+        "- only defining the condition for one of the sequenceFlows after a gateway"
     )
 
 
@@ -245,6 +272,7 @@ def add_process_description_for_extensions(process_description):
 def create_extension_prompt(base_bpmn: str, custom_attributes: dict) -> str:
     prompt = add_extension_role()
     prompt += add_generator_impl()
+    prompt += add_examples()
     prompt += add_extension_knowledge()
     prompt += add_extension_code_generation()
     prompt += add_base_model(base_bpmn)

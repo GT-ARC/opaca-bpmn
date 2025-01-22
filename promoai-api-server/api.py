@@ -85,14 +85,14 @@ def generate_model(data: Session):
             # Second step: add custom attributes TODO maybe use seperate description
             extension_gen = LLMExtensionGenerator(bpmn_str, data.process_description, data.api_key, data.llm)
 
-            logger.info('ExtensionGenerator', extension_gen)
+            #logger.info('ExtensionGenerator', extension_gen)
             bpmn_with_extensions = extension_gen.get_enhanced_bpmn()
 
             logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
 
             session_id = store_model_gen_in_cache(model_gen)
             # TODO also store and return extension session
-            return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
+            return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id}, media_type="application/json")
         else:
             raise ValueError("Generated BPMN diagram is None or invalid.")
     except Exception as e:
