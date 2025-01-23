@@ -81,6 +81,18 @@ export default function TimerEventSupport(
                 }
             });
         }
+        // EventBasedGateways
+        if(is(element, 'bpmn:EventBasedGateway')){
+            const events = element.outgoing.map(el => el.businessObject.targetRef)
+            events.forEach(event => {
+                const timerDefinition = event.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));
+                if(timerDefinition){
+
+                    this.triggerTimerEvent(event.id, timerDefinition)
+                        .catch(err => console.error(err));
+                }
+            })
+        }
     });
 }
 

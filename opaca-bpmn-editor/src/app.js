@@ -565,7 +565,9 @@ $(function() {
       // Filter for events
       const events = elements.filter(el => is(el, 'bpmn:Event'));
       // Filter for events that have the messageReference of our message
-      const messageEvents = events.filter(el => el.businessObject.eventDefinitions.find(ed => ed.messageRef.name === messageType));
+      const messageEvents = events.filter(el =>
+          el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageType)
+      );
 
       const failedElements = [];
       const successfulElements = [];
