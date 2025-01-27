@@ -236,24 +236,28 @@ element_id1 = 'Process_1'
 variable = {'name': 'var1', 'type': 'integer'}
 extension_generator.add_vsdt_attribute(element_id1, 'variables', variable)
 element_id2 = 'StartEvent_1'
-assignment = {'variable': 'var1', 'expression': 'var1 + 1', 'assignTime': 'END'}
-extension_generator.add_vsdt_attribute(element_id1, 'assignments', assignment)
-element_id3 = 'SequenceFlow_1'
+assignment = {'variable': 'var1', 'expression': '0', 'assignTime': 'END'}
+extension_generator.add_vsdt_attribute(element_id2, 'assignments', assignment)
+element_id3 = 'Task_1'
+assignment = {'variable': 'var1', 'expression': 'var1 + 1', 'assignTime': 'START'}
+extension_generator.add_vsdt_attribute(element_id3, 'assignments', assignment)
+element_id4 = 'SequenceFlow_1'
 expression = 'var1 > 5'
-extension_generator.add_standard_attribute(element_id3, 'conditionExpression', expression, 'bpmn:tFormalExpression')
-element_id4 = 'SequenceFlow_2'
+extension_generator.add_standard_attribute(element_id4, 'conditionExpression', expression, 'bpmn:tFormalExpression')
+element_id5 = 'SequenceFlow_2'
 expression2 = 'var1 <= 5'
-extension_generator.add_standard_attribute(element_id4, 'conditionExpression', expression2, 'bpmn:tFormalExpression')
+extension_generator.add_standard_attribute(element_id5, 'conditionExpression', expression2, 'bpmn:tFormalExpression')
 """
 
 def add_examples():
     return (
         "Here is an example on how to add attributes: " + example_str +
-        "\nCommon mistakes for this example would be:"
-        "- not defining the variable which is referenced in the assignment"
-        "- misspelling the attribute name (e.g. they should always be lowercase, without prefix)"
-        "- setting an invalid assignTime ('START' or 'END')"
-        "- only defining the condition for one of the sequenceFlows after a gateway"
+        "\nCommon mistakes for this example would be:\n"
+        "- not defining the variable which is referenced in the assignment\n"
+        "- misspelling the attribute name (e.g. they should always be lowercase, without prefix)\n"
+        "- setting an invalid assignTime ('START' or 'END')\n"
+        "- not initializing a variable before doing calculations with it\n"
+        "- only defining the condition for one of the sequenceFlows after a gateway\n"
     )
 
 
