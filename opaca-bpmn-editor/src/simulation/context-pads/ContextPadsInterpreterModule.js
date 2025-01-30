@@ -20,6 +20,7 @@ import ExclusiveGatewayHandler from './handler/ExclusiveGatewayHandler';
 import InclusiveGatewayHandler from './handler/InclusiveGatewayHandler';
 import PauseHandler from 'bpmn-js-token-simulation/lib/features/context-pads/handler/PauseHandler';
 import TriggerHandler from 'bpmn-js-token-simulation/lib/features/context-pads/handler/TriggerHandler';
+import {getRootElement} from "../../provider/util";
 
 
 const LOW_PRIORITY = 500;
@@ -163,16 +164,34 @@ ContextPads.prototype._addOverlay = function(element, options) {
         throw new Error('<handlerHash> required');
     }
 
-    const overlayId = this._overlays.add(element, 'ts-context-menu', {
-        ...options,
-        position: {
-            top: OFFSET_TOP,
-            left: OFFSET_LEFT
-        },
-        show: {
-            minZoom: 0.5
-        }
-    });
+    var overlayId = {};
+
+    const root = getRootElement(element);
+
+    // If process is executable:
+    // Hide overlay for every event, except StartEvent
+    // Using minZoom: Infinity to not show
+    if(!is(element, 'bpmn:StartEvent') && root.isExecutable){
+        overlayId = this._overlays.add(element, 'ts-context-menua', {
+            ...options,
+            position: {},
+            show: {
+                minZoom: Infinity
+            }
+        });
+    // Else create normal overlay
+    }else{
+        overlayId = this._overlays.add(element, 'ts-context-menu', {
+            ...options,
+            position: {
+                top: OFFSET_TOP,
+                left: OFFSET_LEFT
+            },
+            show: {
+                minZoom: 0.5
+            }
+        });
+    }
 
     const overlay = this._overlays.get(overlayId);
 
