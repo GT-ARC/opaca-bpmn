@@ -6,6 +6,10 @@ export function handleConditionalEvents(outgoingEvents, scope, simulationSupport
 
     outgoingEvents.forEach(event => {
         const id = event.businessObject.id;
+        // Elements like ReceiveTask have no EventDefinitions
+        if(!event.businessObject.eventDefinitions){
+            return;
+        }
         const condition = event.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:ConditionalEventDefinition'));
 
         // If event is a conditional event

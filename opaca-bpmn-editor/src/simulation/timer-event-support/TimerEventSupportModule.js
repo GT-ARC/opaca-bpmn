@@ -83,8 +83,13 @@ export default function TimerEventSupport(
         }
         // EventBasedGateways
         if(is(element, 'bpmn:EventBasedGateway')){
-            const events = element.outgoing.map(el => el.businessObject.targetRef)
+            const events = element.outgoing.map(el => el.businessObject.targetRef);
+
             events.forEach(event => {
+                // Elements like ReceiveTask have no EventDefinitions
+                if(!event.eventDefinitions){
+                    return;
+                }
                 const timerDefinition = event.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));
                 if(timerDefinition){
 
