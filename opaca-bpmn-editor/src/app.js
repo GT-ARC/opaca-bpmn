@@ -167,6 +167,7 @@ async function fetchConfig() {
 }
 
 var sessionId = '';
+var extensionSessionId = '';
 
 async function generateDiagramWithLLM() {
   const description = $('#process-description').val();
@@ -189,7 +190,9 @@ async function generateDiagramWithLLM() {
     const data = await response.json();
 
     sessionId = data.session_id;
-    console.log(data.session_id);
+    console.log(sessionId);
+    extensionSessionId = data.extension_session_id;
+    console.log(extensionSessionId);
 
     const bpmnXml = data.bpmn_xml;
     console.log(bpmnXml);
@@ -238,6 +241,7 @@ async function refineDiagramWithLLM(){
       body: JSON.stringify({
         feedback_text: feedbackText,
         session_id: sessionId,
+        extension_session_id: extensionSessionId,
         ...(xml && {process_xml: xml})
       })
     });

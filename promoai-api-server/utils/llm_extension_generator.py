@@ -55,14 +55,16 @@ class LLMExtensionGenerator(object):
         """
         return self.__enhanced_bpmn
 
-    def update(self, feedback: str):
+    def update(self, base_bpmn: str, feedback: str):
         """
         Updates the enhanced BPMN model based on user feedback.
 
         Args:
+            base_bpmn (str): The bpmn we want modified
             feedback (str): User feedback on the generated BPMN.
         """
-        self.__conversation = update_extension_conversation(self.__conversation, feedback)
+        self.__base_bpmn = base_bpmn
+        self.__conversation = update_extension_conversation(self.__conversation, base_bpmn, feedback)
         self.__enhanced_bpmn, self.__conversation = generate_extension(conversation=self.__conversation,
                                                                    api_key=self.__api_key,
                                                                    openai_model=self.__openai_model,

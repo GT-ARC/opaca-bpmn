@@ -91,8 +91,9 @@ def generate_model(data: Session):
             logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
 
             session_id = store_model_gen_in_cache(model_gen)
-            # TODO also store and return extension session
-            return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id}, media_type="application/json")
+            extension_session_id = store_model_gen_in_cache(extension_gen)
+
+            return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
         else:
             raise ValueError("Generated BPMN diagram is None or invalid.")
     except Exception as e:
@@ -108,6 +109,10 @@ def update_model(data: Feedback):
         session_id = data.session_id
 
         model_gen = get_model_gen_from_cache(session_id)
+
+        extension_session_id = data.extension_session_id
+
+        extension_gen = get_model_gen_from_cache(extension_session_id)
 
         # When there is no model_gen yet, create a new one using process xml
         if not session_id and data.process_xml:
@@ -130,6 +135,10 @@ def update_model(data: Feedback):
 
         bpmn_str = bpmn_data.decode('utf-8')
         logger.debug("The BPMN model after decoding: %s", bpmn_str)
+
+        # Second step: add custom attributes
+        extension_gen.update(bpmn_str, data.feedback_text)
+
         return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
     except Exception as e:
         logger.error("Error processing feedback: %s", str(e))
