@@ -63,6 +63,40 @@ index a44cb67..6782312 100644
    const parentScope = scope.parent;
  
    // TODO(nikku): if a outgoing flow is conditional,
+diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/EventBasedGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/EventBasedGatewayBehavior.js
+index f8c1711..87ef223 100644
+--- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/EventBasedGatewayBehavior.js
++++ b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/EventBasedGatewayBehavior.js
+@@ -1,14 +1,18 @@
+ import { isAny } from '../util/ModelUtil';
++import {handleConditionalEvents} from "../../../../../src/simulation/event-based-gateway-handling/EventBasedGatewayHandler";
+ 
+ 
+-export default function EventBasedGatewayBehavior(simulator) {
++export default function EventBasedGatewayBehavior(simulator, simulationSupport) {
+   this._simulator = simulator;
++  this._simulationSupport = simulationSupport;
++
+ 
+   simulator.registerBehavior('bpmn:EventBasedGateway', this);
+ }
+ 
+ EventBasedGatewayBehavior.$inject = [
+-  'simulator'
++  'simulator',
++  'simulationSupport'
+ ];
+ 
+ EventBasedGatewayBehavior.prototype.enter = function(context) {
+@@ -22,6 +26,8 @@ EventBasedGatewayBehavior.prototype.enter = function(context) {
+ 
+   const triggerElements = getTriggers(element);
+ 
++  handleConditionalEvents(triggerElements, scope, this._simulationSupport);
++
+   // create subscriptions for outgoing event triggers
+   // do nothing else beyond that
+   const subscriptions = triggerElements.map(
 diff --git a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js b/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
 index 1d2cbe0..0130d8f 100644
 --- a/node_modules/bpmn-js-token-simulation/lib/simulator/behaviors/ExclusiveGatewayBehavior.js
