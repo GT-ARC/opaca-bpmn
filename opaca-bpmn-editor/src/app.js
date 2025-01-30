@@ -563,10 +563,12 @@ $(function() {
       // Get all elements
       const elements = elementRegistry.getAll();
       // Filter for events
-      const events = elements.filter(el => is(el, 'bpmn:Event'));
-      // Filter for events that have the messageReference of our message
+      const events = elements.filter(el => is(el, 'bpmn:Event') || is(el, 'bpmn:ReceiveTask'));
+      // Filter for events that have the messageReference or signalReference of our message
       const messageEvents = events.filter(el =>
-          el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageType)
+          (el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageType || ed.signalRef?.name === messageType)) ||
+          // Or ReceiveTask with the reference
+          (el.businessObject.messageRef?.name === messageType)
       );
 
       const failedElements = [];
