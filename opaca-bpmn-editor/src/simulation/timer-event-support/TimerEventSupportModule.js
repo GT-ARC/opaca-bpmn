@@ -1,4 +1,5 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
+import {getRootElement} from "../../provider/util";
 
 export default function TimerEventSupport(
     eventBus, elementRegistry, toggleMode, simulationSupport) {
@@ -11,6 +12,8 @@ export default function TimerEventSupport(
     // Keep list of running timers
     this.activeTimers = [];
 
+    this.isExecutable = false;
+
     eventBus.on('tokenSimulation.toggleMode', () => {
         if(this._toggleMode._active){
             // When toggled off, clear running timers
@@ -19,6 +22,16 @@ export default function TimerEventSupport(
         }
         // Get all elements
         const elements = elementRegistry.getAll();
+
+        // See if process is executable
+        const root = getRootElement(elements[0]);
+        if(root.isExecutable){
+            this.isExecutable = true;
+            console.log('Executable!');
+        }else{
+            this.isExecutable = false;
+            return;
+        }
 
         // Filter for start events
         const startEvents = elements.filter(el => is(el, 'bpmn:StartEvent'));
@@ -51,6 +64,12 @@ export default function TimerEventSupport(
     });
 
     eventBus.on('trace.elementEnter', (event) => {
+        // Don't start timers for non-executable processes
+        if(!this.isExecutable){
+            console.log('Process is not executable!');
+            return;
+        }
+        console.log('Reaching this.');
         const element = event.element;
 
         // Intermediate Catch Events
