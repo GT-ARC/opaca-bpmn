@@ -231,7 +231,6 @@ async function refineDiagramWithLLM(){
       xml = await bpmnModeler.saveXML({ format: true });
       xml = xml.xml;
     }
-    console.log('ready for call');
 
     const response = await fetch(process.env.LLM_BACKEND + '/update_process_model', {
       method: 'POST',
@@ -254,9 +253,12 @@ async function refineDiagramWithLLM(){
     const bpmnXml = data.bpmn_xml;
     // Save session id
     sessionId = data.session_id;
+    // Save extension session id
+    extensionSessionId = data.extension_session_id;
     // console.log(bpmnXml);
 
     if (bpmnXml) {
+      console.log('New diagram', bpmnXml);
       $('#js-feedback-loading-panel').hide();
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);

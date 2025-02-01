@@ -136,10 +136,19 @@ def update_model(data: Feedback):
         bpmn_str = bpmn_data.decode('utf-8')
         logger.debug("The BPMN model after decoding: %s", bpmn_str)
 
-        # Second step: add custom attributes
-        extension_gen.update(bpmn_str, data.feedback_text)
+        # When there is no extension_gen yet, create a new one
+        if not extension_session_id and data.process_xml:
+            extension_gen = LLMExtensionGenerator(bpmn_str, data.feedback_text, data.api_key, data.llm)
 
-        return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
+            extension_session_id = store_model_gen_in_cache(extension_gen)
+
+        if not extension_gen:
+            raise HTTPException(status_code=404, detail="Extension session ID not found or expired.")
+
+        # Second step: add custom attributes
+        final_bpmn = extension_gen.update(bpmn_str, data.feedback_text)
+
+        return JSONResponse(content={"bpmn_xml": final_bpmn, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
     except Exception as e:
         logger.error("Error processing feedback: %s", str(e))
         logger.error(traceback.format_exc())
