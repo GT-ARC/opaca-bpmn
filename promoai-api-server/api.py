@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 import logging, traceback
 import os, uuid
 
-from utils import LLMProcessModelGenerator
+from utils import LLMProcessModelGenerator, LLMExtensionGenerator
 from pm4py.objects.conversion.powl.variants.to_petri_net import apply as powl_to_pn
 from pm4py.objects.conversion.wf_net.variants.to_bpmn import apply as pn_to_bpmn
 from utils.bpmn.graphviz import layouter
@@ -34,6 +34,7 @@ class Feedback(BaseModel):
     process_xml: str = None
     feedback_text: str
     session_id: str
+    extension_session_id: str
     llm: str = os.getenv("LLM_NAME")
     api_key: str = os.getenv("LLM_API_KEY")
 
@@ -81,9 +82,18 @@ def generate_model(data: Session):
             bpmn_str = bpmn_data.decode('utf-8') #here we convert bytes to a string
             logger.debug("The BPMN model after decoding: %s", bpmn_str)
 
-            session_id = store_model_gen_in_cache(model_gen)
+            # Second step: add custom attributes TODO maybe use seperate description
+            extension_gen = LLMExtensionGenerator(bpmn_str, data.process_description, data.api_key, data.llm)
 
-            return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
+            #logger.info('ExtensionGenerator', extension_gen)
+            bpmn_with_extensions = extension_gen.get_enhanced_bpmn()
+
+            logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
+
+            session_id = store_model_gen_in_cache(model_gen)
+            extension_session_id = store_model_gen_in_cache(extension_gen)
+
+            return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
         else:
             raise ValueError("Generated BPMN diagram is None or invalid.")
     except Exception as e:
@@ -99,6 +109,10 @@ def update_model(data: Feedback):
         session_id = data.session_id
 
         model_gen = get_model_gen_from_cache(session_id)
+
+        extension_session_id = data.extension_session_id
+
+        extension_gen = get_model_gen_from_cache(extension_session_id)
 
         # When there is no model_gen yet, create a new one using process xml
         if not session_id and data.process_xml:
@@ -121,7 +135,20 @@ def update_model(data: Feedback):
 
         bpmn_str = bpmn_data.decode('utf-8')
         logger.debug("The BPMN model after decoding: %s", bpmn_str)
-        return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id}, media_type="application/json")
+
+        # When there is no extension_gen yet, create a new one
+        if not extension_session_id and data.process_xml:
+            extension_gen = LLMExtensionGenerator(bpmn_str, data.feedback_text, data.api_key, data.llm)
+
+            extension_session_id = store_model_gen_in_cache(extension_gen)
+
+        if not extension_gen:
+            raise HTTPException(status_code=404, detail="Extension session ID not found or expired.")
+
+        # Second step: add custom attributes
+        final_bpmn = extension_gen.update(bpmn_str, data.feedback_text)
+
+        return JSONResponse(content={"bpmn_xml": final_bpmn, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
     except Exception as e:
         logger.error("Error processing feedback: %s", str(e))
         logger.error(traceback.format_exc())

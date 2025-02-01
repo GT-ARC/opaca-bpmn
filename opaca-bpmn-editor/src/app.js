@@ -167,6 +167,7 @@ async function fetchConfig() {
 }
 
 var sessionId = '';
+var extensionSessionId = '';
 
 async function generateDiagramWithLLM() {
   const description = $('#process-description').val();
@@ -189,7 +190,9 @@ async function generateDiagramWithLLM() {
     const data = await response.json();
 
     sessionId = data.session_id;
-    console.log(data.session_id);
+    console.log(sessionId);
+    extensionSessionId = data.extension_session_id;
+    console.log(extensionSessionId);
 
     const bpmnXml = data.bpmn_xml;
     console.log(bpmnXml);
@@ -228,7 +231,6 @@ async function refineDiagramWithLLM(){
       xml = await bpmnModeler.saveXML({ format: true });
       xml = xml.xml;
     }
-    console.log('ready for call');
 
     const response = await fetch(process.env.LLM_BACKEND + '/update_process_model', {
       method: 'POST',
@@ -238,6 +240,7 @@ async function refineDiagramWithLLM(){
       body: JSON.stringify({
         feedback_text: feedbackText,
         session_id: sessionId,
+        extension_session_id: extensionSessionId,
         ...(xml && {process_xml: xml})
       })
     });
@@ -250,9 +253,12 @@ async function refineDiagramWithLLM(){
     const bpmnXml = data.bpmn_xml;
     // Save session id
     sessionId = data.session_id;
+    // Save extension session id
+    extensionSessionId = data.extension_session_id;
     // console.log(bpmnXml);
 
     if (bpmnXml) {
+      console.log('New diagram', bpmnXml);
       $('#js-feedback-loading-panel').hide();
       $('#js-drop-zone').show();
       openDiagram(bpmnXml);

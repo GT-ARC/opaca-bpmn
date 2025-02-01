@@ -1,1 +1,2 @@
 from utils.llm_model_generator import LLMProcessModelGenerator
+from utils.llm_extension_generator import LLMExtensionGenerator
