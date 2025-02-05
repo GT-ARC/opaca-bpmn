@@ -75,8 +75,16 @@
           "name": "SendMessage",
           "parameters": {
             "id": {"type": "string"},
-            "messageType": {"type": "string"},
+            "messageReference": {"type": "string"},
             "messageContent": {"type": "string"}
+          },
+          "result": "void"
+        },
+        {
+          "name": "SendSignal",
+          "parameters": {
+            "id": {"type": "string"},
+            "signalReference": {"type": "string"}
           },
           "result": "void"
         }

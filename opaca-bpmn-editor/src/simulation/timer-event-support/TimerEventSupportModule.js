@@ -66,10 +66,8 @@ export default function TimerEventSupport(
     eventBus.on('trace.elementEnter', (event) => {
         // Don't start timers for non-executable processes
         if(!this.isExecutable){
-            console.log('Process is not executable!');
             return;
         }
-        console.log('Reaching this.');
         const element = event.element;
 
         // Intermediate Catch Events

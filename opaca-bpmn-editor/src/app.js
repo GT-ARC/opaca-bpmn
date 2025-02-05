@@ -564,7 +564,8 @@ $(function() {
   }
 
   // SEND MESSAGE
-  window.sendMessage = async (messageType, messageContent) => {
+  window.sendMessage = async (messageReference, messageContent) => {
+    // TODO handle this via eventBus?!
     try{
       // Get all elements
       const elements = elementRegistry.getAll();
@@ -572,9 +573,9 @@ $(function() {
       const events = elements.filter(el => is(el, 'bpmn:Event') || is(el, 'bpmn:ReceiveTask'));
       // Filter for events that have the messageReference or signalReference of our message
       const messageEvents = events.filter(el =>
-          (el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageType || ed.signalRef?.name === messageType)) ||
+          (el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageReference || ed.signalRef?.name === messageReference)) ||
           // Or ReceiveTask with the reference
-          (el.businessObject.messageRef?.name === messageType)
+          (el.businessObject.messageRef?.name === messageReference)
       );
 
       const failedElements = [];
@@ -598,5 +599,12 @@ $(function() {
     }catch (error){
       return 'Message could not be processed. ' + error.message;
     }
+  }
+
+  // SEND SIGNAL
+  window.sendSignal = async (signalReference) => {
+    // TODO handle this via eventBus?!
+    console.log('got signal!');
+    return 'ok';
   }
 });

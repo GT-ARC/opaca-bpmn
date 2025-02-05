@@ -31,7 +31,7 @@ async function invokeAgentAction(action, agentId, parameters) {
 
         if (action === 'CreateInstance') {
             const width = parameters.width || 1920;
-            const height = parameters.hwight || 1080;
+            const height = parameters.height || 1080;
 
             // Create a new instance
             const newPage = await openModelerInstance(width, height);
@@ -74,7 +74,7 @@ async function invokeAgentAction(action, agentId, parameters) {
             }
             return reject(new Error(startResult));
 
-        } else if (action === 'createLoadStart') {
+        } else if (action === 'CreateLoadStart') {
 
             // Create a new instance
             const newPage = await openModelerInstance();
@@ -138,14 +138,25 @@ async function invokeAgentAction(action, agentId, parameters) {
 
         } else if (action === 'SendMessage'){
             const page = instances.get(parameters.id);
-            const messageResult = await page.evaluate(async (messageType, messageContent) => {
-                return await window.sendMessage(messageType, messageContent);
-            }, parameters.messageType, parameters.messageContent)
+            const messageResult = await page.evaluate(async (messageReference, messageContent) => {
+                return await window.sendMessage(messageReference, messageContent);
+            }, parameters.messageReference, parameters.messageContent)
 
             if(messageResult==='ok'){
                 return resolve();
             }
             return reject(new Error(messageResult));
+
+        } else if (action === 'SendSignal'){
+            const page = instances.get(parameters.id);
+            const signalResult = await page.evaluate(async (signalReference) => {
+                return await window.sendSignal(signalReference);
+            }, parameters.signalReference)
+
+            if(signalResult==='ok'){
+                return resolve();
+            }
+            return reject(new Error(signalResult));
 
         } else if (action === 'CloseInstance') {
             const page = instances.get(parameters.id);
