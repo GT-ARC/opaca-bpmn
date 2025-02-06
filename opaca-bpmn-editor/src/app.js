@@ -15,6 +15,7 @@ import serviceImplProviderModule from './provider/services';
 import vsdtModdleDescriptor from './descriptors/vsdt2';
 import conditionPropsProviderModule from './provider/conditions';
 import userTaskInfoProviderModule from './provider/userTaskInformation';
+import payloadsListProviderModule from './provider/messagePayloads';
 // import Views
 import serviceViewModule from './views/services';
 // Auto-Layout
@@ -43,6 +44,7 @@ var bpmnModeler = new BpmnModeler({
     serviceViewModule,
     conditionPropsProviderModule,
     userTaskInfoProviderModule,
+    payloadsListProviderModule,
     nativeCopyModule
   ],
   moddleExtensions: {

@@ -76,7 +76,7 @@ function Variable(props) {
     // Drop-down options (defined variables)
     const getOptions = () => {
         return Array.isArray(variables) ? variables.map(variable => {
-            if (variable.category === 'serviceParameter' || variable.category === 'serviceResult') {
+            if (variable.category === 'serviceParameter' ) {  //|| variable.category === 'serviceResult') {
                 // For service parameters and results, include the service name and data type
                 return {
                     value: variable.name,

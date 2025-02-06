@@ -179,6 +179,21 @@
           "description": "Description of the expected input"
         }
       ]
+    },
+    {
+      "name": "Payloads",
+      "superClass": [ "Element" ],
+      "properties": [
+        {
+          "name": "values",
+          "isMany": true,
+          "type": "Payload"
+        }
+      ]
+    },
+    {
+      "name": "Payload",
+      "superClass": [ "Variable" ]
     }
   ]
 }

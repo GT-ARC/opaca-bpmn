@@ -61,6 +61,7 @@ export function getAllVariables(element) {
                         });
                     }
 
+                    /*
                     // Add service result if it exists
                     if (service.result) {
                         variables.push({
@@ -70,6 +71,7 @@ export function getAllVariables(element) {
                             serviceName: service.name
                         });
                     }
+                     */
                 });
             }
         }
