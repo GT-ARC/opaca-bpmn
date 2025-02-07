@@ -578,6 +578,7 @@ $(function() {
           (el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageReference || ed.signalRef?.name === messageReference)) ||
           // Or ReceiveTask with the reference
           (el.businessObject.messageRef?.name === messageReference)
+          // TODO remove signal (when it has their own trigger)
       );
 
       const failedElements = [];

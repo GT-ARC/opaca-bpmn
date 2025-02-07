@@ -136,29 +136,68 @@ async function invokeAgentAction(action, agentId, parameters) {
             }
             return reject(new Error(resetResult));
 
-        } else if (action === 'SendMessage'){
-            const page = instances.get(parameters.id);
-            const messageResult = await page.evaluate(async (messageReference, messageContent) => {
-                return await window.sendMessage(messageReference, messageContent);
-            }, parameters.messageReference, parameters.messageContent)
+        } else if (action === 'SendMessage') {
+            if (parameters.id) {
+                // Send to a specific instance
+                const page = instances.get(parameters.id);
 
-            if(messageResult==='ok'){
+                const messageResult = await page.evaluate(async (messageReference, messageContent) => {
+                    return await window.sendMessage(messageReference, messageContent);
+                }, parameters.messageReference, parameters.messageContent);
+
+                if (messageResult === 'ok') {
+                    return resolve();
+                }
+                return reject(new Error(messageResult));
+
+            } else {
+                // Send to all instances
+                const results = await Promise.allSettled(
+                    Array.from(instances.values()).map(async (page) => {
+                        return page.evaluate(async (messageReference, messageContent) => {
+                            return await window.sendMessage(messageReference, messageContent);
+                        }, parameters.messageReference, parameters.messageContent);
+                    })
+                );
+
+                const errors = results.filter(result => result.status === 'rejected');
+                if (errors.length > 0) {
+                    return reject(new Error(`Failed to send message to some instances: ${errors.map(e => e.reason).join(', ')}`));
+                }
                 return resolve();
             }
-            return reject(new Error(messageResult));
+        } else if (action === 'SendSignal') {
+            if (parameters.id) {
+                // Send to a specific instance
+                const page = instances.get(parameters.id);
 
-        } else if (action === 'SendSignal'){
-            const page = instances.get(parameters.id);
-            const signalResult = await page.evaluate(async (signalReference) => {
-                return await window.sendSignal(signalReference);
-            }, parameters.signalReference)
+                const signalResult = await page.evaluate(async (signalReference) => {
+                    return await window.sendSignal(signalReference);
+                }, parameters.signalReference);
 
-            if(signalResult==='ok'){
+                if (signalResult === 'ok') {
+                    return resolve();
+                }
+                return reject(new Error(signalResult));
+
+            } else {
+                // Send to all instances
+                const results = await Promise.allSettled(
+                    Array.from(instances.values()).map(async (page) => {
+                        return page.evaluate(async (signalReference) => {
+                            return await window.sendSignal(signalReference);
+                        }, parameters.signalReference);
+                    })
+                );
+
+                const errors = results.filter(result => result.status === 'rejected');
+                if (errors.length > 0) {
+                    return reject(new Error(`Failed to send signal to some instances: ${errors.map(e => e.reason).join(', ')}`));
+                }
                 return resolve();
             }
-            return reject(new Error(signalResult));
-
-        } else if (action === 'CloseInstance') {
+        }
+        else if (action === 'CloseInstance') {
             const page = instances.get(parameters.id);
 
             // Check if this is the last instance being closed

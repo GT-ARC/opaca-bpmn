@@ -74,16 +74,16 @@
         {
           "name": "SendMessage",
           "parameters": {
-            "id": {"type": "string"},
+            "id": {"type": "string", "optional":  true},
             "messageReference": {"type": "string"},
-            "messageContent": {"type": "string"}
+            "messageContent": {"type": "json"}
           },
           "result": "void"
         },
         {
           "name": "SendSignal",
           "parameters": {
-            "id": {"type": "string"},
+            "id": {"type": "string", "optional":  true},
             "signalReference": {"type": "string"}
           },
           "result": "void"
