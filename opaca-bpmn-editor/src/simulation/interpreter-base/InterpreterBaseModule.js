@@ -2,12 +2,14 @@ import {is} from "bpmn-js/lib/util/ModelUtil";
 import {getRootElement} from "../../provider/util";
 import {isAny} from "bpmn-js/lib/features/modeling/util/ModelingUtil";
 import {handleEnd, handleStart, initializeVariables} from "../util";
+import {handleConditionalEvents} from "../event-based-gateway-handling/EventBasedGatewayHandler";
 
 export default function InterpreterBase(
-    eventBus, elementRegistry) {
+    eventBus, elementRegistry, simulationSupport) {
 
     this._eventBus = eventBus;
     this._elementRegistry = elementRegistry;
+    this._simulationSupport = simulationSupport;
 
     this.isExecutable = false;
 
@@ -31,8 +33,11 @@ export default function InterpreterBase(
         const element = event.element;
         const scope = {'parent': event.scope};
 
-        if(isAny(element, ['bpmn:SequenceFlow', 'bpmn:Gateway'])){
-            return;
+        // TODO why is this in enter, in contrast to other gateways?!
+        if(is(element, 'bpmn:EventBasedGateway')){
+            const triggerElements = getTriggers(element);
+            // TODO don't pass simulationSupport like this
+            handleConditionalEvents(triggerElements, scope, this._simulationSupport);
         }
         // Assignments
         handleStart(element, scope);
@@ -50,8 +55,12 @@ export default function InterpreterBase(
         if(is(element, 'bpmn:StartEvent')){
             initializeVariables(event);
         }
-        if(isAny(element, ['bpmn:SequenceFlow', 'bpmn:Gateway'])){
-            return;
+        // TODO don't use fire here
+        if(is(element, 'bpmn:ExclusiveGateway')){
+            eventBus.fire('tokenSimulation.exitExclusiveGateway', {scope: event.scope});
+        }
+        if(is(element, 'bpmn:InclusiveGateway')){
+            eventBus.fire('tokenSimulation.exitInclusiveGateway', {scope: event.scope});
         }
         // Assignments
         handleEnd(element, event.scope);
@@ -59,7 +68,18 @@ export default function InterpreterBase(
 }
 
 
+function getTriggers(element) {
+    return element.outgoing.map(
+        outgoing => outgoing.target
+    ).filter(activity => isAny(activity, [
+        'bpmn:IntermediateCatchEvent',
+        'bpmn:ReceiveTask'
+    ]));
+}
+
+
 InterpreterBase.$inject = [
     'eventBus',
-    'elementRegistry'
+    'elementRegistry',
+    'simulationSupport'
 ];
