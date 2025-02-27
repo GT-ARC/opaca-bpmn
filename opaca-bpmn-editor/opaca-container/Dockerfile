@@ -6,7 +6,6 @@ WORKDIR /usr/src/app
 
 # Copy application files
 COPY ../package*.json ./
-COPY ../patches ./patches
 
 # Ensure non-root user has ownership
 USER root
