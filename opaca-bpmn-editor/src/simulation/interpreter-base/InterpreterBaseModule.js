@@ -5,11 +5,13 @@ import {handleEnd, handleStart, initializeVariables} from "../util";
 import {handleConditionalEvents} from "../event-based-gateway-handling/EventBasedGatewayHandler";
 
 export default function InterpreterBase(
-    eventBus, elementRegistry, simulationSupport) {
+    eventBus, elementRegistry, simulationSupport, exclusiveGatewaySettings, inclusiveGatewaySettings) {
 
     this._eventBus = eventBus;
     this._elementRegistry = elementRegistry;
     this._simulationSupport = simulationSupport;
+    this._exclusiveGatewaySettings = exclusiveGatewaySettings;
+    this._inclusiveGatewaySettings = inclusiveGatewaySettings;
 
     this.isExecutable = false;
 
@@ -55,12 +57,12 @@ export default function InterpreterBase(
         if(is(element, 'bpmn:StartEvent')){
             initializeVariables(event);
         }
-        // TODO don't use fire here
+
         if(is(element, 'bpmn:ExclusiveGateway')){
-            eventBus.fire('tokenSimulation.exitExclusiveGateway', {scope: event.scope});
+            this._exclusiveGatewaySettings.setSequenceFlowsLive(event.scope);
         }
         if(is(element, 'bpmn:InclusiveGateway')){
-            eventBus.fire('tokenSimulation.exitInclusiveGateway', {scope: event.scope});
+            this._inclusiveGatewaySettings.setLive(event.scope);
         }
         // Assignments
         handleEnd(element, event.scope);
@@ -81,5 +83,7 @@ function getTriggers(element) {
 InterpreterBase.$inject = [
     'eventBus',
     'elementRegistry',
-    'simulationSupport'
+    'simulationSupport',
+    'exclusiveGatewaySettings',
+    'inclusiveGatewaySettings'
 ];

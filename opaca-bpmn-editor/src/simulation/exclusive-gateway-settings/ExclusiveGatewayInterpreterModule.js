@@ -7,7 +7,6 @@ import {
 } from 'bpmn-js-token-simulation/lib/util/EventHelper';
 
 import {evaluateCondition} from "../util";
-import {getRootElement} from "../../provider/util";
 
 
 const SELECTED_COLOR = '--token-simulation-grey-darken-30';
@@ -78,15 +77,6 @@ export default function ExclusiveGatewaySettings(
             this.setSequenceFlowsDefault();
         } else {
             this.resetSequenceFlows();
-        }
-    });
-    // While exiting a gateway the next sequence flow gets set
-    eventBus.on('tokenSimulation.exitExclusiveGateway', event => {
-
-        const root = getRootElement(this._elementRegistry.getAll()[0]);
-        if(root.isExecutable){
-            const { scope } = event;
-            this.setSequenceFlowsLive(scope);
         }
     });
 }
