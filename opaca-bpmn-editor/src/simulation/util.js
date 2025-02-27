@@ -14,18 +14,20 @@ const variableMapping = {};
 // Called in StartEvent
 export function initializeVariables(startEventContext){
     const parentScopeId = startEventContext.parentScope.id;
+    console.log('initializeVariables, parentScope: ', parentScopeId);
 
     if (!variableMapping[parentScopeId]) {
         variableMapping[parentScopeId] = {};
     }
-    const root = getRootElement(startEventContext.element.di.bpmnElement);
+    console.log('whole context: ', startEventContext);
+    const root = getRootElement(startEventContext.element.businessObject);
 
     // Skip when not meant for interpretation
     if(!root.isExecutable){
         return;
     }
 
-    const parent = getParentElement(startEventContext.element.di.bpmnElement);
+    const parent = getParentElement(startEventContext.element.businessObject);
 
     // if parent is not root, we entered a sub-process
     // which could have additional variables defined
@@ -71,7 +73,7 @@ export function evaluateCondition(condition, scope){
 export function updateVariables(element, assignTime, scope){
     const parentScope = scope.parent;
 
-    const bpmnElement = element.di.bpmnElement;
+    const bpmnElement = element.businessObject;
 
     const assignments = getAssignments(bpmnElement);
     if(assignments){
@@ -91,7 +93,7 @@ export function callService(element, scope) {
     const parentScope = scope.parent;
     return new Promise((resolve, reject) => {
         // Get serviceImplementation of service task
-        const bpmnElement = element.di.bpmnElement;
+        const bpmnElement = element.businessObject;
         const serviceImpl = bpmnElement.serviceImpl;
         if(!serviceImpl){
             reject(new Error('Service implementation not found'));
@@ -155,7 +157,7 @@ export function createUserTask(element, scope){
         const parentScope = scope.parent;
 
         // Get UserTaskInfo
-        const bpmnElement = element.di.bpmnElement;
+        const bpmnElement = element.businessObject;
         const taskType = bpmnElement.type;
         const taskMessage = bpmnElement.message;
 
@@ -286,6 +288,8 @@ export function createUserTask(element, scope){
 }
 
 export function handleStart(element, scope){
+
+    console.log('HANDLE START ', element);
 
     const root = getRootElement(element);
     // Skip when not meant for interpretation
