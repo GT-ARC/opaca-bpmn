@@ -27,7 +27,6 @@ export default function TimerEventSupport(
         const root = getRootElement(elements[0]);
         if(root.isExecutable){
             this.isExecutable = true;
-            console.log('Executable!');
         }else{
             this.isExecutable = false;
             return;

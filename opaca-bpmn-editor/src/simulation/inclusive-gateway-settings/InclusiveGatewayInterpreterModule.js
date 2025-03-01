@@ -33,17 +33,6 @@ export default function InclusiveGatewaySettings(
             this.reset();
         }
     });
-
-    // While exiting a gateway the next sequence flow(s) gets set
-    eventBus.on('tokenSimulation.exitInclusiveGateway', event => {
-
-        const root = getRootElement(this._elementRegistry.getAll()[0]);
-
-        if(root.isExecutable){
-            const { scope } = event;
-            this.setLive(scope);
-        }
-    });
 }
 
 InclusiveGatewaySettings.prototype.setDefaults = function() {

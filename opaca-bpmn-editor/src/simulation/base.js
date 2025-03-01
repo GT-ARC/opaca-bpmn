@@ -20,6 +20,7 @@ import TokenSimulationPaletteModule from 'bpmn-js-token-simulation/lib/features/
 
 // additional
 import TimerEventSupportModule from './timer-event-support/';
+import InterpreterBaseModule from './interpreter-base';
 
 export default {
     __depends__: [
@@ -39,6 +40,7 @@ export default {
         NeutralElementColors,
         InclusiveGatewaySettingsModule,
         TokenSimulationPaletteModule,
+        InterpreterBaseModule,
         TimerEventSupportModule
     ]
 };
