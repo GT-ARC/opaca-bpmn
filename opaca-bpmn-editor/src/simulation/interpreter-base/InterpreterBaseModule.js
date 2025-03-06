@@ -1,10 +1,9 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
-import {getRootElement} from "../../provider/util";
 import {isAny} from "bpmn-js/lib/features/modeling/util/ModelingUtil";
-import {handleEnd, handleStart, initializeVariables} from "../util";
+import {handleEnd, handleStart, initializeVariables} from "./util";
 import {handleConditionalEvents} from "../event-based-gateway-handling/EventBasedGatewayHandler";
 
-export default function InterpreterBase(
+export default function InterpreterBase(activationManager,
     eventBus, elementRegistry, simulationSupport, exclusiveGatewaySettings, inclusiveGatewaySettings) {
 
     this._eventBus = eventBus;
@@ -13,22 +12,14 @@ export default function InterpreterBase(
     this._exclusiveGatewaySettings = exclusiveGatewaySettings;
     this._inclusiveGatewaySettings = inclusiveGatewaySettings;
 
-    this.isExecutable = false;
+    this._isActive = false;
 
-    // ON SIMULATION TOGGLE
-    eventBus.on('tokenSimulation.toggleMode', () => {
-        // Get all elements
-        const elements = elementRegistry.getAll();
+    activationManager.registerModule(this);
 
-        // See if process is executable
-        const root = getRootElement(elements[0]);
-        this.isExecutable = !!root.isExecutable;
-    });
-
-    // ON ELEMENT EXIT
+    // ON ELEMENT ENTER
     eventBus.on('trace.elementEnter', (event) => {
         // Don't do anything, if process is not executable
-        if(!this.isExecutable){
+        if(!this._isActive){
             return;
         }
 
@@ -48,7 +39,7 @@ export default function InterpreterBase(
     // ON ELEMENT EXIT
     eventBus.on('trace.elementExit', (event) => {
         // Don't do anything, if process is not executable
-        if(!this.isExecutable){
+        if(!this._isActive){
             return;
         }
 
@@ -69,7 +60,12 @@ export default function InterpreterBase(
     })
 }
 
+// Activate/Deactivate this module
+InterpreterBase.prototype.setActive = function(isExecutable){
+    this._isActive = isExecutable;
+}
 
+// Helper for eventBasedGateway
 function getTriggers(element) {
     return element.outgoing.map(
         outgoing => outgoing.target
@@ -81,6 +77,7 @@ function getTriggers(element) {
 
 
 InterpreterBase.$inject = [
+    'activationManager',
     'eventBus',
     'elementRegistry',
     'simulationSupport',

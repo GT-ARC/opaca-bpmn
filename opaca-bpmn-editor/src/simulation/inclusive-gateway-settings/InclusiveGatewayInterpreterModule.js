@@ -11,7 +11,7 @@ import {
     is,
     isSequenceFlow
 } from 'bpmn-js-token-simulation/lib/simulator/util/ModelUtil';
-import {evaluateCondition} from "../util";
+import {evaluateCondition} from "../interpreter-base/util";
 import {getRootElement} from "../../provider/util";
 
 const COLOR_ID = 'inclusive-gateway-settings';

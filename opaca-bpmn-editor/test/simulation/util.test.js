@@ -1,4 +1,4 @@
-import {addVariable, assignAndGet, evaluateCondition} from '../../src/simulation/util';
+import {addVariable, assignAndGet, evaluateCondition} from '../../src/simulation/interpreter-base/util';
 
 //// These tests are only meant to validate the evaluation of expressions ////
 //// They don't test the actual assignments etc. as these would depend on elements of a diagram ////

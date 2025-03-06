@@ -1,5 +1,5 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
-import {evaluateCondition} from "../util";
+import {evaluateCondition} from "../interpreter-base/util";
 
 export function handleConditionalEvents(outgoingEvents, scope, simulationSupport){
     console.log('Outgoing events:', outgoingEvents);
