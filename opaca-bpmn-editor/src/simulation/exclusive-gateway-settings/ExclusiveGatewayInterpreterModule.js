@@ -6,7 +6,7 @@ import {
     TOGGLE_MODE_EVENT
 } from 'bpmn-js-token-simulation/lib/util/EventHelper';
 
-import {evaluateCondition} from "../util";
+import {evaluateCondition} from "../interpreter-base/util";
 
 
 const SELECTED_COLOR = '--token-simulation-grey-darken-30';

@@ -19,8 +19,11 @@ import NeutralElementColors from 'bpmn-js-token-simulation/lib/features/neutral-
 import TokenSimulationPaletteModule from 'bpmn-js-token-simulation/lib/features/palette';
 
 // additional
-import TimerEventSupportModule from './timer-event-support/';
 import InterpreterBaseModule from './interpreter-base';
+import TimerEventSupportModule from './timer-event-support';
+import MessageEventSupportModule from './message-event-support';
+import ActivationManagerModule from './activation-manager';
+import SignalEventSupportModule from './signal-event-support';
 
 export default {
     __depends__: [
@@ -40,7 +43,10 @@ export default {
         NeutralElementColors,
         InclusiveGatewaySettingsModule,
         TokenSimulationPaletteModule,
+        ActivationManagerModule,
         InterpreterBaseModule,
-        TimerEventSupportModule
+        TimerEventSupportModule,
+        MessageEventSupportModule,
+        SignalEventSupportModule
     ]
 };

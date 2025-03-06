@@ -413,6 +413,7 @@ $(function() {
   }
 
   var exportArtifacts = debounce(async function() {
+    console.log('exportArtifacts');
     try {
       const { svg } = await bpmnModeler.saveSVG();
       setEncoded(downloadSvgLink, 'diagram.svg', svg);
@@ -567,47 +568,24 @@ $(function() {
 
   // SEND MESSAGE
   window.sendMessage = async (messageReference, messageContent) => {
-    // TODO handle this via eventBus?!
-    try{
-      // Get all elements
-      const elements = elementRegistry.getAll();
-      // Filter for events
-      const events = elements.filter(el => is(el, 'bpmn:Event') || is(el, 'bpmn:ReceiveTask'));
-      // Filter for events that have the messageReference or signalReference of our message
-      const messageEvents = events.filter(el =>
-          (el.businessObject.eventDefinitions?.some(ed => ed.messageRef?.name === messageReference || ed.signalRef?.name === messageReference)) ||
-          // Or ReceiveTask with the reference
-          (el.businessObject.messageRef?.name === messageReference)
-          // TODO remove signal (when it has their own trigger)
-      );
-
-      const failedElements = [];
-      const successfulElements = [];
-
-      messageEvents.forEach(msgEvent => {
-        try {
-          simulationSupport.triggerElement(msgEvent.id);
-          successfulElements.push(msgEvent.id);
-        } catch (error) {
-          failedElements.push(msgEvent.id);
-        }
-      });
-
-      console.log(`Message sent. Triggered events: ${successfulElements.join(', ')}`);
-      if (failedElements.length > 0) {
-        console.warn(`Failed to trigger elements: ${failedElements.join(', ')}
-        \nThis could be expected behavior for some boundary events.`);
-      }
+    try {
+      eventBus.fire('interpretation.sendMessage',
+          {messageReferance: messageReference, messageContent: messageContent});
       return 'ok';
-    }catch (error){
+
+    }catch(error){
       return 'Message could not be processed. ' + error.message;
     }
   }
 
   // SEND SIGNAL
   window.sendSignal = async (signalReference) => {
-    // TODO handle this via eventBus?!
-    console.log('got signal!');
-    return 'ok';
+      try{
+        eventBus.fire('interpretation.sendSignal', {signalReference: signalReference});
+        return 'ok';
+
+      }catch(error){
+        return 'Signal could not be processed. ' + error.message;
+      }
   }
 });
