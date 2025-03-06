@@ -156,7 +156,7 @@ export default function ServiceView(elementRegistry, injector, eventBus) {
                             method: 'POST',
                             name: `${agent.agentId}::${action["name"]}`,
                             result: {
-                                name: `result_${action["name"]}`,
+                                name: `result${action["name"]}`,
                                 type: action["result"] != null ? action["result"]["type"] : "void"
                             },
                             parameters: Object.entries(action["parameters"]).map(e => ({
