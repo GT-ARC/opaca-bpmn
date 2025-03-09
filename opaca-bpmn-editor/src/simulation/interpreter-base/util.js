@@ -170,7 +170,7 @@ export function createUserTask(element, scope){
         const dialogContent = document.getElementById('dialogContent');
         const dialogMessage = document.getElementById('dialogMessage');
 
-        if(dialogMessage.innerHTML){
+        if(taskMessage){
             dialogMessage.innerHTML = restrictedEval(taskMessage, parentScope.id);
         }
         dialogContent.innerHTML = '';
