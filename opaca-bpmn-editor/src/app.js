@@ -321,6 +321,9 @@ if (!window.FileList || !window.FileReader) {
 
 // Bootstrap diagram functions
 $(function() {
+  // Add version and build date
+  $('#version-info').text(`Version: ${process.env.APP_VERSION} (Built: ${process.env.BUILD_DATE})`);
+
   // Check if llm backend and api key present
   fetchConfig();
 
@@ -588,4 +591,9 @@ $(function() {
         return 'Signal could not be processed. ' + error.message;
       }
   }
+
+  // TODO broadcast
+  eventBus.on('interpretation.broadcastSignal', (event) => {
+    console.log(event);
+  })
 });
