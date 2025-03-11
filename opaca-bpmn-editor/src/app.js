@@ -427,7 +427,20 @@ $(function() {
 
     try {
       const { xml } = await bpmnModeler.saveXML({ format: true });
-      setEncoded(downloadLink, 'diagram.bpmn', xml);
+
+      // Inject version info into <bpmn2:definitions>
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xml, 'text/xml');
+
+      const definitions = xmlDoc.getElementsByTagName('bpmn2:definitions')[0];
+      if (definitions) {
+        definitions.setAttribute('appVersion', process.env.APP_VERSION);
+      }
+      // Serialize XML back to string
+      const serializer = new XMLSerializer();
+      const updatedXml = serializer.serializeToString(xmlDoc);
+
+      setEncoded(downloadLink, 'diagram.bpmn', updatedXml);
     } catch (err) {
       console.log('Error happened saving XML: ', err);
       setEncoded(downloadLink, 'diagram.bpmn', null);
