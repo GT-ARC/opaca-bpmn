@@ -367,7 +367,7 @@ function isBoolean(token) {
 }
 
 function isString(token){
-    return /^("[^"]*"|'[^']*')$/.test(token);
+    return /^("[^"]*"|'[^']*'|`[^`]*`)$/.test(token);
 }
 
 // Replace variable by variableMapping or predefined function
@@ -381,6 +381,9 @@ function validateAndReplaceTokens(tokens, parentScope){
             return `variableMapping['${parentScope}']['${token}']`; // Replace with variable mapping
         } else if (context.hasOwnProperty(token)) {
             return `context['${token}']`; // Allow function from context
+        } else if (token === 'element') {
+            return token; // Allow use of 'element' for iteration
+            // TODO maybe think of better solution
         } else {
             throw new Error(`No access to ${token}!`); // Invalid token
         }
@@ -389,7 +392,7 @@ function validateAndReplaceTokens(tokens, parentScope){
 
 function tokenizeExpression(expression){
     // Split the expression into tokens
-    const tokens = expression.match(/("[^"]*"|'[^']*'|\w+:|\d+|\w+|\.\w+|[^\w\s])/g);
+    const tokens = expression.match(/("[^"]*"|'[^']*'|`[^`]*`|\w+:|\d+|\w+|\.\w+|[^\w\s])/g);
     //console.log(tokens);
     return tokens;
 }
