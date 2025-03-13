@@ -56,16 +56,21 @@ export default function InterpreterBase(activationManager, eventBus, elementRegi
         }
 
         const element = event.element;
+        const scope = event.scope;
 
         if(is(element, 'bpmn:StartEvent')){
             initializeVariables(event);
         }
 
         if(is(element, 'bpmn:ExclusiveGateway')){
-            this._exclusiveGatewaySettings.setSequenceFlowsLive(event.scope);
+            //this._exclusiveGatewaySettings.setSequenceFlowsLive(event.scope);
+            // TODO only set flow for this gateway
+            this._exclusiveGatewaySettings.setSequenceFlow(element, scope);
         }
         if(is(element, 'bpmn:InclusiveGateway')){
-            this._inclusiveGatewaySettings.setLive(event.scope);
+            //this._inclusiveGatewaySettings.setLive(event.scope);
+            // TODO only set flow for this gateway
+            this._inclusiveGatewaySettings._setGatewayLive(element, scope);
         }
         // Assignments
         await handleEnd(element, event.scope);

@@ -14,12 +14,11 @@ const variableMapping = {};
 // Called in StartEvent
 export function initializeVariables(startEventContext){
     const parentScopeId = startEventContext.parentScope.id;
-    console.log('initializeVariables, parentScope: ', parentScopeId);
+    //console.log('initializeVariables, parentScope: ', parentScopeId);
 
     if (!variableMapping[parentScopeId]) {
         variableMapping[parentScopeId] = {};
     }
-    console.log('whole context: ', startEventContext);
     const root = getRootElement(startEventContext.element.businessObject);
 
     // Skip when not meant for interpretation
@@ -289,8 +288,6 @@ export function createUserTask(element, scope){
 
 export function handleStart(element, scope){
 
-    console.log('HANDLE START ', element);
-
     const root = getRootElement(element);
     // Skip when not meant for interpretation
     if(!root.isExecutable){
@@ -337,7 +334,7 @@ export function handleEnd(element, scope){
 function makeAssignment(assignment, parentScopeId) {
     try {
         variableMapping[parentScopeId][assignment.variable] = restrictedEval(assignment.expression, parentScopeId);
-        console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
+        //console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
     }catch (err){
         console.error(`Assignment failed: ${err}`);
     }
