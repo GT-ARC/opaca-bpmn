@@ -432,10 +432,13 @@ $(function() {
       const parser = new DOMParser();
       const xmlDoc = parser.parseFromString(xml, 'text/xml');
 
-      const definitions = xmlDoc.getElementsByTagName('bpmn2:definitions')[0];
-      if (definitions) {
-        definitions.setAttribute('appVersion', process.env.APP_VERSION);
-      }
+      // Create the comment
+      const commentText = `appVersion: ${process.env.APP_VERSION}, buildDate: ${process.env.BUILD_DATE}`;
+      const commentNode = xmlDoc.createComment(commentText);
+
+      // Insert the comment at the beginning of the document
+      xmlDoc.insertBefore(commentNode, xmlDoc.documentElement);
+
       // Serialize XML back to string
       const serializer = new XMLSerializer();
       const updatedXml = serializer.serializeToString(xmlDoc);
@@ -477,136 +480,4 @@ $(function() {
       console.warn('Process not marked as executable. Using standard Token Simulation.');
     }
   });
-
-  //// functions to load diagram and control simulation ////
-
-  // LOAD DIAGRAM
-  window.loadDiagram = async (bpmnXml) => {
-    try {
-      console.log(bpmnXml);
-      await openDiagram(bpmnXml);
-      // Prepare for timer/message start events
-      toggleMode.toggleMode(true);
-
-      return 'ok';
-    } catch (error) {
-      console.error('Error loading BPMN diagram:', error.message);
-      return error.message;
-    }
-  };
-
-  // START SIMULATION
-  window.startSimulation = async (waitToFinish) => {
-    try{
-      if(!toggleMode._active){
-        toggleMode.toggleMode(true);
-      }
-      // Find (the first) start event
-      const elements = elementRegistry.getAll();
-      const startEvent = elements.find(el => is(el, 'bpmn:StartEvent'));
-
-      // Trigger start event
-      simulationSupport.triggerElement(startEvent.id);
-
-      console.log(`Started Simulation at ${startEvent.id}`);
-
-      if (waitToFinish) {
-        // Set up listener to detect when the token exits an EndEvent
-        let endEventReached = false;
-        return new Promise((resolve, reject) => {
-
-          eventBus.on('trace.elementExit', (event) => {
-            const element = event.element;
-
-            // Check if the exited element is an EndEvent
-            if (is(element, 'bpmn:EndEvent') && !endEventReached) {
-              endEventReached = true;
-              console.log(`Simulation completed at EndEvent: ${element.id}`);
-
-              resolve('ok');
-            }
-          });
-        });
-      }
-
-      return 'ok';
-    }catch(error){
-      return error.message;
-    }
-  }
-
-  // PAUSE SIMULATION
-  window.pauseSimulation = async () => {
-    try {
-      // If not paused, pause simulation
-      if(!pauseSimulation.isPaused){
-        pauseSimulation.pause();
-      }else{
-        throw new Error('Simulation is already paused.');
-      }
-
-      console.log('Paused Simulation.');
-      return 'ok';
-    } catch (error) {
-      return 'Pause failed. ' + error.message;
-    }
-  }
-
-  // RESUME SIMULATION
-  window.resumeSimulation = async () => {
-    try {
-      // If paused, unpause simulation
-      if(pauseSimulation.isPaused){
-        pauseSimulation.unpause();
-      }else{
-        throw new Error('Simulation is not paused.');
-      }
-
-      console.log('Resumed Simulation.');
-      return 'ok';
-    } catch (error) {
-      return 'Resume failed. ' + error.message;
-    }
-  }
-
-  // RESET SIMULATION
-  window.resetSimulation = async () => {
-    try {
-      // Trigger reset
-      eventBus.fire('tokenSimulation.resetSimulation');
-
-      console.log('Reset Simulation.');
-      return 'ok';
-    }catch (error){
-      return 'Reset failed. ' + error.message;
-    }
-  }
-
-  // SEND MESSAGE
-  window.sendMessage = async (messageReference, messageContent) => {
-    try {
-      eventBus.fire('interpretation.sendMessage',
-          {messageReferance: messageReference, messageContent: messageContent});
-      return 'ok';
-
-    }catch(error){
-      return 'Message could not be processed. ' + error.message;
-    }
-  }
-
-  // SEND SIGNAL
-  window.sendSignal = async (signalReference) => {
-      try{
-        eventBus.fire('interpretation.sendSignal', {signalReference: signalReference});
-        return 'ok';
-
-      }catch(error){
-        return 'Signal could not be processed. ' + error.message;
-      }
-  }
-
-  // TODO broadcast
-  eventBus.on('interpretation.broadcastSignal', (event) => {
-    console.log(event);
-  })
 });
