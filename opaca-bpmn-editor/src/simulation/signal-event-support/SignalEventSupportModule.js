@@ -1,7 +1,6 @@
-import {is} from "bpmn-js/lib/util/ModelUtil";
+import {is, isAny} from "bpmn-js/lib/util/ModelUtil";
 
 export default function SignalEventSupport(activationManager, eventBus, elementRegistry, toggleMode, simulationSupport){
-    this._eventBus = eventBus;
     this._elementRegistry = elementRegistry;
     this._simulationSupport = simulationSupport;
 
@@ -17,6 +16,30 @@ export default function SignalEventSupport(activationManager, eventBus, elementR
 
         if(this._isActive) {
             this._triggerSignal(signalReference);
+        }
+    });
+
+    // ON ELEMENT ENTER
+    eventBus.on('trace.elementEnter', async (event) => {
+
+        const {element} = event;
+
+        //console.log('Entered element: ', element);
+
+        if(this._isActive) {
+            const possible_outgoing_signals = ['bpmn:IntermediateThrowEvent', 'bpmn:EndEvent'];
+
+            //console.log('possible outgoing: ', possible_outgoing_signals);
+
+            if (isAny(element, possible_outgoing_signals)) {
+                const signalRef = element.businessObject.eventDefinitions?.find(def => def.signalRef)?.signalRef;
+
+                if (signalRef) {
+                    console.log('signalRef: ', signalRef.name);
+                    eventBus.fire('interpretation.broadcastSignal',
+                        {signalReference: signalRef.name});
+                }
+            }
         }
     });
 }

@@ -1,8 +1,6 @@
 import {getRootElement} from "../../provider/util";
 
 export default function ActivationManager(elementRegistry, eventBus){
-    this._elementRegistry = elementRegistry;
-    this._eventBus = eventBus;
 
     this._modules = [];
 
@@ -24,7 +22,6 @@ ActivationManager.prototype.registerModule = function(module){
 ActivationManager.prototype.updateModules = function(isExecutable){
     // Update activation of each registered module
     this._modules.forEach(module => {
-        console.log('ActivationManager, update module:', module);
         module.setActive(isExecutable);
     });
 }

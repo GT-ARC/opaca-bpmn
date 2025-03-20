@@ -1,36 +1,29 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
-import {getRootElement} from "../../provider/util";
 
 export default function TimerEventSupport(
-    eventBus, elementRegistry, toggleMode, simulationSupport) {
+    eventBus, elementRegistry, toggleMode, simulationSupport, activationManager) {
 
-    this._eventBus = eventBus;
-    this._elementRegistry = elementRegistry;
-    this._toggleMode = toggleMode;
     this._simulationSupport = simulationSupport;
 
     // Keep list of running timers
     this.activeTimers = [];
 
-    this.isExecutable = false;
+    this._isActive = false;
+
+    activationManager.registerModule(this);
 
     eventBus.on('tokenSimulation.toggleMode', () => {
-        if(this._toggleMode._active){
+        if(!this._isActive){
+            return;
+        }
+
+        if(toggleMode._active){
             // When toggled off, clear running timers
             this.clearActiveTimers();
             return;
         }
         // Get all elements
         const elements = elementRegistry.getAll();
-
-        // See if process is executable
-        const root = getRootElement(elements[0]);
-        if(root.isExecutable){
-            this.isExecutable = true;
-        }else{
-            this.isExecutable = false;
-            return;
-        }
 
         // Filter for start events
         const startEvents = elements.filter(el => is(el, 'bpmn:StartEvent'));
@@ -62,12 +55,15 @@ export default function TimerEventSupport(
         }
     });
 
-    eventBus.on('trace.elementEnter', (event) => {
+    eventBus.on('trace.elementEnter', async (event) => {
         // Don't start timers for non-executable processes
-        if(!this.isExecutable){
+        if(!this._isActive){
             return;
         }
         const element = event.element;
+
+        console.log('Entered element (timerSupport): ', element);
+
 
         // Intermediate Catch Events
         if(is(element, 'bpmn:IntermediateCatchEvent')){
@@ -115,6 +111,11 @@ export default function TimerEventSupport(
             })
         }
     });
+}
+
+// Activate/Deactivate this module
+TimerEventSupport.prototype.setActive = function(isExecutable){
+    this._isActive = isExecutable;
 }
 
 // Creates timer for event based on timerDefinition
@@ -260,7 +261,8 @@ TimerEventSupport.$inject = [
     'eventBus',
     'elementRegistry',
     'toggleMode',
-    'simulationSupport'
+    'simulationSupport',
+    'activationManager'
 ];
 
 // For testing only

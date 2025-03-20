@@ -6,18 +6,15 @@ import {handleConditionalEvents} from "../event-based-gateway-handling/EventBase
 export default function InterpreterBase(activationManager, eventBus, elementRegistry,
     simulationSupport, exclusiveGatewaySettings, inclusiveGatewaySettings, simulator) {
 
-    this._eventBus = eventBus;
-    this._elementRegistry = elementRegistry;
-    this._simulationSupport = simulationSupport;
-    this._exclusiveGatewaySettings = exclusiveGatewaySettings;
-    this._inclusiveGatewaySettings = inclusiveGatewaySettings;
-
     this._isActive = false;
 
     activationManager.registerModule(this);
 
     // ON ELEMENT ENTER
     eventBus.on('trace.elementEnter', async (event) => {
+
+        console.log('element entered (interpreterBase)');
+
         // Don't do anything, if process is not executable
         if(!this._isActive){
             return;
@@ -65,12 +62,12 @@ export default function InterpreterBase(activationManager, eventBus, elementRegi
         if(is(element, 'bpmn:ExclusiveGateway')){
             //this._exclusiveGatewaySettings.setSequenceFlowsLive(event.scope);
             // TODO only set flow for this gateway
-            this._exclusiveGatewaySettings.setSequenceFlow(element, scope);
+            exclusiveGatewaySettings.setSequenceFlow(element, scope);
         }
         if(is(element, 'bpmn:InclusiveGateway')){
             //this._inclusiveGatewaySettings.setLive(event.scope);
             // TODO only set flow for this gateway
-            this._inclusiveGatewaySettings._setGatewayLive(element, scope);
+            inclusiveGatewaySettings._setGatewayLive(element, scope);
         }
         // Assignments
         await handleEnd(element, event.scope);

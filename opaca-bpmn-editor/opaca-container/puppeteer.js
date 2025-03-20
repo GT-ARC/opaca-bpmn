@@ -231,9 +231,24 @@ async function openModelerInstance(portWidth, portHeight){
     await newPage.goto(`http://localhost:8080`, { waitUntil: 'domcontentloaded' });
 
     // Redirect console messages from the page to the Node.js console
-    newPage.on('console', (msg) => {
-        for (let i = 0; i < msg.args().length; ++i) {
-            console.log(`PAGE LOG: ${msg.args()[i]}`);
+    newPage.on('console', async (msg) => {
+        const text = msg.text();
+
+        // Check if it's a broadcast signal
+        if (text.startsWith('BROADCAST_SIGNAL:')) {
+            const signalReference = text.replace('BROADCAST_SIGNAL: ', '').trim();
+            console.log(`Received broadcast request: ${signalReference}`);
+
+            // Forward to all instances
+            for (const instancePage of instances.values()) {
+                await instancePage.evaluate((signalReference) => {
+                    window.sendSignal(signalReference);
+                }, signalReference);
+            }
+        }else{
+            for (let i = 0; i < msg.args().length; ++i) {
+                console.log(`PAGE LOG: ${msg.args()[i]}`);
+            }
         }
     });
 

@@ -416,7 +416,6 @@ $(function() {
   }
 
   var exportArtifacts = debounce(async function() {
-    console.log('exportArtifacts');
     try {
       const { svg } = await bpmnModeler.saveSVG();
       setEncoded(downloadSvgLink, 'diagram.svg', svg);
@@ -610,6 +609,8 @@ $(function() {
 
   // TODO broadcast
   eventBus.on('interpretation.broadcastSignal', (event) => {
-    console.log(event);
+
+    const {signalReference} = event;
+    console.log(`BROADCAST_SIGNAL: ${signalReference}`);
   })
 });
