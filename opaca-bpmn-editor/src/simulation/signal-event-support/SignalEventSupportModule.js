@@ -20,11 +20,12 @@ export default function SignalEventSupport(activationManager, eventBus, elementR
     });
 
     // ON ELEMENT ENTER
-    eventBus.on('trace.elementEnter', async (event) => {
+    eventBus.on('trace.elementEnter', (event) => {
 
         const {element} = event;
 
         //console.log('Entered element: ', element);
+        console.log('Entered element (signalSupport)');
 
         if(this._isActive) {
             const possible_outgoing_signals = ['bpmn:IntermediateThrowEvent', 'bpmn:EndEvent'];

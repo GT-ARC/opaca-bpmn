@@ -44,9 +44,9 @@ export default {
         InclusiveGatewaySettingsModule,
         TokenSimulationPaletteModule,
         ActivationManagerModule,
-        //InterpreterBaseModule,
-        //TimerEventSupportModule,
-        //MessageEventSupportModule,
+        InterpreterBaseModule,
+        TimerEventSupportModule,
+        MessageEventSupportModule,
         SignalEventSupportModule
     ]
 };

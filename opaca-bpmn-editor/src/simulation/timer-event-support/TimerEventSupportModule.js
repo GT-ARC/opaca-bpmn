@@ -55,7 +55,7 @@ export default function TimerEventSupport(
         }
     });
 
-    eventBus.on('trace.elementEnter', async (event) => {
+    eventBus.on('trace.elementEnter', (event) => {
         // Don't start timers for non-executable processes
         if(!this._isActive){
             return;
