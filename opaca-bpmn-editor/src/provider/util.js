@@ -57,7 +57,7 @@ export function getRelevantBusinessObject(element) {
 
 // Get extension of type
 export function getExtension(element, type) {
-    if (!element.extensionElements || !element.extensionElements.length) {
+    if (!element.extensionElements || !element.extensionElements.values) {
         return null;
     }
 
