@@ -54,7 +54,7 @@ InclusiveGatewaySettings.prototype.setLive = function(scope) {
 
     inclusiveGateways.forEach(inclusiveGateway => {
         if (inclusiveGateway.outgoing.filter(isSequenceFlow).length > 1) {
-            this._setGatewayLive(inclusiveGateway, scope);
+            this.setGatewayLive(inclusiveGateway, scope);
         }
     });
 };
@@ -125,7 +125,7 @@ InclusiveGatewaySettings.prototype._setActiveOutgoing = function(gateway, active
     });
 };
 
-InclusiveGatewaySettings.prototype._setGatewayLive = function(gateway, scope) {
+InclusiveGatewaySettings.prototype.setGatewayLive = function(gateway, scope) {
     const sequenceFlows = gateway.outgoing.filter(isSequenceFlow);
 
     const validFlows = [];

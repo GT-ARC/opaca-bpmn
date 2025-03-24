@@ -1,7 +1,6 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
 
 export default function MessageEventSupport(activationManager, eventBus, elementRegistry, toggleMode, simulationSupport){
-    this._eventBus = eventBus;
     this._elementRegistry = elementRegistry;
     this._simulationSupport = simulationSupport;
 

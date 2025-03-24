@@ -5,7 +5,7 @@ npm start &
 
 # Wait for the app to start (poll the server)
 echo "Waiting for the application to start..."
-until curl -s http://localhost:8080 >/dev/null;do
+until curl -s http://localhost:8080 >/dev/null; do
   sleep 1
 done
 
