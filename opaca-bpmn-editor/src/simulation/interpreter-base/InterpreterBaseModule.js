@@ -1,10 +1,10 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {isAny} from "bpmn-js/lib/features/modeling/util/ModelingUtil";
 import {handleEnd, handleStart, initializeVariables} from "./util";
-import {handleConditionalEvents} from "../event-based-gateway-handling/EventBasedGatewayHandler";
 
-export default function InterpreterBase(activationManager, eventBus, elementRegistry,
-    simulationSupport, exclusiveGatewaySettings, inclusiveGatewaySettings, simulator) {
+export default function InterpreterBase(activationManager, eventBus,
+    simulationSupport, exclusiveGatewaySettings,
+    inclusiveGatewaySettings, simulator, conditionalEventSupport) {
 
     this.simulator = simulator;
     this.simulationSupport = simulationSupport;
@@ -15,9 +15,6 @@ export default function InterpreterBase(activationManager, eventBus, elementRegi
 
     // ON ELEMENT ENTER
     eventBus.on('trace.elementEnter', (event) => {
-
-        console.log('element entered (interpreterBase)');
-
         // Don't do anything, if process is not executable
         if(!this._isActive){
             return;
@@ -26,13 +23,18 @@ export default function InterpreterBase(activationManager, eventBus, elementRegi
         const element = event.element;
         const scope = {'parent': event.scope};
 
-        // TODO why is this in enter, in contrast to other gateways?!
+        // Gateways
+        if(is(element, 'bpmn:ExclusiveGateway')){
+            exclusiveGatewaySettings.setSequenceFlow(element, scope);
+        }else
+
+        if(is(element, 'bpmn:InclusiveGateway')){
+            inclusiveGatewaySettings.setGatewayLive(element, scope);
+        }else
+
         if(is(element, 'bpmn:EventBasedGateway')){
-            const triggerElements = getTriggers(element);
-            // TODO don't pass simulationSupport like this
-            handleConditionalEvents(triggerElements, scope, this._simulationSupport);
-            return;
-        }
+            conditionalEventSupport.conditionAfterGateway(element, scope);
+        }else
 
         // Assignments
         if(isAny(element, ['bpmn:UserTask', 'bpmn:ServiceTask'])){
@@ -57,18 +59,8 @@ export default function InterpreterBase(activationManager, eventBus, elementRegi
             initializeVariables(event);
         }
 
-        if(is(element, 'bpmn:ExclusiveGateway')){
-            //this._exclusiveGatewaySettings.setSequenceFlowsLive(event.scope);
-            // TODO only set flow for this gateway
-            exclusiveGatewaySettings.setSequenceFlow(element, scope);
-        }
-        if(is(element, 'bpmn:InclusiveGateway')){
-            //this._inclusiveGatewaySettings.setLive(event.scope);
-            // TODO only set flow for this gateway
-            inclusiveGatewaySettings._setGatewayLive(element, scope);
-        }
         // Assignments
-        handleEnd(element, event.scope);
+        handleEnd(element, scope);
     })
 }
 
@@ -87,23 +79,13 @@ InterpreterBase.prototype._handleAsyncTasks = async function(element, scope){
     this.simulationSupport.triggerElement(element.id);
 }
 
-// Helper for eventBasedGateway
-function getTriggers(element) {
-    return element.outgoing.map(
-        outgoing => outgoing.target
-    ).filter(activity => isAny(activity, [
-        'bpmn:IntermediateCatchEvent',
-        'bpmn:ReceiveTask'
-    ]));
-}
-
 
 InterpreterBase.$inject = [
     'activationManager',
     'eventBus',
-    'elementRegistry',
     'simulationSupport',
     'exclusiveGatewaySettings',
     'inclusiveGatewaySettings',
-    'simulator'
+    'simulator',
+    'conditionalEventSupport'
 ];

@@ -24,6 +24,7 @@ import TimerEventSupportModule from './timer-event-support';
 import MessageEventSupportModule from './message-event-support';
 import ActivationManagerModule from './activation-manager';
 import SignalEventSupportModule from './signal-event-support';
+import ConditionalEventSupportModule from './conditional-event-support';
 
 export default {
     __depends__: [
@@ -47,6 +48,7 @@ export default {
         InterpreterBaseModule,
         TimerEventSupportModule,
         MessageEventSupportModule,
-        SignalEventSupportModule
+        SignalEventSupportModule,
+        ConditionalEventSupportModule
     ]
 };

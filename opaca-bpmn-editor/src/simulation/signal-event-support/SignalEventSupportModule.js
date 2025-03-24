@@ -1,6 +1,6 @@
 import {is, isAny} from "bpmn-js/lib/util/ModelUtil";
 
-export default function SignalEventSupport(activationManager, eventBus, elementRegistry, toggleMode, simulationSupport){
+export default function SignalEventSupport(activationManager, eventBus, elementRegistry, simulationSupport){
     this._elementRegistry = elementRegistry;
     this._simulationSupport = simulationSupport;
 
@@ -24,13 +24,8 @@ export default function SignalEventSupport(activationManager, eventBus, elementR
 
         const {element} = event;
 
-        //console.log('Entered element: ', element);
-        console.log('Entered element (signalSupport)');
-
         if(this._isActive) {
             const possible_outgoing_signals = ['bpmn:IntermediateThrowEvent', 'bpmn:EndEvent'];
-
-            //console.log('possible outgoing: ', possible_outgoing_signals);
 
             if (isAny(element, possible_outgoing_signals)) {
                 const signalRef = element.businessObject.eventDefinitions?.find(def => def.signalRef)?.signalRef;
@@ -94,6 +89,5 @@ SignalEventSupport.$inject = [
     'activationManager',
     'eventBus',
     'elementRegistry',
-    'toggleMode',
     'simulationSupport'
 ];
