@@ -62,9 +62,6 @@ export default function TimerEventSupport(
         }
         const element = event.element;
 
-        console.log('Entered element (timerSupport): ', element);
-
-
         // Intermediate Catch Events
         if(is(element, 'bpmn:IntermediateCatchEvent')){
             const timerDefinition = element.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));

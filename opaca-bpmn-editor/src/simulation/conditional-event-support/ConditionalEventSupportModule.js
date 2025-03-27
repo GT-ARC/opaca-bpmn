@@ -14,19 +14,33 @@ export default function ConditionalEventSupport(activationManager, eventBus, sim
         const {element} = event;
         const scope = {parent: event.scope};
 
-        if(this._isActive) {
+        // Don't evaluate conditions for non-executable processes
+        if(!this._isActive) {
+            return;
+        }
 
-            const id = element.businessObject.id;
+        // Boundary Events
+        if(element.attachers){
+            element.attachers.forEach(attacher => {
+                if(is(attacher, 'bpmn:BoundaryEvent')){
+                    const condition = attacher.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:ConditionalEventDefinition'));
+                    // If event is a conditional event
+                    if(condition){
+                        this._handleConditionalEvent(attacher.id, scope, condition);
+                    }
+                }
+            });
+        }
 
-            if(!element.businessObject.eventDefinitions){
-                return;
-            }
-            const condition = element.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:ConditionalEventDefinition'));
+        // Intermediate Events
+        if(!element.businessObject.eventDefinitions){
+            return;
+        }
+        const condition = element.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:ConditionalEventDefinition'));
 
-            // If event is a conditional event
-            if(condition){
-                this._handleConditionalEvent(id, scope, condition);
-            }
+        // If event is a conditional event
+        if(condition){
+            this._handleConditionalEvent(element.id, scope, condition);
         }
     });
 }
