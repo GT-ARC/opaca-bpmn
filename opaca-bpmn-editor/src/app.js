@@ -588,7 +588,7 @@ $(function() {
   window.sendMessage = async (messageReference, messageContent) => {
     try {
       eventBus.fire('interpretation.sendMessage',
-          {messageReferance: messageReference, messageContent: messageContent});
+          {messageReference: messageReference, messageContent: messageContent});
       return 'ok';
 
     }catch(error){

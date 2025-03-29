@@ -8,13 +8,16 @@ import {getTargets} from "../../provider/userTaskInformation/targets/util";
 
 // variable, value mapped to each scope (variableMapping[scopeId][variableName])
 const variableMapping = {};
+// highest scope
+var rootScope;
 
 // Create local mapping for variables defined in root
 // and parameters and results of services.
 // Called in StartEvent
 export function initializeVariables(startEventContext){
     const parentScopeId = startEventContext.parentScope.id;
-    //console.log('initializeVariables, parentScope: ', parentScopeId);
+
+    rootScope = startEventContext.parentScope;
 
     if (!variableMapping[parentScopeId]) {
         variableMapping[parentScopeId] = {};
@@ -325,6 +328,12 @@ export function handleEnd(element, scope){
 
     // Handle assignments at End
     updateVariables(element, 'END', scope);
+}
+
+export function handleMessagePayload(element, payload, scope = rootScope){
+
+    makeAssignment(payload, scope.id);
+    logAssignment(payload.variable, element, scope);
 }
 
 
