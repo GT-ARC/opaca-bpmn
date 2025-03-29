@@ -42,7 +42,7 @@ Following the steps of [properties-panel-extension](https://github.com/bpmn-io/b
 
 ### Importing OPACA Actions as Services
 
-In addition to the extended properties panel, the OPACA BPMN Editor also includes a special view (see screenshot) for connecting to an OPACA Runtime Platform and importing the different agents' actions as Services into the BPMN diagram, to be used as implementations for Service Tasks.
+In addition to the extended properties panel, the OPACA BPMN Editor also includes a special view (see screenshot) for connecting to an OPACA Runtime Platform and importing the different agents' actions as Services into the BPMN diagram, to be used as implementations for Service Tasks. Services, like the other properties, are stored in the BPMN XML. We decided to put them under `<bpmn2:definitions>` as they can be part of multiple processes.
 
 ### Integrated BPMN Interpreter
 
@@ -52,7 +52,7 @@ Also integrated in the editor is the [bpmn-js-token-simulation](https://github.c
 
 A custom landing page allows to create a new BPMN diagram, load an existing one by drag-and-drop, or draft a new BPMN diagram using an LLM prompt. The latter calls the `promoai-api-server` which is based on [ProMoAI](https://github.com/humam-kourani/ProMoAI/) (see below for details). The diagrams can then be further extended in the regular BPMN editor. Similarly, a button at the bottom of the editor also allows the refinement of existing BPMN diagrams through the LLM.
 
-**Note:** Due to inner workings of ProMoAI, the LLM can currently only generate very basic processes, and does not "know" about the OPACA-specific extensions.
+**Note:** Due to inner workings of ProMoAI, the LLM can currently only generate very basic processes, and does not "know" about the OPACA-specific extensions itself.
 
 
 ## Integration into an OPACA Agent Container
@@ -67,6 +67,8 @@ For more details, please refer to the [dedicated documentation](docs/opaca-agent
 The `promoai-api-server` is entirely optional, but can be used to create BPMN diagrams based on a textual description, as an alternative to starting with a new or existing BPMN diagram. The logic has been taken mostly from ProMoAI, replacing the Streamlit App with a FastAPI server to be used by the BPMN editor frontend.
 
 It uses the OpenAI API to generate the BPMN process. But while GPT can generate BPMN XML, the result is often incorrect. Thus, the approach in ProMoAI is to generate Python code, that then generates a POWL model, which is then translated to actual valid BPMN 2.0 XML. For more details please refer to [ProMoAI: Process Modeling with Generative AI (Kourani et al., 2024)](https://www.ijcai.org/proceedings/2024/1014). The downside of this approach is that while the resulting processes are usually "on point" and syntactically correct, the intermediate model limits the expressiveness to just a subset of what's possible with BPMN, and in particular none of the extension elements of the OPACA BPMN editor.
+
+We have already started working on improving the process generation to include our custom properties. Our approach is to add a second step to model generation that extends the previously generated model in a parallel LLM session. Similar to the first step, the LLM is prompted to generate Python code, which only adds or removes properties in the XML. This has the downside of keeping an extra LLM session and making coordination more complex. Also, currently the same user input is used for both generation steps, possibly leading to confusion. This is still a work in progress and can certainly be refined further in the future.
 
 
 ## Environment Variables
@@ -107,6 +109,10 @@ To run the OPACA Agent Container integrating the BPMN editor and interpreter, yo
 5. Use the container's actions to interact with the interpreter (see [the respective documentation](docs/opaca-agent.md) for details).
 
 **Note:** The OPACA Interpreter Agent is still work in progress and details may change.
+
+### User Manual
+
+A complete walkthrough on creating an executable process can be found in our [User Manual](./docs/user-manual.md).
 
 
 ## License
