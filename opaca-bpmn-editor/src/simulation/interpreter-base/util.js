@@ -5,6 +5,7 @@ import {getAssignments} from "../../provider/assignments/util";
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {call} from "../../opacaUtil";
 import {getTargets} from "../../provider/userTaskInformation/targets/util";
+import {isAny} from "bpmn-js/lib/features/modeling/util/ModelingUtil";
 
 // variable, value mapped to each scope (variableMapping[scopeId][variableName])
 const variableMapping = {};
@@ -23,11 +24,6 @@ export function initializeVariables(startEventContext){
         variableMapping[parentScopeId] = {};
     }
     const root = getRootElement(startEventContext.element.businessObject);
-
-    // Skip when not meant for interpretation
-    if(!root.isExecutable){
-        return;
-    }
 
     const parent = getParentElement(startEventContext.element.businessObject);
 
@@ -291,12 +287,6 @@ export function createUserTask(element, scope){
 
 export function handleStart(element, scope){
 
-    const root = getRootElement(element);
-    // Skip when not meant for interpretation
-    if(!root.isExecutable){
-        return Promise.resolve();
-    }
-
     // Handle assignments at Start
     updateVariables(element, 'START', scope);
 
@@ -438,6 +428,9 @@ function logAssignment(variable, element, parentScope){
 
         }else if(is(element, 'bpmn:UserTask')){
             log.icon = 'bpmn-icon-user';
+
+        }else if(isAny(element, ['bpmn:IntermediateCatchEvent', 'bpmn:IntermediateThrowEvent'])){
+            log.icon = 'bpmn-icon-intermediate-event-none';
         }
         // Dispatch
         document.dispatchEvent(new CustomEvent('logAssignment', {detail: log}));
