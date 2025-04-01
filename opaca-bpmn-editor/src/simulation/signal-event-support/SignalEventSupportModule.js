@@ -31,7 +31,6 @@ export default function SignalEventSupport(activationManager, eventBus, elementR
                 const signalRef = element.businessObject.eventDefinitions?.find(def => def.signalRef)?.signalRef;
 
                 if (signalRef) {
-                    console.log('signalRef: ', signalRef.name);
                     eventBus.fire('interpretation.broadcastSignal',
                         {signalReference: signalRef.name});
                 }
@@ -54,7 +53,15 @@ SignalEventSupport.prototype._triggerSignal = function(signalReference){
 
     signalEvents.forEach(signalEvent => {
         try {
+            // Trigger events
             this._simulationSupport.triggerElement(signalEvent.id);
+
+            // If this was after gateway inform other possible event handlers
+            const previousElement = signalEvent?.incoming?.[0]?.source;
+            if(previousElement.type === 'bpmn:EventBasedGateway'){
+                this._eventBus.fire('interpretation.eventBasedGatewayLeft', {gatewayId: previousElement.id});
+            }
+
             successfulElements.push(signalEvent.id);
         } catch (error) {
             failedElements.push(signalEvent.id);
@@ -67,7 +74,7 @@ SignalEventSupport.prototype._triggerSignal = function(signalReference){
 
     if(failedElements.length > 0){
         console.log(`Failed to trigger elements: ${failedElements.join(', ')}
-    \nThis could be expected behavior for some boundary events.`);
+    \nThis could be expected behavior for some events.`);
     }
 }
 

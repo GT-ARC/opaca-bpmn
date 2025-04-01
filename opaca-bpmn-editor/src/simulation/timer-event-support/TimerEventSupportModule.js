@@ -3,6 +3,7 @@ import {is} from "bpmn-js/lib/util/ModelUtil";
 export default function TimerEventSupport(
     eventBus, elementRegistry, toggleMode, simulationSupport, activationManager) {
 
+    this._eventBus = eventBus;
     this._simulationSupport = simulationSupport;
 
     // Keep list of running timers
@@ -102,10 +103,16 @@ export default function TimerEventSupport(
                 const timerDefinition = event.eventDefinitions.find(ed => is(ed, 'bpmn:TimerEventDefinition'));
                 if(timerDefinition){
 
-                    this.triggerTimerEvent(event.id, timerDefinition)
+                    this.triggerTimerEvent(event.id, timerDefinition, element.id)
                         .catch(err => console.error(err));
                 }
             })
+
+            // Keep track of pending gateway
+            eventBus.on('interpretation.eventBasedGatewayLeft', ({gatewayId}) => {
+                // If left, remove relevant timer again
+                this.removeTimersForGateway(gatewayId);
+            });
         }
     });
 }
@@ -116,7 +123,7 @@ TimerEventSupport.prototype.setActive = function(isExecutable){
 }
 
 // Creates timer for event based on timerDefinition
-TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinition) {
+TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinition, gatewayId = null) {
     return new Promise((resolve, reject) => {
         const now = new Date();
 
@@ -125,6 +132,9 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
             if (now === triggerTime) {
                 try{
                     this._simulationSupport.triggerElement(eventId);
+                    if(gatewayId){
+                        this._eventBus.fire('interpretation.eventBasedGatewayLeft', {gatewayId});
+                    }
                     resolve();
                 }catch(err){
                     reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
@@ -135,13 +145,16 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
                     try{
                         this._simulationSupport.triggerElement(eventId);
                         this.removeTimer(timeoutId);
+                        if(gatewayId){
+                            this._eventBus.fire('interpretation.eventBasedGatewayLeft', {gatewayId});
+                        }
                         resolve();
                     }catch(err){
                         this.removeTimer(timeoutId);
                         reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                     }
                 }, delay);
-                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay});
+                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay, gatewayId});
             }
         } else if (timerDefinition.timeDuration) { // DURATION
             const duration = parseISO8601Duration(timerDefinition.timeDuration.body); // Parse ISO 8601 duration string
@@ -149,13 +162,16 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
                 try{
                     this._simulationSupport.triggerElement(eventId);
                     this.removeTimer(timeoutId);
+                    if(gatewayId){
+                        this._eventBus.fire('interpretation.eventBasedGatewayLeft', {gatewayId});
+                    }
                     resolve();
                 }catch(err){
                     this.removeTimer(timeoutId);
                     reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                 }
             }, duration);
-            this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: duration});
+            this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: duration, gatewayId});
         } else if (timerDefinition.timeCycle) { // CYCLE (INTERVAL)
             const { repetitions, interval, delay } = parseISO8601Cycle(timerDefinition.timeCycle.body); // Parse ISO 8601 cycle string
             for (let i = 0; i < repetitions; i++) {
@@ -163,12 +179,15 @@ TimerEventSupport.prototype.triggerTimerEvent = function(eventId, timerDefinitio
                     try{
                         this._simulationSupport.triggerElement(eventId);
                         this.removeTimer(timeoutId);
+                        if(gatewayId){
+                            this._eventBus.fire('interpretation.eventBasedGatewayLeft', {gatewayId});
+                        }
                     }catch(err){
                         this.removeTimer(timeoutId);
                         reject(new Error(`Failed to trigger timer event ${eventId}: ${err}`));
                     }
                 }, delay + interval * i);
-                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: delay + interval * i });
+                this.activeTimers.push({ id: timeoutId, eventId: eventId, startTime: now, delay: delay + interval * i, gatewayId});
             }
             resolve();
         }
@@ -183,6 +202,12 @@ TimerEventSupport.prototype.clearActiveTimers = function() {
     });
     // Empty list
     this.activeTimers = [];
+};
+
+// Clear and remove timers following a given gateway
+TimerEventSupport.prototype.removeTimersForGateway = function(gatewayId) {
+    const timersToRemove = this.activeTimers.filter(timer => timer.gatewayId === gatewayId);
+    timersToRemove.forEach(timer => this.removeTimer(timer.id));
 };
 
 // Clears timers and calculates passed time

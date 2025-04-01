@@ -1,8 +1,9 @@
 import {is, isAny} from "bpmn-js/lib/util/ModelUtil";
 import {evaluateCondition} from "../interpreter-base/util";
 
-export default function ConditionalEventSupport(activationManager, eventBus, simulationSupport){
+export default function ConditionalEventSupport(activationManager, eventBus, simulationSupport) {
     this._simulationSupport = simulationSupport;
+    this._eventBus = eventBus;
 
     this._isActive = false;
 
@@ -15,17 +16,17 @@ export default function ConditionalEventSupport(activationManager, eventBus, sim
         const scope = {parent: event.scope};
 
         // Don't evaluate conditions for non-executable processes
-        if(!this._isActive) {
+        if (!this._isActive) {
             return;
         }
 
         // Boundary Events
-        if(element.attachers){
+        if (element.attachers) {
             element.attachers.forEach(attacher => {
-                if(is(attacher, 'bpmn:BoundaryEvent')){
+                if (is(attacher, 'bpmn:BoundaryEvent')) {
                     const condition = attacher.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:ConditionalEventDefinition'));
                     // If event is a conditional event
-                    if(condition){
+                    if (condition) {
                         this._handleConditionalEvent(attacher.id, scope, condition);
                     }
                 }
@@ -33,13 +34,13 @@ export default function ConditionalEventSupport(activationManager, eventBus, sim
         }
 
         // Intermediate Events
-        if(!element.businessObject.eventDefinitions){
+        if (!element.businessObject.eventDefinitions) {
             return;
         }
         const condition = element.businessObject.eventDefinitions.find(ed => is(ed, 'bpmn:ConditionalEventDefinition'));
 
         // If event is a conditional event
-        if(condition){
+        if (condition) {
             this._handleConditionalEvent(element.id, scope, condition);
         }
     });
@@ -51,30 +52,47 @@ ConditionalEventSupport.prototype.setActive = function(isExecutable){
 }
 
 // Trigger event if condition is true Or wait for updates
-ConditionalEventSupport.prototype._handleConditionalEvent = function(id, scope, condition){
+ConditionalEventSupport.prototype._handleConditionalEvent = function(id, scope, condition, gatewayId = null){
 
     setTimeout(() => { // small delay for element triggers to be ready
 
         const conditionExpression = condition.condition.body;
 
-        // If condition is true, trigger event
-        if(evaluateCondition(conditionExpression, scope)){
-            this._simulationSupport.triggerElement(id);
+        // If condition is false, wait for updates
+        if(!this._handleEvaluation(conditionExpression, scope, id, gatewayId)){
 
-            // Else wait for variable updates
-        }else{
+            // Wrapper function for handleEvaluation
+            const logAssignmentHandler = (event) => {
+                this._handleEvaluation(conditionExpression, scope, id, gatewayId)
+            }
+
             // Alternatively use
             //eventBus.on('variableUpdate', (event) => {
-            document.addEventListener('logAssignment', (log) => {
-                // Optionally, we could also filter the updates for the relevant variable
+            document.addEventListener('logAssignment', logAssignmentHandler);
 
-                // Evaluate condition again
-                if(evaluateCondition(conditionExpression, scope)){
-                    this._simulationSupport.triggerElement(id);
+            // Keep track of pending gateway
+            this._eventBus.on('interpretation.eventBasedGatewayLeft', (event) => {
+                if(gatewayId === event.gatewayId){
+                    document.removeEventListener('logAssignment', logAssignmentHandler);
                 }
             });
         }
     }, 10);
+}
+
+ConditionalEventSupport.prototype._handleEvaluation = function(conditionExpression, scope, id, gatewayId){
+    // Evaluate condition
+    if(evaluateCondition(conditionExpression, scope)){
+        // Trigger event
+        this._simulationSupport.triggerElement(id);
+
+        if(gatewayId){
+            this._eventBus.fire('interpretation.eventBasedGatewayLeft', {gatewayId});
+        }
+
+        return true;
+    }
+    return false;
 }
 
 ConditionalEventSupport.prototype.conditionAfterGateway = function(gateway, scope){
@@ -92,7 +110,7 @@ ConditionalEventSupport.prototype.conditionAfterGateway = function(gateway, scop
 
         // If event is a conditional event
         if(condition){
-            this._handleConditionalEvent(id, scope, condition);
+            this._handleConditionalEvent(id, scope, condition, gateway.id);
         }
     })
 }
