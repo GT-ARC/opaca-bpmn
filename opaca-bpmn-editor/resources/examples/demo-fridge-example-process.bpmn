@@ -1,22 +1,21 @@
-<?xml version="1.0" encoding="UTF-8"?><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd" appVersion="0.1.0">
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-04-02--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" xmlns:color="http://www.omg.org/spec/BPMN/non-normative/color/1.0" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
   <bpmn2:extensionElements>
     <vsdt2:services>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="fridge-agent::GetGroceries" id="service_3tek2k3">
-        <vsdt2:parameter name="category" type="string"/>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="KitchenAgent::GetGroceryList" id="service_3tek2k3">
         <vsdt2:result name="resultGetGroceries" type="array"/>
       </vsdt2:service>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="fridge-agent::AddGroceries" id="service_3feb890">
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="KitchenAgent::AddToGroceryList" id="service_3feb890">
         <vsdt2:parameter name="item" type="Grocery"/>
         <vsdt2:result name="resultAddGroceries" type="void"/>
       </vsdt2:service>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="fridge-agent::RemoveGrocery" id="service_37k6bjc">
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="KitchenAgent::RemoveFromGroceryList" id="service_37k6bjc">
         <vsdt2:parameter name="name" type="string"/>
         <vsdt2:result name="resultRemoveGrocery" type="boolean"/>
       </vsdt2:service>
     </vsdt2:services>
   </bpmn2:extensionElements>
   <bpmn2:process id="Process_1" name="demo-fridge-process" isExecutable="true">
-    <bpmn2:documentation>Process build around the fridge-agent of OPACAs demo-services. User decides actions and when to stop.</bpmn2:documentation>
+    <bpmn2:documentation>Process build around the KitchenAgent of OPACAs demo-services. User decides actions and when to stop.</bpmn2:documentation>
     <bpmn2:extensionElements/>
     <bpmn2:startEvent id="StartEvent_1" name="Start">
       <bpmn2:outgoing>Flow_0upavj5</bpmn2:outgoing>
