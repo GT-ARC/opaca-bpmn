@@ -38,9 +38,11 @@ function Service(props) {
         // Confirm window for automatic parameter assignment
         if(confirm('Create empty assignments for service parameters?')){
             const service = services.find(service => service.id === value);
-            service.parameters.forEach(param => {
-                simpleParameterAssignments(element, injector, param.name);
-            });
+            if(service && service.parameters){
+                service.parameters.forEach(param => {
+                    simpleParameterAssignments(element, injector, param.name);
+                });
+            }
         }
         return modeling.updateProperties(element, { serviceImpl: value });
     };
