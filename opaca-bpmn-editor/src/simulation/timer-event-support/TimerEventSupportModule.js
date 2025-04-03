@@ -1,4 +1,5 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
+import {restrictedEval} from "../interpreter-base/util";
 
 export default function TimerEventSupport(
     eventBus, elementRegistry, toggleMode, simulationSupport, activationManager) {
@@ -245,6 +246,7 @@ TimerEventSupport.prototype.removeTimer = function(timeoutId) {
 
 
 function parseISO8601Duration(duration) {
+    duration = restrictedEval(duration);
     // Simple parser for ISO 8601 duration strings
     const match = duration.match(/P(?:(\d+)D)?T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
     let milliseconds = 0;

@@ -367,14 +367,14 @@ function isString(token){
 }
 
 // Replace variable by variableMapping or predefined function
-function validateAndReplaceTokens(tokens, parentScope){
+function validateAndReplaceTokens(tokens, parentScopeId){
     return tokens.map(token => {
         if (isNumber(token) || isOperator(token) || isBoolean(token) || isString(token)) {
             return token; // Valid number, operator, boolean or string
         } else if(token.startsWith('.') || token.endsWith(':')) {
             return token; // Property access
-        } else if (variableMapping[parentScope] && variableMapping[parentScope].hasOwnProperty(token)) {
-            return `variableMapping['${parentScope}']['${token}']`; // Replace with variable mapping
+        } else if (variableMapping[parentScopeId] && variableMapping[parentScopeId].hasOwnProperty(token)) {
+            return `variableMapping['${parentScopeId}']['${token}']`; // Replace with variable mapping
         } else if (context.hasOwnProperty(token)) {
             return `context['${token}']`; // Allow function from context
         } else if (token === 'element') {
@@ -394,9 +394,9 @@ function tokenizeExpression(expression){
 }
 
 // Match expression before calling eval
-function restrictedEval(expression, parentScope){
-    const tokens = tokenizeExpression(expression, parentScope);
-    const validatedTokens = validateAndReplaceTokens(tokens, parentScope);
+export function restrictedEval(expression, parentScopeId = rootScope.id){
+    const tokens = tokenizeExpression(expression);
+    const validatedTokens = validateAndReplaceTokens(tokens, parentScopeId);
     const validatedExpression = validatedTokens.join('');
 
     // Parentheses ensure it is treated as an expression, not a block
