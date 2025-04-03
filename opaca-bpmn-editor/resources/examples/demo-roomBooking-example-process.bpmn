@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-04-02--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-04-03--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
   <bpmn2:extensionElements>
     <vsdt2:services>
       <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="RoomAgent::GetRoomId" id="service_32ejqqq">
@@ -51,6 +51,9 @@
         <vsdt2:targets>
           <vsdt2:target name="user_room" type="string" description="&quot;Name des Raumes&quot;"/>
         </vsdt2:targets>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="var_name" expression="user_room" assignTime="END"/>
+        </vsdt2:assignments>
       </bpmn2:extensionElements>
       <bpmn2:incoming>Flow_1roi5ut</bpmn2:incoming>
       <bpmn2:incoming>Flow_0oxap0e</bpmn2:incoming>
