@@ -449,6 +449,7 @@ $(function() {
     }
   }, 500);
 
+  bpmnModeler.on('import.done', exportArtifacts);
   bpmnModeler.on('commandStack.changed', exportArtifacts);
 
   // Confirm closing/refreshing window with unsaved changes
