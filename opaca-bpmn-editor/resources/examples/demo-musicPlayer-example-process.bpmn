@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-04-03--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+  <bpmn2:extensionElements>
+    <vsdt2:services>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="MusicPlayerAgent::PlayTrack" id="service_1epdl7s">
+        <vsdt2:parameter name="track_id" type="integer"/>
+        <vsdt2:result name="resultPlayTrack" type="boolean"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="MusicPlayerAgent::PauseTrack" id="service_07b25v7">
+        <vsdt2:result name="resultPauseTrack" type="null"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="MusicPlayerAgent::SkipToPreviousTrack" id="service_2uchkhm">
+        <vsdt2:result name="resultSkipToPreviousTrack" type="integer"/>
+      </vsdt2:service>
+    </vsdt2:services>
+  </bpmn2:extensionElements>
+  <bpmn2:process id="Process_1" name="demo-musicPlayer-process" isExecutable="true">
+    <bpmn2:documentation>Process build around the musicPlayer to set and turn off a timer.</bpmn2:documentation>
+    <bpmn2:extensionElements>
+      <vsdt2:variables>
+        <vsdt2:variable name="val_alarm_off" type="boolean"/>
+        <vsdt2:variable name="val_timer_definition" type="string"/>
+        <vsdt2:variable name="val_track_id" type="integer"/>
+      </vsdt2:variables>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1" name="Start">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="alarm_off" expression="false" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>Flow_1676krm</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="Flow_1676krm" sourceRef="StartEvent_1" targetRef="Activity_13f0f2k"/>
+    <bpmn2:parallelGateway id="Gateway_0f4yvcc">
+      <bpmn2:incoming>Flow_1lc4yw4</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0wltl2o</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_13vm7ob</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="Flow_0wltl2o" sourceRef="Gateway_0f4yvcc" targetRef="Gateway_1yzfmyt"/>
+    <bpmn2:eventBasedGateway id="Gateway_1yzfmyt">
+      <bpmn2:incoming>Flow_0wltl2o</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_09hwlfu</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_1iil4a5</bpmn2:outgoing>
+    </bpmn2:eventBasedGateway>
+    <bpmn2:intermediateCatchEvent id="Event_0bi52ee" name="turned off by user">
+      <bpmn2:incoming>Flow_09hwlfu</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_186dmg2</bpmn2:outgoing>
+      <bpmn2:conditionalEventDefinition id="ConditionalEventDefinition_1kg67as">
+        <bpmn2:condition xsi:type="bpmn2:tFormalExpression">val_alarm_off === true</bpmn2:condition>
+      </bpmn2:conditionalEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="Flow_09hwlfu" sourceRef="Gateway_1yzfmyt" targetRef="Event_0bi52ee"/>
+    <bpmn2:intermediateCatchEvent id="Event_13wn2hk" name="time is up">
+      <bpmn2:incoming>Flow_1iil4a5</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_147279m</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_1yt6v4k">
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">val_timer_definition</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:intermediateCatchEvent>
+    <bpmn2:sequenceFlow id="Flow_1iil4a5" sourceRef="Gateway_1yzfmyt" targetRef="Event_13wn2hk"/>
+    <bpmn2:sequenceFlow id="Flow_13vm7ob" sourceRef="Gateway_0f4yvcc" targetRef="Activity_0ay9e8z"/>
+    <bpmn2:exclusiveGateway id="Gateway_13w25xe">
+      <bpmn2:incoming>Flow_1o5619j</bpmn2:incoming>
+      <bpmn2:incoming>Flow_0fsj1db</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1ea2rwv</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_1o5619j" sourceRef="Activity_0ay9e8z" targetRef="Gateway_13w25xe"/>
+    <bpmn2:exclusiveGateway id="Gateway_0g2e37k">
+      <bpmn2:incoming>Flow_186dmg2</bpmn2:incoming>
+      <bpmn2:incoming>Flow_147279m</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0vv8pf1</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_186dmg2" sourceRef="Event_0bi52ee" targetRef="Gateway_0g2e37k"/>
+    <bpmn2:sequenceFlow id="Flow_147279m" sourceRef="Event_13wn2hk" targetRef="Gateway_0g2e37k"/>
+    <bpmn2:sequenceFlow id="Flow_0vv8pf1" sourceRef="Gateway_0g2e37k" targetRef="Activity_0tklv3n"/>
+    <bpmn2:endEvent id="Event_1hzzwtb" name="End">
+      <bpmn2:incoming>Flow_1ea2rwv</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_1ea2rwv" sourceRef="Gateway_13w25xe" targetRef="Event_1hzzwtb"/>
+    <bpmn2:userTask id="Activity_0ay9e8z" name="Remove timer" vsdt2:type="information" vsdt2:message="&quot;Confirm to stop timer manually.&quot;">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="user_off" type="boolean" description="&quot;'true' or 'false'&quot;"/>
+        </vsdt2:targets>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="val_alarm_off" expression="true" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_13vm7ob</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1o5619j</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="Flow_1lc4yw4" sourceRef="Activity_13f0f2k" targetRef="Gateway_0f4yvcc"/>
+    <bpmn2:userTask id="Activity_13f0f2k" name="Set timer" vsdt2:type="input" vsdt2:message="&quot;How long do you want the timer to run?&quot;">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="user_time" type="integer" description="&quot;time in seconds&quot;"/>
+          <vsdt2:target name="user_track_id" type="integer" description="&quot;The track you want as your alarm&quot;"/>
+        </vsdt2:targets>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="val_timer_definition" expression="&quot;PT&quot; + user_time + &quot;S&quot;" assignTime="END"/>
+          <vsdt2:assignment variable="val_track_id" expression="user_track_id" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1676krm</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1lc4yw4</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="Flow_04199x6" sourceRef="Activity_0tklv3n" targetRef="Activity_1fm8dgj"/>
+    <bpmn2:sequenceFlow id="Flow_1nqdln1" sourceRef="Activity_1fm8dgj" targetRef="Activity_084drj7"/>
+    <bpmn2:userTask id="Activity_1fm8dgj" name="Set off alarm" vsdt2:type="information" vsdt2:message="&quot;Confirm to turn of the alarm.&quot;">
+      <bpmn2:incoming>Flow_04199x6</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1nqdln1</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="Flow_0fsj1db" sourceRef="Activity_084drj7" targetRef="Gateway_13w25xe"/>
+    <bpmn2:serviceTask id="Activity_0tklv3n" name="Play song" vsdt2:serviceImpl="service_1epdl7s">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="track_id" expression="val_track_id" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0vv8pf1</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_04199x6</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_084drj7" name="Pause song" vsdt2:serviceImpl="service_07b25v7">
+      <bpmn2:incoming>Flow_1nqdln1</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0fsj1db</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="272" y="482" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="278" y="525" width="24" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_060bzvx_di" bpmnElement="Gateway_0f4yvcc">
+        <dc:Bounds x="515" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0vpa2aq_di" bpmnElement="Gateway_1yzfmyt">
+        <dc:Bounds x="625" y="335" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_13w25xe_di" bpmnElement="Gateway_13w25xe" isMarkerVisible="true">
+        <dc:Bounds x="1365" y="475" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0g2e37k_di" bpmnElement="Gateway_0g2e37k" isMarkerVisible="true">
+        <dc:Bounds x="825" y="335" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1hzzwtb_di" bpmnElement="Event_1hzzwtb">
+        <dc:Bounds x="1492" y="482" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1500" y="525" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_056dfyc_di" bpmnElement="Activity_13f0f2k">
+        <dc:Bounds x="360" y="460" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qy4n1b_di" bpmnElement="Activity_1fm8dgj">
+        <dc:Bounds x="1080" y="320" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0gswqed_di" bpmnElement="Activity_0tklv3n">
+        <dc:Bounds x="920" y="320" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0w0aktt_di" bpmnElement="Activity_084drj7">
+        <dc:Bounds x="1240" y="320" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_13wn2hk_di" bpmnElement="Event_13wn2hk">
+        <dc:Bounds x="732" y="252" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="727" y="295" width="47" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0bi52ee_di" bpmnElement="Event_0bi52ee">
+        <dc:Bounds x="732" y="422" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="707" y="465" width="86" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0o8hgco_di" bpmnElement="Activity_0ay9e8z">
+        <dc:Bounds x="900" y="580" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1676krm_di" bpmnElement="Flow_1676krm">
+        <di:waypoint x="308" y="500"/>
+        <di:waypoint x="360" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0wltl2o_di" bpmnElement="Flow_0wltl2o">
+        <di:waypoint x="540" y="475"/>
+        <di:waypoint x="540" y="360"/>
+        <di:waypoint x="625" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_09hwlfu_di" bpmnElement="Flow_09hwlfu">
+        <di:waypoint x="650" y="385"/>
+        <di:waypoint x="650" y="440"/>
+        <di:waypoint x="732" y="440"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1iil4a5_di" bpmnElement="Flow_1iil4a5">
+        <di:waypoint x="650" y="335"/>
+        <di:waypoint x="650" y="270"/>
+        <di:waypoint x="732" y="270"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_13vm7ob_di" bpmnElement="Flow_13vm7ob">
+        <di:waypoint x="540" y="525"/>
+        <di:waypoint x="540" y="620"/>
+        <di:waypoint x="900" y="620"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1o5619j_di" bpmnElement="Flow_1o5619j">
+        <di:waypoint x="1000" y="620"/>
+        <di:waypoint x="1390" y="620"/>
+        <di:waypoint x="1390" y="525"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_186dmg2_di" bpmnElement="Flow_186dmg2">
+        <di:waypoint x="768" y="440"/>
+        <di:waypoint x="850" y="440"/>
+        <di:waypoint x="850" y="385"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_147279m_di" bpmnElement="Flow_147279m">
+        <di:waypoint x="768" y="270"/>
+        <di:waypoint x="850" y="270"/>
+        <di:waypoint x="850" y="335"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0vv8pf1_di" bpmnElement="Flow_0vv8pf1">
+        <di:waypoint x="875" y="360"/>
+        <di:waypoint x="920" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ea2rwv_di" bpmnElement="Flow_1ea2rwv">
+        <di:waypoint x="1415" y="500"/>
+        <di:waypoint x="1492" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lc4yw4_di" bpmnElement="Flow_1lc4yw4">
+        <di:waypoint x="460" y="500"/>
+        <di:waypoint x="515" y="500"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_04199x6_di" bpmnElement="Flow_04199x6">
+        <di:waypoint x="1020" y="360"/>
+        <di:waypoint x="1080" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1nqdln1_di" bpmnElement="Flow_1nqdln1">
+        <di:waypoint x="1180" y="360"/>
+        <di:waypoint x="1240" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0fsj1db_di" bpmnElement="Flow_0fsj1db">
+        <di:waypoint x="1340" y="360"/>
+        <di:waypoint x="1390" y="360"/>
+        <di:waypoint x="1390" y="475"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>
