@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-04-04--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+  <bpmn2:extensionElements>
+    <vsdt2:services>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.20.0.130:8000" name="shelf-agent::FindInShelf" id="service_32nnj81">
+        <vsdt2:parameter name="item" type="string"/>
+        <vsdt2:result name="resultFindInShelf" type="integer"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.20.0.130:8000" name="shelf-agent::OpenShelf" id="service_27i3t4c">
+        <vsdt2:parameter name="shelf" type="integer"/>
+        <vsdt2:result name="resultOpenShelf" type="boolean"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.20.0.130:8000" name="shelf-agent::CloseShelf" id="service_1gq2n04">
+        <vsdt2:parameter name="shelf" type="integer"/>
+        <vsdt2:result name="resultCloseShelf" type="boolean"/>
+      </vsdt2:service>
+    </vsdt2:services>
+  </bpmn2:extensionElements>
+  <bpmn2:process id="Process_1" name="reallab-shelf-process" isExecutable="true">
+    <bpmn2:documentation>Process build around the shelf agent in reallabor. Find item and open respective shelf.</bpmn2:documentation>
+    <bpmn2:extensionElements>
+      <vsdt2:variables>
+        <vsdt2:variable name="var_item" type="string"/>
+        <vsdt2:variable name="var_shelf_id" type="integer"/>
+      </vsdt2:variables>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1" name="Start">
+      <bpmn2:outgoing>Flow_097y0s4</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="Flow_097y0s4" sourceRef="StartEvent_1" targetRef="Activity_1nzy4hn"/>
+    <bpmn2:sequenceFlow id="Flow_0df6s0b" sourceRef="Activity_1nzy4hn" targetRef="Activity_0wq47c0"/>
+    <bpmn2:exclusiveGateway id="Gateway_1x40ftx">
+      <bpmn2:incoming>Flow_0w5808b</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0b30rpp</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_0cltegj</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_0w5808b" sourceRef="Activity_0wq47c0" targetRef="Gateway_1x40ftx"/>
+    <bpmn2:sequenceFlow id="Flow_0b30rpp" name="Found" sourceRef="Gateway_1x40ftx" targetRef="Activity_0hf3h9s">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">var_shelf_id &gt; 0</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:exclusiveGateway id="Gateway_0ft4zd1">
+      <bpmn2:incoming>Flow_0i3jvc5</bpmn2:incoming>
+      <bpmn2:incoming>Flow_1djnfrk</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1xro4vg</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_0iplgdw" sourceRef="Activity_0hf3h9s" targetRef="Activity_0p68z1c"/>
+    <bpmn2:sequenceFlow id="Flow_0cltegj" name="Not found" sourceRef="Gateway_1x40ftx" targetRef="Activity_1b4rtmw">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">var_shelf_id &lt; 0</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_1sj6ii1" sourceRef="Activity_0p68z1c" targetRef="Activity_1nnq6q2"/>
+    <bpmn2:sequenceFlow id="Flow_0i3jvc5" sourceRef="Activity_1b4rtmw" targetRef="Gateway_0ft4zd1"/>
+    <bpmn2:sequenceFlow id="Flow_052b1w9" name="20 seconds passed" sourceRef="Event_1ncw1rb" targetRef="Activity_1nnq6q2"/>
+    <bpmn2:sequenceFlow id="Flow_1djnfrk" sourceRef="Activity_1nnq6q2" targetRef="Gateway_0ft4zd1"/>
+    <bpmn2:endEvent id="Event_0omnic6" name="End">
+      <bpmn2:incoming>Flow_1xro4vg</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_1xro4vg" sourceRef="Gateway_0ft4zd1" targetRef="Event_0omnic6"/>
+    <bpmn2:boundaryEvent id="Event_1ncw1rb" attachedToRef="Activity_0p68z1c">
+      <bpmn2:outgoing>Flow_052b1w9</bpmn2:outgoing>
+      <bpmn2:timerEventDefinition id="TimerEventDefinition_1jhto4p">
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">"PT20S"</bpmn2:timeDuration>
+      </bpmn2:timerEventDefinition>
+    </bpmn2:boundaryEvent>
+    <bpmn2:userTask id="Activity_1nzy4hn" name="Define item" vsdt2:type="input" vsdt2:message="&quot;Which item are you looking for?&quot;">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="user_item" type="string" description="&quot;item name&quot;"/>
+        </vsdt2:targets>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="var_item" expression="user_item" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_097y0s4</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0df6s0b</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:userTask id="Activity_0p68z1c" name="Close manually" vsdt2:type="information" vsdt2:message="&quot;Opened shelf &quot; + var_shelf_id + &quot;. Confirm to close it again.&quot;">
+      <bpmn2:incoming>Flow_0iplgdw</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1sj6ii1</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:userTask id="Activity_1b4rtmw" name="inform user: not found" vsdt2:type="information" vsdt2:message="&quot;No shelf contains the item you are looking for.&quot;">
+      <bpmn2:incoming>Flow_0cltegj</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0i3jvc5</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:serviceTask id="Activity_0wq47c0" name="Find in shelf" vsdt2:serviceImpl="service_32nnj81">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="item" expression="var_item" assignTime="START"/>
+          <vsdt2:assignment variable="var_shelf_id" expression="resultFindInShelf" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0df6s0b</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0w5808b</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_0hf3h9s" name="Open shelf" vsdt2:serviceImpl="service_27i3t4c">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="shelf" expression="var_shelf_id" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0b30rpp</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0iplgdw</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_1nnq6q2" name="Close shelf" vsdt2:serviceImpl="service_1gq2n04">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="shelf" expression="var_shelf_id" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1sj6ii1</bpmn2:incoming>
+      <bpmn2:incoming>Flow_052b1w9</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1djnfrk</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Gateway_1x40ftx_di" bpmnElement="Gateway_1x40ftx" isMarkerVisible="true">
+        <dc:Bounds x="775" y="275" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="322" y="282" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="328" y="325" width="25" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0ft4zd1_di" bpmnElement="Gateway_0ft4zd1" isMarkerVisible="true">
+        <dc:Bounds x="1395" y="275" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_0omnic6_di" bpmnElement="Event_0omnic6">
+        <dc:Bounds x="1522" y="282" width="36" height="36"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1530" y="325" width="20" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_018m4g8_di" bpmnElement="Activity_1nzy4hn">
+        <dc:Bounds x="430" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1hvylnq_di" bpmnElement="Activity_0p68z1c">
+        <dc:Bounds x="1060" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1r8ww5s_di" bpmnElement="Activity_1b4rtmw">
+        <dc:Bounds x="1050" y="410" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1ibjwef_di" bpmnElement="Activity_0wq47c0">
+        <dc:Bounds x="600" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0cvb00n_di" bpmnElement="Activity_0hf3h9s">
+        <dc:Bounds x="900" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1rj5amn_di" bpmnElement="Activity_1nnq6q2">
+        <dc:Bounds x="1220" y="260" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1vnzyll_di" bpmnElement="Event_1ncw1rb">
+        <dc:Bounds x="1092" y="242" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_097y0s4_di" bpmnElement="Flow_097y0s4">
+        <di:waypoint x="358" y="300"/>
+        <di:waypoint x="430" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0df6s0b_di" bpmnElement="Flow_0df6s0b">
+        <di:waypoint x="530" y="300"/>
+        <di:waypoint x="600" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0w5808b_di" bpmnElement="Flow_0w5808b">
+        <di:waypoint x="700" y="300"/>
+        <di:waypoint x="775" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0b30rpp_di" bpmnElement="Flow_0b30rpp">
+        <di:waypoint x="825" y="300"/>
+        <di:waypoint x="900" y="300"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="844" y="282" width="32" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0iplgdw_di" bpmnElement="Flow_0iplgdw">
+        <di:waypoint x="1000" y="300"/>
+        <di:waypoint x="1060" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0cltegj_di" bpmnElement="Flow_0cltegj">
+        <di:waypoint x="800" y="325"/>
+        <di:waypoint x="800" y="450"/>
+        <di:waypoint x="1050" y="450"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="806" y="385" width="48" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1sj6ii1_di" bpmnElement="Flow_1sj6ii1">
+        <di:waypoint x="1160" y="300"/>
+        <di:waypoint x="1220" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0i3jvc5_di" bpmnElement="Flow_0i3jvc5">
+        <di:waypoint x="1150" y="450"/>
+        <di:waypoint x="1420" y="450"/>
+        <di:waypoint x="1420" y="325"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_052b1w9_di" bpmnElement="Flow_052b1w9">
+        <di:waypoint x="1110" y="242"/>
+        <di:waypoint x="1110" y="222"/>
+        <di:waypoint x="1270" y="222"/>
+        <di:waypoint x="1270" y="260"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="1162" y="186" width="57" height="27"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1djnfrk_di" bpmnElement="Flow_1djnfrk">
+        <di:waypoint x="1320" y="300"/>
+        <di:waypoint x="1395" y="300"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1xro4vg_di" bpmnElement="Flow_1xro4vg">
+        <di:waypoint x="1445" y="300"/>
+        <di:waypoint x="1522" y="300"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>
