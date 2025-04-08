@@ -285,6 +285,15 @@ export function createUserTask(element, scope){
     });
 }
 
+export function closeUserTaskDialog(){
+    // Get dialog
+    const dialog = document.getElementById('dynamicInputDialog');
+    // Close, if open
+    if (dialog && dialog.open) {
+        dialog.close();
+    }
+}
+
 export function handleStart(element, scope){
 
     // Handle assignments at Start

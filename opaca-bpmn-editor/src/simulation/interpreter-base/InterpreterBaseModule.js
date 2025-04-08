@@ -1,6 +1,6 @@
 import {is} from "bpmn-js/lib/util/ModelUtil";
 import {isAny} from "bpmn-js/lib/features/modeling/util/ModelingUtil";
-import {handleEnd, handleStart, initializeVariables} from "./util";
+import {closeUserTaskDialog, handleEnd, handleStart, initializeVariables} from "./util";
 
 export default function InterpreterBase(activationManager, eventBus,
     simulationSupport, exclusiveGatewaySettings,
@@ -59,9 +59,17 @@ export default function InterpreterBase(activationManager, eventBus,
             initializeVariables(event);
         }
 
+        if(is(element, 'bpmn:BoundaryEvent')){
+            // If is attached to UserTask and interrupting
+            if(is(element.host, 'bpmn:UserTask') && element.businessObject.cancelActivity){
+                // Close User Dialog
+                closeUserTaskDialog();
+            }
+        }
+
         // Assignments
         handleEnd(element, scope);
-    })
+    });
 }
 
 // Activate/Deactivate this module
