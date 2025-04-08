@@ -31,7 +31,7 @@
       <bpmn2:incoming>Flow_17k2qam</bpmn2:incoming>
       <bpmn2:outgoing>Flow_1q5ujpw</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="TimerEventDefinition_04e6h4a">
-        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">PT10S</bpmn2:timeDuration>
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">"PT10S"</bpmn2:timeDuration>
       </bpmn2:timerEventDefinition>
     </bpmn2:intermediateCatchEvent>
     <bpmn2:sequenceFlow id="Flow_17k2qam" sourceRef="Gateway_1udevls" targetRef="Event_1n7v7tk" />
@@ -99,7 +99,7 @@
       <bpmn2:incoming>Flow_08khmyc</bpmn2:incoming>
       <bpmn2:outgoing>Flow_16brp6e</bpmn2:outgoing>
       <bpmn2:timerEventDefinition id="TimerEventDefinition_0kmi43u">
-        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">PT3S</bpmn2:timeDuration>
+        <bpmn2:timeDuration xsi:type="bpmn2:tFormalExpression">"PT3S"</bpmn2:timeDuration>
       </bpmn2:timerEventDefinition>
     </bpmn2:intermediateCatchEvent>
   </bpmn2:process>
