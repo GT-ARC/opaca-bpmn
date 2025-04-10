@@ -5,8 +5,10 @@ import payloadsList from './payloads/Payloads';
 import {ListGroup} from '@bpmn-io/properties-panel';
 
 import { is, getBusinessObject } from 'bpmn-js/lib/util/ModelUtil';
-import {find} from "min-dash";
+import {find, without} from "min-dash";
 import {isAny} from "bpmn-js/lib/features/modeling/util/ModelingUtil";
+import {getRelevantBusinessObject} from "../util";
+import {getPayloadsExtension} from "./payloads/util";
 
 const LOW_PRIORITY = 500;
 
@@ -17,8 +19,9 @@ const LOW_PRIORITY = 500;
  *
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} translate
+ * @param {EventBus} eventBus
  */
-export default function PayloadsListProvider(propertiesPanel, injector, translate) {
+export default function PayloadsListProvider(propertiesPanel, injector, translate, eventBus) {
 
     // API ////////
 
@@ -47,7 +50,6 @@ export default function PayloadsListProvider(propertiesPanel, injector, translat
 
                     // Payload is needed in ReceiveTasks and MessageCatchEvents
                     if (is(element, 'bpmn:ReceiveTask') || isMessageCatchEvent(element)) {
-                        console.log('group entries', group.entries);
                         // Push to existing entries
                         group.entries.push(createPayloadsGroup(element, injector, translate));
                     }
@@ -65,9 +67,42 @@ export default function PayloadsListProvider(propertiesPanel, injector, translat
     // Use a lower priority to ensure it is loaded after
     // the basic BPMN properties.
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
+
+    // Element properties changed
+    eventBus.on('commandStack.element.updateProperties.executed', (event) => {
+
+        const element = event.context.element;
+
+        // Wait for other ongoing commands to finish
+        setTimeout(() => {
+
+            const businessObject = getRelevantBusinessObject(element);
+            const extensionElements = businessObject.get('extensionElements');
+
+            if(!extensionElements) return;
+
+            const payloadsExtension = getPayloadsExtension(element);
+
+            // Remove the Payloads extension if it exists
+            // and the new element is not a ReceiveTask or MessageCatchEvent
+            if(payloadsExtension && !(is(element, "bpmn:ReceiveTask") || isMessageCatchEvent(element))){
+                const updatedValues = without(extensionElements.get('values'), payloadsExtension);
+
+                injector.get('commandStack').execute('element.updateModdleProperties', {
+                    element,
+                    moddleElement: extensionElements,
+                    properties: {
+                        values: updatedValues
+                    }
+                });
+
+                console.log(`Removed vsdt2:Payloads extension from ${element.id} (no longer receiving task or event).`);
+            }
+        }, 0);
+    });
 }
 
-PayloadsListProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
+PayloadsListProvider.$inject = [ 'propertiesPanel', 'injector', 'translate', 'eventBus' ];
 
 // Create the custom payloads list group.
 function createPayloadsGroup(element, injector, translate) {

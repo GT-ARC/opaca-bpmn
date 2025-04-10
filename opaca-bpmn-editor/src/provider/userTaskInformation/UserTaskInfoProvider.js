@@ -3,6 +3,9 @@ import UserTaskMessage from './UserTaskMessage';
 import targetsList from './targets/Targets';
 import { ListGroup } from '@bpmn-io/properties-panel';
 import { is } from 'bpmn-js/lib/util/ModelUtil';
+import {without} from "min-dash";
+import {getTargetsExtension} from "./targets/util";
+import {getRelevantBusinessObject} from "../util";
 
 const LOW_PRIORITY = 500;
 
@@ -14,8 +17,9 @@ const LOW_PRIORITY = 500;
  * @param {PropertiesPanel} propertiesPanel
  * @param {Function} injector
  * @param {Function} translate
+ * @param {EventBus} eventBus
  */
-export default function UserTaskInfoProvider(propertiesPanel, injector, translate) {
+export default function UserTaskInfoProvider(propertiesPanel, injector, translate, eventBus) {
 
     // API ////////
 
@@ -54,9 +58,40 @@ export default function UserTaskInfoProvider(propertiesPanel, injector, translat
     // Use a lower priority to ensure it is loaded after
     // the basic BPMN properties.
     propertiesPanel.registerProvider(LOW_PRIORITY, this);
+
+    // Element properties changed
+    eventBus.on('commandStack.element.updateProperties.executed', (event) => {
+        const element = event.context.element;
+
+        // Wait for other ongoing commands to finish
+        setTimeout(() => {
+
+            const businessObject = getRelevantBusinessObject(element);
+            const extensionElements = businessObject.get('extensionElements');
+
+            if (!extensionElements) return;
+
+            const targetsExtension = getTargetsExtension(element);
+
+            // Remove the Targets extension if it exists and the type is not 'input'
+            if (targetsExtension && businessObject.type !== 'input') {
+                const updatedValues = without(extensionElements.get('values'), targetsExtension);
+
+                injector.get('commandStack').execute('element.updateModdleProperties', {
+                    element,
+                    moddleElement: extensionElements,
+                    properties: {
+                        values: updatedValues
+                    }
+                });
+
+                console.log(`Removed Targets extension from ${element.id} due to type change.`);
+            }
+        }, 0);
+    });
 }
 
-UserTaskInfoProvider.$inject = [ 'propertiesPanel', 'injector', 'translate' ];
+UserTaskInfoProvider.$inject = [ 'propertiesPanel', 'injector', 'translate', 'eventBus'];
 
 // Create the "UserTaskInfo" group
 function createUserTaskInfoGroup(element, injector, translate) {
