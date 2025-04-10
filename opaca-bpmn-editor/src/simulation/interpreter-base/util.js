@@ -341,11 +341,42 @@ export function handleMessagePayload(element, payload, scope = rootScope){
 // Evaluate assignment of different expressions
 function makeAssignment(assignment, parentScopeId) {
     try {
-        variableMapping[parentScopeId][assignment.variable] = restrictedEval(assignment.expression, parentScopeId);
+        // Check scope
+        const scopeIdToUse = checkScope(assignment.variable, parentScopeId);
+
+        // Perform the assignment
+        variableMapping[scopeIdToUse][assignment.variable] = restrictedEval(assignment.expression, scopeIdToUse);
         //console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
     }catch (err){
         console.error(`Assignment failed: ${err}`);
     }
+}
+
+// Check if given variable is defined in the scope
+function checkScope(variable, parentScopeId){
+    let scopeIdToUse = parentScopeId;
+
+    // If the variable doesn't exist in the expected scope, look for it in others
+    if (
+        !variableMapping[parentScopeId] ||
+        !(variable in variableMapping[parentScopeId])
+    ) {
+        //console.log('Variable not found in scope ', parentScopeId);
+        for (const scopeId in variableMapping) {
+            if (variable in variableMapping[scopeId]) {
+                scopeIdToUse = scopeId;
+                //console.log('Variable found in scope ', scopeIdToUse);
+                break;
+            }
+        }
+
+        // If still not found, optionally create it in the original scope
+        if (!variableMapping[scopeIdToUse]) {
+            variableMapping[scopeIdToUse] = {};
+            //console.log('Variable not found at all.');
+        }
+    }
+    return scopeIdToUse;
 }
 
 // Here we can put functions to be assigned in the process design
@@ -414,10 +445,12 @@ export function restrictedEval(expression, parentScopeId = rootScope.id){
 
 // Create log element with assignment info and trigger log event
 function logAssignment(variable, element, parentScope){
+    // check scope
+    const scopeIdToUse = checkScope(variable, parentScope.id)
 
     try {
         // the " -> ' is needed because otherwise the tooltip ends with the first "
-        const readableValue = JSON.stringify(variableMapping[parentScope.id][variable], null, 2).replace(/"/g, "'")
+        const readableValue = JSON.stringify(variableMapping[scopeIdToUse][variable], null, 2).replace(/"/g, "'")
         const log = {
             // indent text
             text: `&nbsp;&nbsp; ${variable} = ${readableValue}`,
