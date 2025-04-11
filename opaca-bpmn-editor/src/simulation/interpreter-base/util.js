@@ -63,8 +63,8 @@ export function initializeVariables(startEventContext){
 
 // Evaluate condition
 export function evaluateCondition(condition, scope){
-    const parentScopeId = scope.parent.id;
-    return restrictedEval(condition, parentScopeId);
+    const parentScope = scope.parent;
+    return restrictedEval(condition, parentScope);
 }
 
 // Make assignment to a variable at assignTime
@@ -77,7 +77,7 @@ export function updateVariables(element, assignTime, scope){
     if(assignments){
         assignments.forEach(assignment => {
             if(assignment.assignTime === assignTime){
-                makeAssignment(assignment, parentScope.id);
+                makeAssignment(assignment, parentScope);
 
                 logAssignment(assignment.variable, bpmnElement, parentScope);
             }
@@ -135,7 +135,7 @@ export function callService(element, scope) {
                 console.log('Response from service:', response);
                 // Assign result
                 if(resName){
-                    makeAssignment({variable: resName, expression: response}, parentScope.id);
+                    makeAssignment({variable: resName, expression: response}, parentScope);
                     logAssignment(resName, element, parentScope);
                 }
                 resolve(); // Resolve the promise after assigning the result
@@ -169,7 +169,7 @@ export function createUserTask(element, scope){
         const dialogMessage = document.getElementById('dialogMessage');
 
         if(taskMessage){
-            dialogMessage.innerHTML = restrictedEval(taskMessage, parentScope.id);
+            dialogMessage.innerHTML = restrictedEval(taskMessage, parentScope);
         }
         dialogContent.innerHTML = '';
 
@@ -186,7 +186,7 @@ export function createUserTask(element, scope){
             if (typeof value === 'string') {
 
                 try{
-                    value = restrictedEval(value, parentScope.id);
+                    value = restrictedEval(value, parentScope);
                 }catch (e) {
                     inputElement.setCustomValidity('Cannot be evaluated.', e);
                 }
@@ -249,7 +249,7 @@ export function createUserTask(element, scope){
                 label.setAttribute('for', target.name);
                 label.textContent = `${target.name} (${target.type})`;
                 // Add description as tooltip, if it is defined
-                label.title = restrictedEval(target.description || `"${target.name}"`, parentScope.id);
+                label.title = restrictedEval(target.description || `"${target.name}"`, parentScope);
 
                 let inputElement = document.createElement('input');
                 inputElement.setAttribute('id', target.name);
@@ -275,7 +275,7 @@ export function createUserTask(element, scope){
                 targets.forEach(target => {
                     let value = formData.get(target.name);
 
-                    makeAssignment({variable: target.name, expression: value}, parentScope.id);
+                    makeAssignment({variable: target.name, expression: value}, parentScope);
                     logAssignment(target.name, element, parentScope);
                 });
             }
@@ -331,7 +331,7 @@ export function handleEnd(element, scope){
 
 export function handleMessagePayload(element, payload, scope = rootScope){
 
-    makeAssignment(payload, scope.id);
+    makeAssignment(payload, scope);
     logAssignment(payload.variable, element, scope);
 }
 
@@ -339,13 +339,14 @@ export function handleMessagePayload(element, payload, scope = rootScope){
 //// Helpers ////
 
 // Evaluate assignment of different expressions
-function makeAssignment(assignment, parentScopeId) {
+function makeAssignment(assignment, parentScope) {
     try {
         // Check scope
-        const scopeIdToUse = checkScope(assignment.variable, parentScopeId);
+        // TODO
+        //const scopeIdToUse = checkScope(assignment.variable, parentScopeId);
 
         // Perform the assignment
-        variableMapping[scopeIdToUse][assignment.variable] = restrictedEval(assignment.expression, scopeIdToUse);
+        variableMapping[parentScope.id][assignment.variable] = restrictedEval(assignment.expression, parentScope);
         //console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
     }catch (err){
         console.error(`Assignment failed: ${err}`);
@@ -406,15 +407,53 @@ function isString(token){
     return /^("[^"]*"|'[^']*'|`[^`]*`)$/.test(token);
 }
 
+// Build a flattened map of all effective variables the scope has access to
+function buildEffectiveScope(scope) {
+    const flattenedMap = {};
+    let currentScope = scope;
+
+    //TODO include scope for every variable added
+
+    while (currentScope !== null) {
+        console.log('Looking up vars in scope');
+        const varsInScope = variableMapping[currentScope.id];
+        if (varsInScope) {
+            console.log('found vars', varsInScope);
+            Object.keys(varsInScope).forEach(variable => {
+                console.log('variable', variable);
+                if (!(variable in flattenedMap)) {
+                    flattenedMap[variable] = {
+                        value: varsInScope[variable],
+                        scopeId: currentScope.id
+                    };
+                    console.log('added to flat map');
+                }
+            });
+        }
+        currentScope = currentScope.parent;
+    }
+
+    console.log('variable Mapping', variableMapping);
+
+    console.log('effective Scope', flattenedMap);
+    return flattenedMap;
+}
+
+
 // Replace variable by variableMapping or predefined function
-function validateAndReplaceTokens(tokens, parentScopeId){
+function validateAndReplaceTokens(tokens, parentScope){
+    const parentScopeId = parentScope.id;
+
+    const effectiveMap = buildEffectiveScope(parentScope);
+
     return tokens.map(token => {
         if (isNumber(token) || isOperator(token) || isBoolean(token) || isString(token)) {
             return token; // Valid number, operator, boolean or string
         } else if(token.startsWith('.') || token.endsWith(':')) {
             return token; // Property access
-        } else if (variableMapping[parentScopeId] && variableMapping[parentScopeId].hasOwnProperty(token)) {
-            return `variableMapping['${parentScopeId}']['${token}']`; // Replace with variable mapping
+        } else if (effectiveMap && effectiveMap.hasOwnProperty(token)) {
+            const originalScopeId = effectiveMap[token].scopeId;
+            return `variableMapping['${originalScopeId}']['${token}']`; // Replace with variable mapping
         } else if (context.hasOwnProperty(token)) {
             return `context['${token}']`; // Allow function from context
         } else if (token === 'element') {
@@ -434,9 +473,10 @@ function tokenizeExpression(expression){
 }
 
 // Match expression before calling eval
-export function restrictedEval(expression, parentScopeId = rootScope.id){
+export function restrictedEval(expression, parentScope = {id: rootScope.id}){
+    const parentScopeId = parentScope.id;
     const tokens = tokenizeExpression(expression);
-    const validatedTokens = validateAndReplaceTokens(tokens, parentScopeId);
+    const validatedTokens = validateAndReplaceTokens(tokens, parentScope);
     const validatedExpression = validatedTokens.join('');
 
     // Parentheses ensure it is treated as an expression, not a block
