@@ -342,42 +342,26 @@ export function handleMessagePayload(element, payload, scope = rootScope){
 function makeAssignment(assignment, parentScope) {
     try {
         // Check scope
-        // TODO
-        //const scopeIdToUse = checkScope(assignment.variable, parentScopeId);
+        const scopeIdToUse = findScopeForVariable(assignment.variable, parentScope);
 
         // Perform the assignment
-        variableMapping[parentScope.id][assignment.variable] = restrictedEval(assignment.expression, parentScope);
-        //console.log(`New value for ${assignment.variable}: ${variableMapping[parentScopeId][assignment.variable]}`);
+        variableMapping[scopeIdToUse][assignment.variable] = restrictedEval(assignment.expression, parentScope);
     }catch (err){
         console.error(`Assignment failed: ${err}`);
     }
 }
 
 // Check if given variable is defined in the scope
-function checkScope(variable, parentScopeId){
-    let scopeIdToUse = parentScopeId;
+function findScopeForVariable(variable, parentScope){
+    const effectiveScopes = buildEffectiveScope(parentScope);
 
-    // If the variable doesn't exist in the expected scope, look for it in others
-    if (
-        !variableMapping[parentScopeId] ||
-        !(variable in variableMapping[parentScopeId])
-    ) {
-        //console.log('Variable not found in scope ', parentScopeId);
-        for (const scopeId in variableMapping) {
-            if (variable in variableMapping[scopeId]) {
-                scopeIdToUse = scopeId;
-                //console.log('Variable found in scope ', scopeIdToUse);
-                break;
-            }
-        }
+    const scopeIdToUse = effectiveScopes[variable];
 
-        // If still not found, optionally create it in the original scope
-        if (!variableMapping[scopeIdToUse]) {
-            variableMapping[scopeIdToUse] = {};
-            //console.log('Variable not found at all.');
-        }
+    if(scopeIdToUse){
+        return scopeIdToUse;
+    }else{
+        throw new Error(`Couldn't find ${variable} in any scope.`);
     }
-    return scopeIdToUse;
 }
 
 // Here we can put functions to be assigned in the process design
@@ -409,50 +393,35 @@ function isString(token){
 
 // Build a flattened map of all effective variables the scope has access to
 function buildEffectiveScope(scope) {
-    const flattenedMap = {};
+    const effectiveScopes = {};
     let currentScope = scope;
 
-    //TODO include scope for every variable added
-
     while (currentScope !== null) {
-        console.log('Looking up vars in scope');
         const varsInScope = variableMapping[currentScope.id];
         if (varsInScope) {
-            console.log('found vars', varsInScope);
             Object.keys(varsInScope).forEach(variable => {
-                console.log('variable', variable);
-                if (!(variable in flattenedMap)) {
-                    flattenedMap[variable] = {
-                        value: varsInScope[variable],
-                        scopeId: currentScope.id
-                    };
-                    console.log('added to flat map');
+                if (!(variable in effectiveScopes)) {
+                    effectiveScopes[variable] = currentScope.id;
                 }
             });
         }
         currentScope = currentScope.parent;
     }
-
-    console.log('variable Mapping', variableMapping);
-
-    console.log('effective Scope', flattenedMap);
-    return flattenedMap;
+    return effectiveScopes;
 }
 
 
 // Replace variable by variableMapping or predefined function
 function validateAndReplaceTokens(tokens, parentScope){
-    const parentScopeId = parentScope.id;
-
-    const effectiveMap = buildEffectiveScope(parentScope);
+    const effectiveScope = buildEffectiveScope(parentScope);
 
     return tokens.map(token => {
         if (isNumber(token) || isOperator(token) || isBoolean(token) || isString(token)) {
             return token; // Valid number, operator, boolean or string
         } else if(token.startsWith('.') || token.endsWith(':')) {
             return token; // Property access
-        } else if (effectiveMap && effectiveMap.hasOwnProperty(token)) {
-            const originalScopeId = effectiveMap[token].scopeId;
+        } else if (effectiveScope && effectiveScope.hasOwnProperty(token)) {
+            const originalScopeId = effectiveScope[token];
             return `variableMapping['${originalScopeId}']['${token}']`; // Replace with variable mapping
         } else if (context.hasOwnProperty(token)) {
             return `context['${token}']`; // Allow function from context
@@ -486,7 +455,7 @@ export function restrictedEval(expression, parentScope = {id: rootScope.id}){
 // Create log element with assignment info and trigger log event
 function logAssignment(variable, element, parentScope){
     // check scope
-    const scopeIdToUse = checkScope(variable, parentScope.id)
+    const scopeIdToUse = findScopeForVariable(variable, parentScope);
 
     try {
         // the " -> ' is needed because otherwise the tooltip ends with the first "
