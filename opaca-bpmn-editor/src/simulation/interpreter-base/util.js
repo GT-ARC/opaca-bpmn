@@ -443,7 +443,6 @@ function tokenizeExpression(expression){
 
 // Match expression before calling eval
 export function restrictedEval(expression, parentScope = {id: rootScope.id}){
-    const parentScopeId = parentScope.id;
     const tokens = tokenizeExpression(expression);
     const validatedTokens = validateAndReplaceTokens(tokens, parentScope);
     const validatedExpression = validatedTokens.join('');

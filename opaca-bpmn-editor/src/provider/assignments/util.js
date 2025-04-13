@@ -23,18 +23,22 @@ export function createAssignments(properties, parent, bpmnFactory) {
 export function getAllVariables(element) {
     const rootElement = getParentElement(element);
 
-    const variables = [];
+    const variables = {};
 
     function collectVariables(currentElement) {
         const extension = getVariablesExtension(currentElement);
 
         if (extension) {
             const currentVariables = extension.values || [];
-            variables.push(...currentVariables.map(variable => ({
-                name: variable.name,
-                type: variable.type,
-                category: 'variable' // Mark as a standard variable
-            })));
+            currentVariables.forEach(variable => {
+                if (!variables[variable.name]) {
+                    variables[variable.name] = {
+                        name: variable.name,
+                        type: variable.type,
+                        category: 'variable' // Mark as a standard variable
+                    };
+                }
+            });
         }
 
         // Check if the current element has a parent
@@ -52,12 +56,12 @@ export function getAllVariables(element) {
                     // Add service parameters
                     if(service.parameters){
                         service.parameters.forEach(param => {
-                            variables.push({
+                            variables[param.name] = {
                                 name: param.name,
-                                type: param.type, // Keep the data type
+                                type: param.type,
                                 category: 'serviceParameter',
                                 serviceName: service.name
-                            });
+                            };
                         });
                     }
 
@@ -78,5 +82,5 @@ export function getAllVariables(element) {
     }
     collectVariables(rootElement);
 
-    return variables;
+    return Object.values(variables);
 }
