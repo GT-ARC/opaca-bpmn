@@ -1,5 +1,5 @@
 # Use official Node runtime as the base
-FROM node:22
+FROM node:24-slim
 
 # Set the working directory
 WORKDIR /usr/src/app

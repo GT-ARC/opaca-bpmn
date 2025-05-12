@@ -4,7 +4,7 @@ services:
 
   opaca-bpmn-editor:
     build: opaca-bpmn-editor
-    image: opaca-bpmn-editor
+    image: opaca-bpmn-modeller
     ports:
       - "8080:8080"
     depends_on:
@@ -14,7 +14,7 @@ services:
 
   promoai-api-server:
     build: promoai-api-server
-    image: promoai-api-server
+    image: opaca-bpmn-modeller-llm-backend
     ports:
       - "5000:5000"
     environment:
