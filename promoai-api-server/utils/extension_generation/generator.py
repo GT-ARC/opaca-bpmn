@@ -3,7 +3,7 @@ from lxml import etree
 
 def add_namespaces(xml_bytes, parser):
     new_namespaces = {
-        "vsdt2": "https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-interpreter-vsdt2/-/raw/main/src/descriptors/vsdt2.json?ref_type=heads"
+        "vsdt2": "https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json"
     }
     # Parse the base XML
     tree = etree.XML(xml_bytes, parser)
