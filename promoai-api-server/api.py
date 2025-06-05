@@ -27,6 +27,7 @@ logger = logging.getLogger("uvicorn")
 
 class Session(BaseModel):
     process_description: str
+    with_extensions: bool = False
     llm: str = os.getenv("LLM_NAME")
     api_key: str = os.getenv("LLM_API_KEY")
 
@@ -71,6 +72,7 @@ def generate_model(data: Session):
     try:
         # First step: generate basic ProMoAI BPMN diagram
         model_gen = LLMProcessModelGenerator(data.process_description, data.api_key, data.llm)
+        session_id = store_model_gen_in_cache(model_gen)
 
         # POWL -> PetriNet -> BPMN model
         powl = model_gen.get_powl()
@@ -83,14 +85,16 @@ def generate_model(data: Session):
         bpmn_str = bpmn_data.decode('utf-8') #here we convert bytes to a string
         logger.debug("The BPMN model after decoding: %s", bpmn_str)
         
+        if not data.with_extensions:
+            return JSONResponse(content={"bpmn_xml": bpmn_str, "session_id": session_id, "extension_session_id": None}, media_type="application/json")
+
         # Second step: add custom attributes TODO maybe use separate description
         extension_gen = LLMExtensionGenerator(bpmn_str, data.process_description, data.api_key, data.llm)
+        extension_session_id = store_model_gen_in_cache(extension_gen)
+        
         bpmn_with_extensions = extension_gen.get_enhanced_bpmn()
         logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
         
-        session_id = store_model_gen_in_cache(model_gen)
-        extension_session_id = store_model_gen_in_cache(extension_gen)
-
         return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
     except Exception as e:
         logger.error("Error generating BPMN model: %s", str(e))
