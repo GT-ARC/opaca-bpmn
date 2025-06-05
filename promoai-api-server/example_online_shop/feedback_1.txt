@@ -1,1 +1,0 @@
-model the item selection using an activity ``Add Items'' that can be repeated
