@@ -22,7 +22,7 @@ export default function Variables({ element, injector, type }) {
 
         return {
             id,
-            label: variable.get('name') || '',
+            label: `${variable.get('name') || ''}: ${variable.get('type') || ''}`,
             entries: Variable({
                 idPrefix: id,
                 element,

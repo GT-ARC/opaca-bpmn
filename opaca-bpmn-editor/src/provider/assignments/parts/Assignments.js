@@ -23,7 +23,7 @@ export default function Assignments({ element, injector }) {
 
         return {
             id,
-            label: assignment.get('variable') || '',
+            label: `${assignment.get('variable') || ''} = ${assignment.get('expression') || ''}`,
             entries: Assignment({
                 idPrefix: id,
                 element,
