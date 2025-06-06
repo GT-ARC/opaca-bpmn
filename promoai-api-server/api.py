@@ -69,33 +69,29 @@ def get_config():
 def generate_model(data: Session):
     logger.info("Generating model for: %s", data.process_description)
     try:
+        # First step: generate basic ProMoAI BPMN diagram
         model_gen = LLMProcessModelGenerator(data.process_description, data.api_key, data.llm)
 
-        if model_gen:
-            powl = model_gen.get_powl()
-            pn, im, fm = powl_to_pn(powl)
-            bpmn = pn_to_bpmn(pn, im, fm)
-            bpmn = layouter(bpmn)
+        # POWL -> PetriNet -> BPMN model
+        powl = model_gen.get_powl()
+        pn, im, fm = powl_to_pn(powl)
+        bpmn = pn_to_bpmn(pn, im, fm)
+        bpmn = layouter(bpmn) # crappy "better-than-nothing" layout, usually overwritten by BPMN.io Auto-Layouter
 
-            bpmn_data = get_xml_string(bpmn, parameters={"encoding": constants.DEFAULT_ENCODING}) #returns bytes
+        # BPMN model -> string
+        bpmn_data = get_xml_string(bpmn, parameters={"encoding": constants.DEFAULT_ENCODING}) #returns bytes
+        bpmn_str = bpmn_data.decode('utf-8') #here we convert bytes to a string
+        logger.debug("The BPMN model after decoding: %s", bpmn_str)
+        
+        # Second step: add custom attributes TODO maybe use separate description
+        extension_gen = LLMExtensionGenerator(bpmn_str, data.process_description, data.api_key, data.llm)
+        bpmn_with_extensions = extension_gen.get_enhanced_bpmn()
+        logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
+        
+        session_id = store_model_gen_in_cache(model_gen)
+        extension_session_id = store_model_gen_in_cache(extension_gen)
 
-            bpmn_str = bpmn_data.decode('utf-8') #here we convert bytes to a string
-            logger.debug("The BPMN model after decoding: %s", bpmn_str)
-
-            # Second step: add custom attributes TODO maybe use seperate description
-            extension_gen = LLMExtensionGenerator(bpmn_str, data.process_description, data.api_key, data.llm)
-
-            #logger.info('ExtensionGenerator', extension_gen)
-            bpmn_with_extensions = extension_gen.get_enhanced_bpmn()
-
-            logger.debug("The BPMN model with extensions: %s", bpmn_with_extensions)
-
-            session_id = store_model_gen_in_cache(model_gen)
-            extension_session_id = store_model_gen_in_cache(extension_gen)
-
-            return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
-        else:
-            raise ValueError("Generated BPMN diagram is None or invalid.")
+        return JSONResponse(content={"bpmn_xml": bpmn_with_extensions, "session_id": session_id, "extension_session_id": extension_session_id}, media_type="application/json")
     except Exception as e:
         logger.error("Error generating BPMN model: %s", str(e))
         logger.error(traceback.format_exc())
@@ -107,17 +103,14 @@ def update_model(data: Feedback):
     logger.info('Updating model with query: %s', data.feedback_text)
     try:
         session_id = data.session_id
-
         model_gen = get_model_gen_from_cache(session_id)
 
         extension_session_id = data.extension_session_id
-
         extension_gen = get_model_gen_from_cache(extension_session_id)
 
         # When there is no model_gen yet, create a new one using process xml
         if not session_id and data.process_xml:
             model_gen = LLMProcessModelGenerator(data.process_xml, data.api_key, data.llm)
-
             session_id = store_model_gen_in_cache(model_gen)
 
 

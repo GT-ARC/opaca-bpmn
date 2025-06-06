@@ -21,7 +21,7 @@ vsdt2 = """
 {
 "name": "Vsdt2",
 "prefix": "vsdt2",
-"uri": "https://gitlab.dai-labor.de/zeki-bmas/tp-processes/bpmn-interpreter-vsdt2/-/raw/main/src/descriptors/vsdt2.json?ref_type=heads",
+"uri": "https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json",
 "xml": {
     "tagAlias": "lowerCase"
 },
