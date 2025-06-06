@@ -39,8 +39,13 @@
         <div class="prompt-panel llm-backend-present" id="js-prompt-panel">
           <textarea id="process-description" rows="10" cols="50"></textarea>
           <br>
-          <button id="send-description-plain">Generate plain BPMN</button>
-          <button id="send-description-extension">Generate BPMN with Extensions (experimental)</button>
+          <div style="display: inline-flex; align-items: center; gap: 10px; margin-top: 5px;">
+            <button id="send-description-plain" style="padding: 5px 10px; font-size: 15px;">Generate BPMN</button>
+            <label style="display: flex; align-items: center; gap: 5px; margin: 0;">
+              <input id="send-description-extension" type="checkbox">
+              With Extensions (experimental)
+            </label>
+          </div>
         </div>
         <div class="loading-panel" id="js-loading-panel" style="display: none;">
           <div class="loader"></div>

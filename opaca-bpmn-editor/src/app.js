@@ -337,12 +337,11 @@ $(function() {
 
   // Generate diagram using LLM
   $('#send-description-plain').click(async function() {
-    const success = await generateDiagramWithLLM(false);
-    if(success){ await fixLayout(); }
-  });
-  $('#send-description-extension').click(async function() {
-    const success = await generateDiagramWithLLM(true);
-    if(success){ await fixLayout(); }
+    const useExtensions = $('#send-description-extension').is(':checked');
+    const success = await generateDiagramWithLLM(useExtensions);
+    if (success) {
+      await fixLayout();
+    }
   });
 
   // Set example prompts
