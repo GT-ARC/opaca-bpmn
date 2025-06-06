@@ -48,7 +48,7 @@ Now we need to add Conditions that set SequenceFlows.
 #### 6. Mark as executable
 When we are done, we can mark the process as executable. When this is not set, the standard token-simulation is used. You find a checkbox for it in the properties of the Process.
 
-Now we have a process that evaluates conditions based on the variable values automatically. You can find the final demo-fridge-process XML in our [examples](../opaca-bpmn-editor/resources/examples).
+Now we have a process that evaluates conditions based on the variable values automatically. You can find the final demo-fridge-process XML in our [examples](../examples).
 This is what the interpretation looks like:
 ![simulation of example](./model-process-screen-recordings/fridge_example_simulation.gif)
 
