@@ -171,7 +171,7 @@ async function fetchConfig() {
 var sessionId = '';
 var extensionSessionId = '';
 
-async function generateDiagramWithLLM() {
+async function generateDiagramWithLLM(with_extensions) {
   const description = $('#process-description').val();
   $('#js-prompt-panel').hide();
   $('#js-loading-panel').show();
@@ -182,7 +182,9 @@ async function generateDiagramWithLLM() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        process_description: description})
+        process_description: description,
+        with_extensions: with_extensions,
+      })
     });
 
     if (!response.ok) {
@@ -334,9 +336,12 @@ $(function() {
   });
 
   // Generate diagram using LLM
-  $('#send-description').click(async function() {
-    const success = await generateDiagramWithLLM();
-    if(success){ await fixLayout(); }
+  $('#send-description-plain').click(async function() {
+    const useExtensions = $('#send-description-extension').is(':checked');
+    const success = await generateDiagramWithLLM(useExtensions);
+    if (success) {
+      await fixLayout();
+    }
   });
 
   // Set example prompts
