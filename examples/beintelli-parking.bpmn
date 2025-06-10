@@ -1,0 +1,415 @@
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-06-06--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+  <bpmn2:extensionElements>
+    <vsdt2:services>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="ClearHighlight" id="service_1104thk">
+        <vsdt2:result name="result" type="boolean"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="HighlightPath" id="service_0qmb2tn">
+        <vsdt2:parameter name="locations" type="array"/>
+        <vsdt2:parameter name="label" type="string"/>
+        <vsdt2:parameter name="clear" type="boolean"/>
+        <vsdt2:result name="result" type="boolean"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="SetTitle" id="service_080hhuh">
+        <vsdt2:parameter name="title" type="string"/>
+        <vsdt2:result name="result" type="void"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="DirectionsToLocation" id="service_2u0ur3f">
+        <vsdt2:parameter name="location_from" type="tuple"/>
+        <vsdt2:parameter name="location_to" type="tuple"/>
+        <vsdt2:result name="dir_result" type="list"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="WaypointsToLocation" id="service_28g5s9o">
+        <vsdt2:parameter name="location_from" type="tuple"/>
+        <vsdt2:parameter name="location_to" type="tuple"/>
+        <vsdt2:result name="wp_result" type="list"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="GetAirQuality" id="service_0ug7dgd">
+        <vsdt2:parameter name="location" type="Location"/>
+        <vsdt2:parameter name="max_distance_meters" type="integer"/>
+        <vsdt2:result name="aq_result" type="string"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="FindParkingSpots" id="service_07237td">
+        <vsdt2:parameter name="location" type="Location"/>
+        <vsdt2:parameter name="radius_meters" type="integer"/>
+        <vsdt2:result name="parking_result" type="list"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="SetValue" id="service_3h599ta">
+        <vsdt2:parameter name="key" type="string"/>
+        <vsdt2:parameter name="value" type="string"/>
+        <vsdt2:result name="result" type="void"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="ShowMessage" id="service_03f9qsh">
+        <vsdt2:parameter name="message" type="string"/>
+        <vsdt2:parameter name="seconds" type="integer"/>
+        <vsdt2:result name="result" type="void"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="ToLocation" id="service_3kjppkt">
+        <vsdt2:parameter name="address" type="string"/>
+        <vsdt2:result name="loc_result" type="tuple"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="FindMyCar" id="service_1itfli6">
+        <vsdt2:parameter name="name" type="string"/>
+        <vsdt2:result name="car_result" type="Location"/>
+      </vsdt2:service>
+    </vsdt2:services>
+  </bpmn2:extensionElements>
+  <bpmn2:process id="Process_1" isExecutable="true">
+    <bpmn2:extensionElements>
+      <vsdt2:variables>
+        <vsdt2:variable name="car_location" type="object"/>
+        <vsdt2:variable name="tgt_location" type="object"/>
+        <vsdt2:variable name="airquality" type="string"/>
+        <vsdt2:variable name="park_location" type=""/>
+        <vsdt2:variable name="directions" type="array"/>
+        <vsdt2:variable name="i" type="integer"/>
+        <vsdt2:variable name="waypoints" type="array"/>
+        <vsdt2:variable name="car_name" type="string"/>
+      </vsdt2:variables>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1">
+      <bpmn2:outgoing>Flow_17l6ygl</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="Flow_17l6ygl" sourceRef="StartEvent_1" targetRef="Activity_0zb4mkt"/>
+    <bpmn2:task id="Activity_1kaiagj" name="show details">
+      <bpmn2:incoming>Flow_0g2qdmw</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0bvr53i</bpmn2:outgoing>
+    </bpmn2:task>
+    <bpmn2:exclusiveGateway id="Gateway_19t7dex">
+      <bpmn2:incoming>Flow_1w1sfge</bpmn2:incoming>
+      <bpmn2:incoming>Flow_1liyvwr</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1lbwa47</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:exclusiveGateway id="Gateway_1d407w6">
+      <bpmn2:incoming>Flow_1lbwa47</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_166hg7z</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_0rj6eu1</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:endEvent id="Event_01k982u">
+      <bpmn2:incoming>Flow_1plsuu0</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_166hg7z" sourceRef="Gateway_1d407w6" targetRef="Gateway_0ka4rur">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">i &gt;= directions.length</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:serviceTask id="Activity_1tszbpj" name="find car" vsdt2:serviceImpl="service_1itfli6">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="name" expression="car_name" assignTime="START"/>
+          <vsdt2:assignment variable="car_location" expression="car_result.location" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0spwb5l</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0fl8zxx</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="Flow_0spwb5l" sourceRef="Gateway_1vt40n5" targetRef="Activity_1tszbpj"/>
+    <bpmn2:sequenceFlow id="Flow_185cai9" sourceRef="Gateway_1vt40n5" targetRef="Activity_0xblfza"/>
+    <bpmn2:parallelGateway id="Gateway_1vt40n5">
+      <bpmn2:incoming>Flow_06ldk99</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0spwb5l</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_185cai9</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="Flow_0btl4qx" sourceRef="Gateway_0qb3zsb" targetRef="Activity_1wpfka4"/>
+    <bpmn2:parallelGateway id="Gateway_0qb3zsb">
+      <bpmn2:incoming>Flow_0rrinv5</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0btl4qx</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_0h28k6i</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="Flow_0h28k6i" sourceRef="Gateway_0qb3zsb" targetRef="Activity_1xntm5d"/>
+    <bpmn2:sequenceFlow id="Flow_0g2qdmw" sourceRef="Activity_1xntm5d" targetRef="Activity_1kaiagj"/>
+    <bpmn2:sequenceFlow id="Flow_1w1sfge" sourceRef="Activity_15ht4kf" targetRef="Gateway_19t7dex"/>
+    <bpmn2:sequenceFlow id="Flow_0fl8zxx" sourceRef="Activity_1tszbpj" targetRef="Gateway_08i3370"/>
+    <bpmn2:sequenceFlow id="Flow_1plsuu0" sourceRef="Gateway_0ka4rur" targetRef="Event_01k982u"/>
+    <bpmn2:parallelGateway id="Gateway_0ka4rur">
+      <bpmn2:incoming>Flow_166hg7z</bpmn2:incoming>
+      <bpmn2:incoming>Flow_0bvr53i</bpmn2:incoming>
+      <bpmn2:incoming>Flow_01wsq8f</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1plsuu0</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="Flow_0bvr53i" sourceRef="Activity_1kaiagj" targetRef="Gateway_0ka4rur"/>
+    <bpmn2:parallelGateway id="Gateway_08i3370">
+      <bpmn2:incoming>Flow_0fl8zxx</bpmn2:incoming>
+      <bpmn2:incoming>Flow_0ocjy15</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_01xqcjc</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="Flow_01xqcjc" sourceRef="Gateway_08i3370" targetRef="Gateway_1w35iya"/>
+    <bpmn2:sequenceFlow id="Flow_0ocjy15" sourceRef="Activity_1wpfka4" targetRef="Gateway_08i3370"/>
+    <bpmn2:serviceTask id="Activity_0xblfza" name="get target location" vsdt2:serviceImpl="service_3kjppkt">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="address" expression="&quot;Hardenbergstraße, Berlin&quot;" assignTime="START"/>
+          <vsdt2:assignment variable="tgt_location" expression="loc_result" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_185cai9</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0rrinv5</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="Flow_0rrinv5" sourceRef="Activity_0xblfza" targetRef="Gateway_0qb3zsb"/>
+    <bpmn2:serviceTask id="Activity_1xntm5d" name="get air quality at target" vsdt2:serviceImpl="service_0ug7dgd">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="location" expression="tgt_location" assignTime="START"/>
+          <vsdt2:assignment variable="max_distance_meters" expression="500" assignTime="START"/>
+          <vsdt2:assignment variable="airquality" expression="aq_result" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0h28k6i</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0g2qdmw</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_1wpfka4" name="find closest parking spot" vsdt2:serviceImpl="service_07237td">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="location" expression="tgt_location" assignTime="START"/>
+          <vsdt2:assignment variable="radius_meters" expression="500" assignTime="START"/>
+          <vsdt2:assignment variable="park_location" expression="parking_result[0].location" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0btl4qx</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0ocjy15</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="Flow_1hhu2z6" sourceRef="Gateway_1w35iya" targetRef="Activity_15ht4kf"/>
+    <bpmn2:sequenceFlow id="Flow_0n1xaoe" sourceRef="Gateway_1w35iya" targetRef="Activity_0f45lun"/>
+    <bpmn2:parallelGateway id="Gateway_1w35iya">
+      <bpmn2:incoming>Flow_01xqcjc</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1hhu2z6</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_0n1xaoe</bpmn2:outgoing>
+    </bpmn2:parallelGateway>
+    <bpmn2:sequenceFlow id="Flow_08n4evi" sourceRef="Activity_0f45lun" targetRef="Activity_1kfy4ec"/>
+    <bpmn2:sequenceFlow id="Flow_01wsq8f" sourceRef="Activity_1kfy4ec" targetRef="Gateway_0ka4rur"/>
+    <bpmn2:serviceTask id="Activity_15ht4kf" name="get directions" vsdt2:serviceImpl="service_2u0ur3f">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="location_from" expression="car_location" assignTime="START"/>
+          <vsdt2:assignment variable="location_to" expression="tgt_location" assignTime="START"/>
+          <vsdt2:assignment variable="directions" expression="dir_result" assignTime="END"/>
+          <vsdt2:assignment variable="i" expression="0" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1hhu2z6</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1w1sfge</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_1mm38ds" name="show directions in control center" vsdt2:serviceImpl="service_03f9qsh">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="message" expression="directions[i]" assignTime="START"/>
+          <vsdt2:assignment variable="seconds" expression="3" assignTime="START"/>
+          <vsdt2:assignment variable="i" expression="i+1" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_03gh760</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1liyvwr</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="Flow_1lbwa47" sourceRef="Gateway_19t7dex" targetRef="Gateway_1d407w6"/>
+    <bpmn2:sequenceFlow id="Flow_0rj6eu1" sourceRef="Gateway_1d407w6" targetRef="Activity_1mf85pg">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">i &lt; directions.length</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_1liyvwr" sourceRef="Activity_1mm38ds" targetRef="Gateway_19t7dex"/>
+    <bpmn2:serviceTask id="Activity_0f45lun" name="get waypoints" vsdt2:serviceImpl="service_28g5s9o">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="location_from" expression="car_location" assignTime="START"/>
+          <vsdt2:assignment variable="location_to" expression="tgt_location" assignTime="START"/>
+          <vsdt2:assignment variable="waypoints" expression="wp_result" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_0n1xaoe</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_08n4evi</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_1kfy4ec" name="show waypoints" vsdt2:serviceImpl="service_0qmb2tn">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="locations" expression="waypoints" assignTime="START"/>
+          <vsdt2:assignment variable="label" expression="&quot;Route to target&quot;" assignTime="START"/>
+          <vsdt2:assignment variable="clear" expression="true" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_08n4evi</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_01wsq8f</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="Flow_06ldk99" sourceRef="Activity_0zb4mkt" targetRef="Gateway_1vt40n5"/>
+    <bpmn2:userTask id="Activity_0zb4mkt" name="ask car name" vsdt2:type="input" vsdt2:message="&quot;What is the name of your car?&quot;">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="car_name" type="string" description="&quot;name of the car (in quotes please)&quot;"/>
+        </vsdt2:targets>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_17l6ygl</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_06ldk99</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="Flow_03gh760" sourceRef="Activity_1mf85pg" targetRef="Activity_1mm38ds"/>
+    <bpmn2:userTask id="Activity_1mf85pg" name="show directions as alert" vsdt2:type="information" vsdt2:message="directions[i]">
+      <bpmn2:incoming>Flow_0rj6eu1</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_03gh760</bpmn2:outgoing>
+    </bpmn2:userTask>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="62" y="232" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1kaiagj_di" bpmnElement="Activity_1kaiagj">
+        <dc:Bounds x="1360" y="430" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_19t7dex_di" bpmnElement="Gateway_19t7dex" isMarkerVisible="true">
+        <dc:Bounds x="1245" y="225" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1d407w6_di" bpmnElement="Gateway_1d407w6" isMarkerVisible="true">
+        <dc:Bounds x="1535" y="225" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_01k982u_di" bpmnElement="Event_01k982u">
+        <dc:Bounds x="1752" y="232" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1349qhc_di" bpmnElement="Activity_1tszbpj">
+        <dc:Bounds x="440" y="210" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1ybrd70_di" bpmnElement="Gateway_1vt40n5">
+        <dc:Bounds x="325" y="225" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0m67spe_di" bpmnElement="Gateway_0qb3zsb">
+        <dc:Bounds x="595" y="335" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_12vc0hi_di" bpmnElement="Gateway_0ka4rur">
+        <dc:Bounds x="1635" y="225" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0t9vkix_di" bpmnElement="Gateway_08i3370">
+        <dc:Bounds x="865" y="225" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1y8rlvf_di" bpmnElement="Activity_0xblfza">
+        <dc:Bounds x="440" y="320" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1a11uy6_di" bpmnElement="Activity_1xntm5d">
+        <dc:Bounds x="1090" y="430" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1igpvz7_di" bpmnElement="Activity_1wpfka4">
+        <dc:Bounds x="710" y="320" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0f3ndwi_di" bpmnElement="Gateway_1w35iya">
+        <dc:Bounds x="965" y="225" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06fj7tc_di" bpmnElement="Activity_15ht4kf">
+        <dc:Bounds x="1090" y="210" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0ks5yan_di" bpmnElement="Activity_1mm38ds">
+        <dc:Bounds x="1290" y="290" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_099u03c_di" bpmnElement="Activity_0f45lun">
+        <dc:Bounds x="1090" y="90" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1huakam_di" bpmnElement="Activity_1kfy4ec">
+        <dc:Bounds x="1360" y="90" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0047bz0_di" bpmnElement="Activity_0zb4mkt">
+        <dc:Bounds x="160" y="210" width="100" height="80"/>
+        <bpmndi:BPMNLabel/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1gf4p3s_di" bpmnElement="Activity_1mf85pg">
+        <dc:Bounds x="1430" y="290" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_17l6ygl_di" bpmnElement="Flow_17l6ygl">
+        <di:waypoint x="98" y="250"/>
+        <di:waypoint x="160" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_166hg7z_di" bpmnElement="Flow_166hg7z">
+        <di:waypoint x="1585" y="250"/>
+        <di:waypoint x="1635" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0spwb5l_di" bpmnElement="Flow_0spwb5l">
+        <di:waypoint x="375" y="250"/>
+        <di:waypoint x="440" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_185cai9_di" bpmnElement="Flow_185cai9">
+        <di:waypoint x="350" y="275"/>
+        <di:waypoint x="350" y="360"/>
+        <di:waypoint x="440" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0btl4qx_di" bpmnElement="Flow_0btl4qx">
+        <di:waypoint x="645" y="360"/>
+        <di:waypoint x="710" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0h28k6i_di" bpmnElement="Flow_0h28k6i">
+        <di:waypoint x="620" y="385"/>
+        <di:waypoint x="620" y="470"/>
+        <di:waypoint x="1090" y="470"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0g2qdmw_di" bpmnElement="Flow_0g2qdmw">
+        <di:waypoint x="1190" y="470"/>
+        <di:waypoint x="1360" y="470"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1w1sfge_di" bpmnElement="Flow_1w1sfge">
+        <di:waypoint x="1190" y="250"/>
+        <di:waypoint x="1245" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0fl8zxx_di" bpmnElement="Flow_0fl8zxx">
+        <di:waypoint x="540" y="250"/>
+        <di:waypoint x="865" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1plsuu0_di" bpmnElement="Flow_1plsuu0">
+        <di:waypoint x="1685" y="250"/>
+        <di:waypoint x="1752" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0bvr53i_di" bpmnElement="Flow_0bvr53i">
+        <di:waypoint x="1460" y="470"/>
+        <di:waypoint x="1660" y="470"/>
+        <di:waypoint x="1660" y="275"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01xqcjc_di" bpmnElement="Flow_01xqcjc">
+        <di:waypoint x="915" y="250"/>
+        <di:waypoint x="965" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0ocjy15_di" bpmnElement="Flow_0ocjy15">
+        <di:waypoint x="810" y="360"/>
+        <di:waypoint x="890" y="360"/>
+        <di:waypoint x="890" y="275"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rrinv5_di" bpmnElement="Flow_0rrinv5">
+        <di:waypoint x="540" y="360"/>
+        <di:waypoint x="595" y="360"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1hhu2z6_di" bpmnElement="Flow_1hhu2z6">
+        <di:waypoint x="1015" y="250"/>
+        <di:waypoint x="1090" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0n1xaoe_di" bpmnElement="Flow_0n1xaoe">
+        <di:waypoint x="990" y="225"/>
+        <di:waypoint x="990" y="130"/>
+        <di:waypoint x="1090" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_08n4evi_di" bpmnElement="Flow_08n4evi">
+        <di:waypoint x="1190" y="130"/>
+        <di:waypoint x="1360" y="130"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01wsq8f_di" bpmnElement="Flow_01wsq8f">
+        <di:waypoint x="1460" y="130"/>
+        <di:waypoint x="1660" y="130"/>
+        <di:waypoint x="1660" y="225"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1lbwa47_di" bpmnElement="Flow_1lbwa47">
+        <di:waypoint x="1295" y="250"/>
+        <di:waypoint x="1535" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rj6eu1_di" bpmnElement="Flow_0rj6eu1">
+        <di:waypoint x="1560" y="275"/>
+        <di:waypoint x="1560" y="330"/>
+        <di:waypoint x="1530" y="330"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1liyvwr_di" bpmnElement="Flow_1liyvwr">
+        <di:waypoint x="1290" y="330"/>
+        <di:waypoint x="1270" y="330"/>
+        <di:waypoint x="1270" y="275"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_06ldk99_di" bpmnElement="Flow_06ldk99">
+        <di:waypoint x="260" y="250"/>
+        <di:waypoint x="325" y="250"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_03gh760_di" bpmnElement="Flow_03gh760">
+        <di:waypoint x="1430" y="330"/>
+        <di:waypoint x="1390" y="330"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-06-10--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+  <bpmn2:extensionElements>
+    <vsdt2:services>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="desk-agent::GetRooms" id="service_04kb0p4">
+        <vsdt2:result name="resultGetRooms" type="array"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="desk-agent::GetDesks" id="service_140tvp8">
+        <vsdt2:parameter name="room" type="string"/>
+        <vsdt2:result name="resultGetDesks" type="array"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="desk-agent::IsFree" id="service_1rca3bt">
+        <vsdt2:parameter name="room" type="string"/>
+        <vsdt2:parameter name="desk" type="integer"/>
+        <vsdt2:result name="resultIsFree" type="boolean"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://localhost:8000" name="desk-agent::BookDesk" id="service_3rtfo80">
+        <vsdt2:parameter name="room" type="string"/>
+        <vsdt2:parameter name="desk" type="integer"/>
+        <vsdt2:result name="resultBookDesk" type="boolean"/>
+      </vsdt2:service>
+    </vsdt2:services>
+  </bpmn2:extensionElements>
+  <bpmn2:process id="Process_1" isExecutable="true">
+    <bpmn2:extensionElements>
+      <vsdt2:variables>
+        <vsdt2:variable name="another" type="boolean"/>
+      </vsdt2:variables>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1">
+      <bpmn2:outgoing>Flow_1l56xrc</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="Flow_1l56xrc" sourceRef="StartEvent_1" targetRef="Activity_0fc986n"/>
+    <bpmn2:sequenceFlow id="Flow_1gmzzds" sourceRef="Activity_1xdxskn" targetRef="Activity_1tt0i12"/>
+    <bpmn2:exclusiveGateway id="Gateway_1bg3jdb" name="any free?">
+      <bpmn2:incoming>Flow_1rxs25k</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_160pxcu</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_019f5n9</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_1rxs25k" sourceRef="Activity_1tt0i12" targetRef="Gateway_1bg3jdb"/>
+    <bpmn2:sequenceFlow id="Flow_160pxcu" sourceRef="Gateway_1bg3jdb" targetRef="Activity_0qhcvbn">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">resultGetDesks.length &gt; 0</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_1ug0lr3" sourceRef="Activity_0qhcvbn" targetRef="Activity_125uwkr"/>
+    <bpmn2:exclusiveGateway id="Gateway_0tsn5ke">
+      <bpmn2:incoming>Flow_0j49tfs</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0be3g8g</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_1g9fatv</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_0j49tfs" sourceRef="Activity_125uwkr" targetRef="Gateway_0tsn5ke"/>
+    <bpmn2:endEvent id="Event_1dwa0c4">
+      <bpmn2:incoming>Flow_0be3g8g</bpmn2:incoming>
+    </bpmn2:endEvent>
+    <bpmn2:sequenceFlow id="Flow_0be3g8g" sourceRef="Gateway_0tsn5ke" targetRef="Event_1dwa0c4">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">! another</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_1g9fatv" sourceRef="Gateway_0tsn5ke" targetRef="Activity_1xdxskn">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">another</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_019f5n9" sourceRef="Gateway_1bg3jdb" targetRef="Activity_1akgxbp">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">resultGetDesks.length == 0</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_0u016p5" sourceRef="Activity_1akgxbp" targetRef="Activity_1xdxskn"/>
+    <bpmn2:userTask id="Activity_1xdxskn" name="Ask User which Room" vsdt2:type="input" vsdt2:message="&quot;Select Room. Available: &quot; + resultGetRooms">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="room" type="string" description="&quot;Where to book a desk&quot;"/>
+        </vsdt2:targets>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1g9fatv</bpmn2:incoming>
+      <bpmn2:incoming>Flow_0u016p5</bpmn2:incoming>
+      <bpmn2:incoming>Flow_01h5yt3</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1gmzzds</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:userTask id="Activity_125uwkr" name="Ask whether to book more" vsdt2:type="input" vsdt2:message="&quot;Result of booking desk &quot; + resultGetDesks[0] + &quot;: &quot; + resultBookDesk + &quot;.\nBook another desk?&quot;">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="another" type="boolean" description=""/>
+        </vsdt2:targets>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1ug0lr3</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0j49tfs</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:serviceTask id="Activity_1tt0i12" name="Find available Desks" vsdt2:serviceImpl="service_140tvp8">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="room" expression="room" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1gmzzds</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1rxs25k</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_0qhcvbn" name="Book next available Desk" vsdt2:serviceImpl="service_3rtfo80">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="room" expression="room" assignTime="START"/>
+          <vsdt2:assignment variable="desk" expression="resultGetDesks[0]" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_160pxcu</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1ug0lr3</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:userTask id="Activity_1akgxbp" name="Message: none free" vsdt2:type="information" vsdt2:message="&quot;It seems like there are no free desks in this room.&quot;">
+      <bpmn2:incoming>Flow_019f5n9</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0u016p5</bpmn2:outgoing>
+    </bpmn2:userTask>
+    <bpmn2:sequenceFlow id="Flow_01h5yt3" sourceRef="Activity_0fc986n" targetRef="Activity_1xdxskn"/>
+    <bpmn2:serviceTask id="Activity_0fc986n" name="Find rooms" vsdt2:serviceImpl="service_04kb0p4">
+      <bpmn2:incoming>Flow_1l56xrc</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_01h5yt3</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="232" y="240" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1bg3jdb_di" bpmnElement="Gateway_1bg3jdb" isMarkerVisible="true">
+        <dc:Bounds x="805" y="233" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="807" y="293" width="46" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0tsn5ke_di" bpmnElement="Gateway_0tsn5ke" isMarkerVisible="true">
+        <dc:Bounds x="1265" y="233" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Event_1dwa0c4_di" bpmnElement="Event_1dwa0c4">
+        <dc:Bounds x="1392" y="240" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_115rm1j_di" bpmnElement="Activity_1xdxskn">
+        <dc:Bounds x="480" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qitkfy_di" bpmnElement="Activity_125uwkr">
+        <dc:Bounds x="1090" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1qe4nf5_di" bpmnElement="Activity_1tt0i12">
+        <dc:Bounds x="640" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1xksac2_di" bpmnElement="Activity_0qhcvbn">
+        <dc:Bounds x="920" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0o4q6jw_di" bpmnElement="Activity_1akgxbp">
+        <dc:Bounds x="640" y="100" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_13v49hy_di" bpmnElement="Activity_0fc986n">
+        <dc:Bounds x="320" y="218" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_1l56xrc_di" bpmnElement="Flow_1l56xrc">
+        <di:waypoint x="268" y="258"/>
+        <di:waypoint x="320" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1gmzzds_di" bpmnElement="Flow_1gmzzds">
+        <di:waypoint x="580" y="258"/>
+        <di:waypoint x="640" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1rxs25k_di" bpmnElement="Flow_1rxs25k">
+        <di:waypoint x="740" y="258"/>
+        <di:waypoint x="805" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_160pxcu_di" bpmnElement="Flow_160pxcu">
+        <di:waypoint x="855" y="258"/>
+        <di:waypoint x="920" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1ug0lr3_di" bpmnElement="Flow_1ug0lr3">
+        <di:waypoint x="1020" y="258"/>
+        <di:waypoint x="1090" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0j49tfs_di" bpmnElement="Flow_0j49tfs">
+        <di:waypoint x="1190" y="258"/>
+        <di:waypoint x="1265" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0be3g8g_di" bpmnElement="Flow_0be3g8g">
+        <di:waypoint x="1315" y="258"/>
+        <di:waypoint x="1392" y="258"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1g9fatv_di" bpmnElement="Flow_1g9fatv">
+        <di:waypoint x="1290" y="283"/>
+        <di:waypoint x="1290" y="370"/>
+        <di:waypoint x="530" y="370"/>
+        <di:waypoint x="530" y="298"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_019f5n9_di" bpmnElement="Flow_019f5n9">
+        <di:waypoint x="830" y="233"/>
+        <di:waypoint x="830" y="140"/>
+        <di:waypoint x="740" y="140"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0u016p5_di" bpmnElement="Flow_0u016p5">
+        <di:waypoint x="640" y="140"/>
+        <di:waypoint x="530" y="140"/>
+        <di:waypoint x="530" y="218"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_01h5yt3_di" bpmnElement="Flow_01h5yt3">
+        <di:waypoint x="420" y="258"/>
+        <di:waypoint x="480" y="258"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>

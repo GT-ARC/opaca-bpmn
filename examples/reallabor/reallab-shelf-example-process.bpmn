@@ -1,17 +1,17 @@
-<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-04-04--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-06-06--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
   <bpmn2:extensionElements>
     <vsdt2:services>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.20.0.130:8000" name="shelf-agent::FindInShelf" id="service_32nnj81">
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="shelf-agent::FindInShelf" id="service_32nnj81">
         <vsdt2:parameter name="item" type="string"/>
         <vsdt2:result name="resultFindInShelf" type="integer"/>
       </vsdt2:service>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.20.0.130:8000" name="shelf-agent::OpenShelf" id="service_27i3t4c">
-        <vsdt2:parameter name="shelf" type="integer"/>
-        <vsdt2:result name="resultOpenShelf" type="boolean"/>
-      </vsdt2:service>
-      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.20.0.130:8000" name="shelf-agent::CloseShelf" id="service_1gq2n04">
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="shelf-agent::CloseShelf" id="service_1gq2n04">
         <vsdt2:parameter name="shelf" type="integer"/>
         <vsdt2:result name="resultCloseShelf" type="boolean"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="shelf-agent::OpenShelf" id="service_27i3t4c">
+        <vsdt2:parameter name="shelf" type="integer"/>
+        <vsdt2:result name="resultOpenShelf" type="boolean"/>
       </vsdt2:service>
     </vsdt2:services>
   </bpmn2:extensionElements>
@@ -63,11 +63,8 @@
     <bpmn2:userTask id="Activity_1nzy4hn" name="Define item" vsdt2:type="input" vsdt2:message="&quot;Which item are you looking for?&quot;">
       <bpmn2:extensionElements>
         <vsdt2:targets>
-          <vsdt2:target name="user_item" type="string" description="&quot;item name&quot;"/>
+          <vsdt2:target name="var_item" type="string" description="&quot;item name&quot;"/>
         </vsdt2:targets>
-        <vsdt2:assignments>
-          <vsdt2:assignment variable="var_item" expression="user_item" assignTime="END"/>
-        </vsdt2:assignments>
       </bpmn2:extensionElements>
       <bpmn2:incoming>Flow_097y0s4</bpmn2:incoming>
       <bpmn2:outgoing>Flow_0df6s0b</bpmn2:outgoing>
@@ -112,14 +109,14 @@
   </bpmn2:process>
   <bpmndi:BPMNDiagram id="BPMNDiagram_1">
     <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
-      <bpmndi:BPMNShape id="Gateway_1x40ftx_di" bpmnElement="Gateway_1x40ftx" isMarkerVisible="true">
-        <dc:Bounds x="775" y="275" width="50" height="50"/>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
         <dc:Bounds x="322" y="282" width="36" height="36"/>
         <bpmndi:BPMNLabel>
           <dc:Bounds x="328" y="325" width="25" height="14"/>
         </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1x40ftx_di" bpmnElement="Gateway_1x40ftx" isMarkerVisible="true">
+        <dc:Bounds x="775" y="275" width="50" height="50"/>
       </bpmndi:BPMNShape>
       <bpmndi:BPMNShape id="Gateway_0ft4zd1_di" bpmnElement="Gateway_0ft4zd1" isMarkerVisible="true">
         <dc:Bounds x="1395" y="275" width="50" height="50"/>
