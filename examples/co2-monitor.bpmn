@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="UTF-8"?><!--appVersion: 0.1.0, buildDate: 2025-06-11--><bpmn2:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:bpmn2="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:vsdt2="https://raw.githubusercontent.com/GT-ARC/opaca-bpmn/refs/heads/main/opaca-bpmn-editor/src/descriptors/vsdt2.json" id="sample-diagram" targetNamespace="http://bpmn.io/schema/bpmn" xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd">
+  <bpmn2:extensionElements>
+    <vsdt2:services>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="home-assistant-agent::GetSensorId" id="service_1gdu2bv">
+        <vsdt2:parameter name="room" type="string"/>
+        <vsdt2:result name="resultGetSensorId" type="string"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="home-assistant-agent::GetTemperature" id="service_1e9spc9">
+        <vsdt2:parameter name="sensorId" type="string"/>
+        <vsdt2:result name="resultGetTemperature" type="number"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="home-assistant-agent::GetCo2" id="service_1k88lac">
+        <vsdt2:parameter name="sensorId" type="string"/>
+        <vsdt2:result name="resultGetCo2" type="number"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="home-assistant-agent::GetValue" id="service_06s7ba6">
+        <vsdt2:parameter name="sensorId" type="string"/>
+        <vsdt2:parameter name="key" type="string"/>
+        <vsdt2:result name="resultGetValue" type="number"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="DataVisAgent::MakeLinePlot" id="service_0qpdcl8">
+        <vsdt2:parameter name="x" type="array"/>
+        <vsdt2:parameter name="y" type="array"/>
+        <vsdt2:parameter name="format" type="string"/>
+        <vsdt2:parameter name="x_label" type="boolean"/>
+        <vsdt2:parameter name="y_label" type="boolean"/>
+        <vsdt2:parameter name="title" type="string"/>
+        <vsdt2:parameter name="line_width" type="number"/>
+        <vsdt2:parameter name="color" type="string"/>
+        <vsdt2:result name="resultMakeLinePlot" type="string"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="servlet-agent::ShowMessage" id="service_0qfbc5m">
+        <vsdt2:parameter name="message" type="string"/>
+        <vsdt2:parameter name="seconds" type="integer"/>
+        <vsdt2:result name="resultShowMessage" type="void"/>
+      </vsdt2:service>
+      <vsdt2:service type="OPACA Action" method="POST" uri="http://10.42.6.107:8000" name="servlet-agent::SetValue" id="service_2g67uam">
+        <vsdt2:parameter name="key" type="string"/>
+        <vsdt2:parameter name="value" type="string"/>
+        <vsdt2:result name="resultSetValue" type="void"/>
+      </vsdt2:service>
+    </vsdt2:services>
+  </bpmn2:extensionElements>
+  <bpmn2:process id="Process_1" isExecutable="true">
+    <bpmn2:extensionElements>
+      <vsdt2:variables>
+        <vsdt2:variable name="tmp_co2_high" type="double"/>
+        <vsdt2:variable name="tmp_window" type="string"/>
+      </vsdt2:variables>
+    </bpmn2:extensionElements>
+    <bpmn2:startEvent id="StartEvent_1">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="tmp_co2_high" expression="1000.0" assignTime="END"/>
+          <vsdt2:assignment variable="tmp_window" expression="&quot;north&quot;" assignTime="END"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:outgoing>Flow_17jnqxh</bpmn2:outgoing>
+    </bpmn2:startEvent>
+    <bpmn2:sequenceFlow id="Flow_17jnqxh" sourceRef="StartEvent_1" targetRef="Activity_0d44dk7"/>
+    <bpmn2:exclusiveGateway id="Gateway_086vott">
+      <bpmn2:incoming>Flow_1odygg0</bpmn2:incoming>
+      <bpmn2:incoming>Flow_0dlycgf</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1qi3lp9</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_1odygg0" sourceRef="Activity_0qjvijs" targetRef="Gateway_086vott"/>
+    <bpmn2:sequenceFlow id="Flow_1qi3lp9" sourceRef="Gateway_086vott" targetRef="Activity_1ean8is"/>
+    <bpmn2:exclusiveGateway id="Gateway_0u5v054" name="Co2 too high?" default="Flow_1jgwkxt">
+      <bpmn2:incoming>Flow_0fbm16g</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1jgwkxt</bpmn2:outgoing>
+      <bpmn2:outgoing>Flow_1bnnian</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_0fbm16g" sourceRef="Activity_1ean8is" targetRef="Gateway_0u5v054"/>
+    <bpmn2:exclusiveGateway id="Gateway_1sgnkdm">
+      <bpmn2:incoming>Flow_0rt4iod</bpmn2:incoming>
+      <bpmn2:incoming>Flow_19iv2xq</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0dlycgf</bpmn2:outgoing>
+    </bpmn2:exclusiveGateway>
+    <bpmn2:sequenceFlow id="Flow_1jgwkxt" sourceRef="Gateway_0u5v054" targetRef="Activity_1m25dob"/>
+    <bpmn2:sequenceFlow id="Flow_0rt4iod" sourceRef="Activity_1m25dob" targetRef="Gateway_1sgnkdm"/>
+    <bpmn2:serviceTask id="Activity_0qjvijs" name="Get Sensor ID" vsdt2:serviceImpl="service_1gdu2bv">
+      <bpmn2:extensionElements/>
+      <bpmn2:incoming>Flow_19527ye</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_1odygg0</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_1ean8is" name="Get Co2" vsdt2:serviceImpl="service_1k88lac">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="sensorId" expression="resultGetSensorId" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1qi3lp9</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0fbm16g</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_0x4fkm8" name="Open Window" vsdt2:serviceImpl="service_2g67uam">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="key" expression="tmp_window" assignTime="START"/>
+          <vsdt2:assignment variable="value" expression="&quot;opened&quot;" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_05nw6gu</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_19iv2xq</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_1m25dob" name="Close Window" vsdt2:serviceImpl="service_2g67uam">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="key" expression="tmp_window" assignTime="START"/>
+          <vsdt2:assignment variable="value" expression="&quot;closed&quot;" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1jgwkxt</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_0rt4iod</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:serviceTask id="Activity_0krzyno" name="Show Alert" vsdt2:serviceImpl="service_0qfbc5m">
+      <bpmn2:extensionElements>
+        <vsdt2:assignments>
+          <vsdt2:assignment variable="message" expression="resultGetCo2 + &quot; ppm Co2! Opening window...&quot;" assignTime="START"/>
+          <vsdt2:assignment variable="seconds" expression="3" assignTime="START"/>
+        </vsdt2:assignments>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_1bnnian</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_05nw6gu</bpmn2:outgoing>
+    </bpmn2:serviceTask>
+    <bpmn2:sequenceFlow id="Flow_1bnnian" sourceRef="Gateway_0u5v054" targetRef="Activity_0krzyno">
+      <bpmn2:conditionExpression xsi:type="bpmn2:tFormalExpression">resultGetCo2 &gt; tmp_co2_high</bpmn2:conditionExpression>
+    </bpmn2:sequenceFlow>
+    <bpmn2:sequenceFlow id="Flow_05nw6gu" sourceRef="Activity_0krzyno" targetRef="Activity_0x4fkm8"/>
+    <bpmn2:sequenceFlow id="Flow_19iv2xq" sourceRef="Activity_0x4fkm8" targetRef="Gateway_1sgnkdm"/>
+    <bpmn2:sequenceFlow id="Flow_0dlycgf" sourceRef="Gateway_1sgnkdm" targetRef="Gateway_086vott"/>
+    <bpmn2:sequenceFlow id="Flow_19527ye" sourceRef="Activity_0d44dk7" targetRef="Activity_0qjvijs"/>
+    <bpmn2:userTask id="Activity_0d44dk7" name="Ask which room" vsdt2:type="input" vsdt2:message="&quot;Monitor which room?&quot;">
+      <bpmn2:extensionElements>
+        <vsdt2:targets>
+          <vsdt2:target name="room" type="string" description=""/>
+        </vsdt2:targets>
+      </bpmn2:extensionElements>
+      <bpmn2:incoming>Flow_17jnqxh</bpmn2:incoming>
+      <bpmn2:outgoing>Flow_19527ye</bpmn2:outgoing>
+    </bpmn2:userTask>
+  </bpmn2:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_1">
+      <bpmndi:BPMNShape id="Gateway_086vott_di" bpmnElement="Gateway_086vott" isMarkerVisible="true">
+        <dc:Bounds x="505" y="205" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_0u5v054_di" bpmnElement="Gateway_0u5v054" isMarkerVisible="true">
+        <dc:Bounds x="765" y="205" width="50" height="50"/>
+        <bpmndi:BPMNLabel>
+          <dc:Bounds x="755" y="181" width="69" height="14"/>
+        </bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1sgnkdm_di" bpmnElement="Gateway_1sgnkdm" isMarkerVisible="true">
+        <dc:Bounds x="1195" y="205" width="50" height="50"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_06jmllo_di" bpmnElement="Activity_0qjvijs">
+        <dc:Bounds x="350" y="190" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0kzcm93_di" bpmnElement="Activity_1ean8is">
+        <dc:Bounds x="610" y="190" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_02bf7ez_di" bpmnElement="Activity_0x4fkm8">
+        <dc:Bounds x="1040" y="190" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_1jilhxr_di" bpmnElement="Activity_1m25dob">
+        <dc:Bounds x="870" y="300" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0226yzw_di" bpmnElement="Activity_0krzyno">
+        <dc:Bounds x="870" y="190" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="122" y="212" width="36" height="36"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Activity_0bjrrgi_di" bpmnElement="Activity_0d44dk7">
+        <dc:Bounds x="200" y="190" width="100" height="80"/>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_17jnqxh_di" bpmnElement="Flow_17jnqxh">
+        <di:waypoint x="158" y="230"/>
+        <di:waypoint x="200" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1odygg0_di" bpmnElement="Flow_1odygg0">
+        <di:waypoint x="450" y="230"/>
+        <di:waypoint x="505" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1qi3lp9_di" bpmnElement="Flow_1qi3lp9">
+        <di:waypoint x="555" y="230"/>
+        <di:waypoint x="610" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0fbm16g_di" bpmnElement="Flow_0fbm16g">
+        <di:waypoint x="710" y="230"/>
+        <di:waypoint x="765" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1jgwkxt_di" bpmnElement="Flow_1jgwkxt">
+        <di:waypoint x="790" y="255"/>
+        <di:waypoint x="790" y="340"/>
+        <di:waypoint x="870" y="340"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0rt4iod_di" bpmnElement="Flow_0rt4iod">
+        <di:waypoint x="970" y="340"/>
+        <di:waypoint x="1220" y="340"/>
+        <di:waypoint x="1220" y="255"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_1bnnian_di" bpmnElement="Flow_1bnnian">
+        <di:waypoint x="815" y="230"/>
+        <di:waypoint x="870" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_05nw6gu_di" bpmnElement="Flow_05nw6gu">
+        <di:waypoint x="970" y="230"/>
+        <di:waypoint x="1040" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19iv2xq_di" bpmnElement="Flow_19iv2xq">
+        <di:waypoint x="1140" y="230"/>
+        <di:waypoint x="1195" y="230"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_0dlycgf_di" bpmnElement="Flow_0dlycgf">
+        <di:waypoint x="1220" y="205"/>
+        <di:waypoint x="1220" y="120"/>
+        <di:waypoint x="530" y="120"/>
+        <di:waypoint x="530" y="205"/>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_19527ye_di" bpmnElement="Flow_19527ye">
+        <di:waypoint x="300" y="230"/>
+        <di:waypoint x="350" y="230"/>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn2:definitions>
